@@ -1,0 +1,62 @@
+---
+import Disclaimer from '../components/Disclaimer.astro';
+// Página de probabilidade — avisos e fórmulas
+// Referência: tasks_loteria.md — T0.3 (decisão de probabilidade)
+
+import Base from '../layouts/Base.astro';
+---
+
+<Base>
+  <section class="page-header">
+    <div class="container">
+      <h1>Probabilidade</h1>
+      <p>
+        Toda combinação válida tem a mesma probabilidade de sorteio. Aqui estão
+        os cálculos básicos e os avisos obrigatórios.
+      </p>
+    </div>
+  </section>
+
+  <section class="container">
+    <div class="probability-cards">
+      <div class="prob-card">
+        <h3>Mega-Sena</h3>
+        <p>
+          C(60, 6) = <strong>50.063.860</strong> combinações. Probabilidade de Sena:
+          <strong>1 em 50.063.860</strong>
+        </p>
+      </div>
+      <div class="prob-card">
+        <h3>Lotofácil</h3>
+        <p>
+          C(25, 15) = <strong>3.268.760</strong> combinações. Probabilidade de
+          15 acertos: <strong>1 em 3.268.760</strong>
+        </p>
+      </div>
+      <div class="prob-card">
+        <h3>Quina</h3>
+        <p>
+          C(80, 5) = <strong>24.040.016</strong> combinações. Probabilidade de
+          Quina: <strong>1 em 24.040.016</strong>
+        </p>
+      </div>
+      <div class="prob-card">
+        <h3>Lotomania</h3>
+        <p>
+          C(100, 20) = <strong>5,36 × 10²⁰</strong> combinações. Probabilidade de
+          20 acertos: <strong>1 em 5,36 × 10²⁰</strong>
+        </p>
+      </div>
+    </div>
+
+    <div class="warning-box">
+      <p>
+        <strong>Aviso:</strong> nenhum método, sistema ou estratégia aumenta a
+        chance de ganhar. O sorteio é justo — todos os números têm a mesma
+        probabilidade.
+      </p>
+    </div>
+  </section>
+
+  <Disclaimer />
+</Base>

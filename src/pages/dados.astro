@@ -1,0 +1,55 @@
+---
+import Disclaimer from '../components/Disclaimer.astro';
+// Página "Dados" — origem e atualização dos dados
+// Referência: tasks_loteria.md — T0.1, T0.2
+
+import Base from '../layouts/Base.astro';
+---
+
+<Base>
+  <section class="page-header">
+    <div class="container">
+      <h1>Dados</h1>
+      <p>
+        Dados históricos das 4 modalidades da CAIXA. Fonte oficial e licença
+        documentadas.
+      </p>
+    </div>
+  </section>
+
+  <section class="container">
+    <div class="data-cards">
+      <div class="data-card">
+        <h3>Mega-Sena</h3>
+        <p>3.073 concursos · de 1996 a 2026-10-22</p>
+      </div>
+      <div class="data-card">
+        <h3>Lotofácil</h3>
+        <p>3.811 concursos · de 2003 a 2026-10-22</p>
+      </div>
+      <div class="data-card">
+        <h3>Quina</h3>
+        <p>7.149 concursos · de 1994 a 2026-10-22</p>
+      </div>
+      <div class="data-card">
+        <h3>Lotomania</h3>
+        <p>2.990 concursos · de 1999 a 2026-10-21</p>
+      </div>
+    </div>
+
+    <div class="data-notes">
+      <h3>Fonte e licença</h3>
+      <p>
+        Dados provenientes de LotoAgora (derivado da API oficial da CAIXA).
+        Licença permite uso para análise e publicação com identificação da
+        fonte.
+      </p>
+      <p>
+        <strong>Atualização manual:</strong> baixar CSV →
+        <code>npm run data:import</code> → revisar diff → commit.
+      </p>
+    </div>
+  </section>
+
+  <Disclaimer />
+</Base>

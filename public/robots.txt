@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://example.com/sitemap-index.xml
+
+# Regra defensiva: nenhum subdomínio/fundo de rastreamento que sugira
+# controle sobre o conteúdo da CAIXA. O site é independente.

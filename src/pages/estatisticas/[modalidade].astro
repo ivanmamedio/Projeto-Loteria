@@ -1,0 +1,205 @@
+---
+import Disclaimer from '../../components/Disclaimer.astro';
+// Página de estatísticas por modalidade
+// Referência: tasks_loteria.md — T1.1 (Astro + TS estrito)
+// Obs: dynamic route — [modalidade].astro
+
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { MODALIDADES, type ModalidadeId, modalidadePorId } from '../../domain/rules';
+import Base from '../../layouts/Base.astro';
+
+import {
+  atrasoAcumulado,
+  combinacoes,
+  desvioAcertos,
+  desvioSomaTeorica,
+  distribuicaoAcertos,
+  distribuicaoPares,
+  frequenciaDezenas,
+  gapMedioTeorico,
+  hitsEsperados,
+  mediaSomaTeorica,
+  paridadeEsperada,
+  probabilidadeAcertos,
+  quiQuadrado,
+  ultimosN,
+  varianciaAcertos,
+  varianciaSomaDezenas,
+  varianciaSomaTeorica,
+} from '../../domain/stats';
+
+export function getStaticPaths() {
+  return MODALIDADES.map((m) => ({ params: { modalidade: m.id } }));
+}
+
+const { modalidade } = Astro.params;
+
+let regras: ReturnType<typeof modalidadePorId>;
+try {
+  regras = modalidadePorId(modalidade as ModalidadeId);
+} catch {
+  regras = modalidadePorId('mega-sena' as ModalidadeId);
+}
+const dataPath = join(process.cwd(), 'public', 'data', `${regras.id}.json`);
+const raw = JSON.parse(readFileSync(dataPath, 'utf8')) as { concursos: { dezenas: number[] }[] };
+const concursos = raw.concursos.map((c) => c.dezenas);
+
+const freq = frequenciaDezenas(concursos);
+const chi = quiQuadrado(concursos, regras.universo);
+const varSoma = varianciaSomaDezenas(concursos, regras.universo);
+const paridade = distribuicaoPares(concursos);
+
+const dezenasUniverso = Array.from(
+  { length: regras.universo + (regras.id === 'lotomania' ? 1 : 0) },
+  (_, i) => (regras.id === 'lotomania' ? i : i + 1),
+);
+const topFreq = Object.entries(freq)
+  .map(([d, n]) => ({ dezena: Number(d), n }))
+  .sort((a, b) => b.n - a.n)
+  .slice(0, 5);
+const topAtraso = dezenasUniverso
+  .map((d) => ({ dezena: d, atraso: atrasoAcumulado(concursos, d) }))
+  .sort((a, b) => b.atraso - a.atraso)
+  .slice(0, 5);
+const janela = ultimosN(concursos, 100);
+
+const apostadosRepresentativos = regras.minDezenas;
+const totalCombinacoes = combinacoes(regras.universo, regras.dezenasSorteadas);
+const acertosEsperados = hitsEsperados(
+  regras.universo,
+  regras.dezenasSorteadas,
+  apostadosRepresentativos,
+);
+const varianciaAcertosValor = varianciaAcertos(
+  regras.universo,
+  regras.dezenasSorteadas,
+  apostadosRepresentativos,
+);
+const desvioAcertosValor = desvioAcertos(
+  regras.universo,
+  regras.dezenasSorteadas,
+  apostadosRepresentativos,
+);
+const distribuicao = distribuicaoAcertos(
+  regras.universo,
+  regras.dezenasSorteadas,
+  apostadosRepresentativos,
+);
+const premiosAceitos = regras.premiacao.map((p) => p.aceitos);
+const probabilidadePremio = distribuicao
+  .filter((d) => premiosAceitos.includes(d.acertos))
+  .reduce((acc, d) => acc + d.probabilidade, 0);
+const somaMediaTeorica = mediaSomaTeorica(regras.universo, regras.dezenasSorteadas);
+const somaDesvioTeorico = desvioSomaTeorica(regras.universo, regras.dezenasSorteadas);
+const gapMedio = gapMedioTeorico(regras.universo, regras.dezenasSorteadas);
+const paridadeTeorica = paridadeEsperada(regras.universo, regras.dezenasSorteadas);
+---
+
+<Base>
+  <section class="page-header">
+    <div class="container">
+      <h1>Estatísticas — {regras.nome}</h1>
+      <p>
+        Frequência, atraso e análise estatística das {regras.universo} dezenas.
+        Toda combinação tem a mesma probabilidade — estatísticas são para
+        <em class="text-muted"> descrição, não previsão.</em>
+      </p>
+    </div>
+  </section>
+
+  <section class="container">
+    <div class="summary-card">
+      <p>
+        <strong>Modalidade:</strong> {regras.nome}
+      </p>
+      <p>
+        <strong>Universo:</strong> {regras.universo} dezenas
+      </p>
+      <p>
+        <strong>Sorteio:</strong> {regras.dezenasSorteadas} dezenas
+      </p>
+      <p>
+        <strong>Faixa de aposta:</strong> {regras.minDezenas}–{regras.maxDezenas} dezenas
+      </p>
+      <p>
+        <strong>Preço mínimo:</strong> {regras.precoMinimo}
+      </p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <h3>Frequência (F4)</h3>
+        <p>Total de concursos: {concursos.length}</p>
+        <p>
+          Mais frequentes:{' '}
+          {topFreq.map((x) => `${String(x.dezena).padStart(2, '0')} (${x.n})`).join(', ')}
+        </p>
+      </div>
+      <div class="stat-box">
+        <h3>Atraso acumulado (F5)</h3>
+        <p>
+          Maiores atrasos:{' '}
+          {topAtraso.map((x) => `${String(x.dezena).padStart(2, '0')} (${x.atraso})`).join(', ')}
+        </p>
+      </div>
+      <div class="stat-box">
+        <h3>Qui-quadrado (F7)</h3>
+        <p>χ² = {chi.chi2.toFixed(2)} · gl = {chi.graus}</p>
+        <p>p-valor = {chi.pValor.toFixed(4)}</p>
+      </div>
+      <div class="stat-box">
+        <h3>Variância da soma (F13)</h3>
+        <p>σ² (amostral) = {varSoma.toFixed(2)}</p>
+        <p>Pares/ímpares: {paridade.pares}/{paridade.impares}</p>
+        <p>Janela recente: {janela.length} concursos</p>
+      </div>
+    </div>
+
+    <div class="stats-grid" style="margin-top:1rem;">
+      <div class="stat-box">
+        <h3>Probabilidade básica</h3>
+        <p>Total de combinações: {totalCombinacoes.toLocaleString('pt-BR')}</p>
+        <p>Acertos esperados (aposta de {apostadosRepresentativos}): {acertosEsperados.toFixed(2)}</p>
+        <p>Desvio padrão dos acertos: {desvioAcertosValor.toFixed(3)}</p>
+      </div>
+      <div class="stat-box">
+        <h3>Soma das dezenas</h3>
+        <p>Média teórica: {somaMediaTeorica.toFixed(2)}</p>
+        <p>Desvio padrão teórico: {somaDesvioTeorico.toFixed(2)}</p>
+        <p>Gap médio teórico: {gapMedio.toFixed(2)}</p>
+      </div>
+      <div class="stat-box">
+        <h3>Paridade teórica</h3>
+        <p>Pares esperados: {paridadeTeorica.pares.toFixed(2)}</p>
+        <p>Ímpares esperados: {paridadeTeorica.impares.toFixed(2)}</p>
+        <p>Variancia dos acertos: {varianciaAcertosValor.toFixed(3)}</p>
+      </div>
+      <div class="stat-box">
+        <h3>Chance de prêmio</h3>
+        <p>Aposta de {apostadosRepresentativos} dezenas</p>
+        <p>Probabilidade de faixa premiada: {(probabilidadePremio * 100).toFixed(4)}%</p>
+        <p>1 em {probabilidadePremio > 0 ? Math.round(1 / probabilidadePremio).toLocaleString('pt-BR') : '—'}</p>
+      </div>
+    </div>
+
+    <div class="data-notes" style="margin-top:1rem;">
+      <h3>Distribuição teórica de acertos</h3>
+      <p>Probabilidade de cada quantidade de acertos ao apostar {apostadosRepresentativos} dezenas (modelo hipergeométrico, sem reposição).</p>
+      <table class="stats-table">
+        <thead><tr><th>Acertos</th><th>Probabilidade</th><th>1 em</th></tr></thead>
+        <tbody>
+          {distribuicao.map((d) => (
+            <tr>
+              <td>{d.acertos}</td>
+              <td>{(d.probabilidade * 100).toFixed(4)}%</td>
+              <td>{d.probabilidade > 0 ? Math.round(1 / d.probabilidade).toLocaleString('pt-BR') : '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <Disclaimer />
+</Base>

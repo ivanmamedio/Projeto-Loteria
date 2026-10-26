@@ -1,0 +1,43 @@
+<!DOCTYPE html><html lang="pt-BR"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Jogo na Hora — geração gratuita de combinações de loteria com probabilidade verificável"><title>Jogo na Hora — gerador de combinações de loteria</title><link rel="stylesheet" href="/src/styles/global.css"><script type="module" src="/_astro/hoisted.DkDxuRqN.js"></script></head> <body> <a href="#conteudo" class="skip-link">Pular para o conteúdo</a> <header class="header"> <div class="container"> <a href="/" class="logo">Jogo na Hora</a> <nav> <ul class="nav-list"> <li><a href="/">Início</a></li> <li><a href="/como-funciona">Como funciona</a></li> <li><a href="/estatisticas">Estatísticas</a></li> <li><a href="/dados">Dados</a></li> <li><a href="/sobre">Sobre</a></li> <li><a href="/privacidade">Privacidade</a></li> <li><a href="/termos">Termos</a></li> <li><a href="/#contribuicao">Contribua</a></li> </ul> </nav> </div> </header> <main id="conteudo">  <section class="hero"> <div class="container"> <h1> <button id="btn-sorteio-hero" type="button" class="hero-title-btn">
+Sorteie sua combinação
+</button> </h1> <p>
+Escolha uma modalidade e marque dezenas. Toda combinação tem a mesma
+        probabilidade de sorteio — use estas ferramentas para descrever,
+        organizar e diversificar jogos, jamais para prometer vantagem.
+</p> <div class="modality-picker"> <a href="/?modalidade=mega-sena" class="modality-btn" aria-current="page"> <span class="modality-btn__label">Mega-Sena</span> <span class="modality-btn__meta">6 dezenas · R$ 6,00</span> </a> <a href="/?modalidade=lotofacil" class="modality-btn"> <span class="modality-btn__label">Lotofácil</span> <span class="modality-btn__meta">15 dezenas · R$ 3,50</span> </a> <a href="/?modalidade=quina" class="modality-btn"> <span class="modality-btn__label">Quina</span> <span class="modality-btn__meta">5 dezenas · R$ 3,00</span> </a> <a href="/?modalidade=lotomania" class="modality-btn"> <span class="modality-btn__label">Lotomania</span> <span class="modality-btn__meta">50 dezenas fixo · R$ 3,00</span> </a> </div> <div id="resultado-hero" class="hero-result" aria-live="polite"></div> </div> </section> <section class="benefits"> <div class="container"> <div class="benefits-grid"> <article> <h2>Uniformidade</h2> <p>Toda combinação válida tem a mesma probabilidade. Nenhum método altera as chances.</p> </article> <article> <h2>Registrável</h2> <p>Seus jogos ficam salvos no navegador, com histórico local, cópia e compartilhamento.</p> </article> <article> <h2>Transparente</h2> <p>Fórmulas F1–F13 documentadas e calculadas a partir dos dados reais.</p> </article> </div> </div> </section> <section class="disclaimer"> <p> <strong>Aviso de probabilidade:</strong> em sorteio justo, toda combinação
+    válida tem a mesma probabilidade de sorteio. As fórmulas deste site servem
+    para descrever o histórico, organizar e diversificar jogos — nunca para
+    prometer vantagem estatística.
+</p> <p>
+Jogue com responsabilidade. Público adulto apenas.
+</p> </section> <section class="generator"> <div class="container"> <h2>Gerar jogos</h2> <p>
+Escolha uma modalidade, marque dezenas (ou use a seleção automática) e
+          gere combinações. Toda combinação tem a mesma probabilidade de sorteio.
+</p> <div class="controls"> <label>
+Modalidade
+<select id="modalidade"> <option value="mega-sena">Mega-Sena</option> <option value="lotofacil">Lotofácil</option> <option value="quina">Quina</option> <option value="lotomania">Lotomania</option> </select> </label> <label>
+Quantidade (1–10)
+<input id="quantidade" type="number" min="1" max="10" value="3"> </label> <label>
+Estratégia
+<select id="estrategia"> <option value="E0">E0 — Uniforme</option> <option value="E1">E1 — Mais frequentes</option> <option value="E2">E2 — Mais atrasadas</option> <option value="E3">E3 — Filtros de equilíbrio</option> <option value="E4">E4 — Diversificar lote</option> <option value="combinado">Combinado (E1+E3+E4)</option> </select> </label> <label><input id="filtros" type="checkbox"> Filtros de equilíbrio (E3)</label> <label><input id="diversificar" type="checkbox"> Diversificar lote (E4)</label> <label><input id="evitaCal" type="checkbox"> Evitar padrão de calendário</label> <label>
+Janela de concursos
+<input id="janela" type="number" min="1" value="100"> </label> <label><input id="autoSelecionar" type="checkbox" checked> Seleção automática de dezenas</label> </div> <div class="grid-actions"> <button id="btn-limpar-grade" type="button">Limpar seleção</button> <button id="btn-selecionar-todos" type="button">Marcar todos</button> <span id="selecao-info" class="text-muted"></span> </div> <div id="grade-dezenas" class="dezenas-grid" aria-label="Grade de dezenas"></div> <button id="btn-gerar" type="button">Gerar 3 jogos</button> <div id="resultado" aria-live="polite"></div> <p id="meta"></p> <section class="history" aria-labelledby="historico-titulo"> <h3 id="historico-titulo">Histórico local</h3> <p class="history-empty" id="historico-vazio">Nenhum jogo salvo ainda.</p> <ul id="historico-lista" class="history-list"></ul> <div class="grid-actions"> <button id="btn-compartilhar-selecao" type="button" class="btn-whatsapp"> <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"></path></svg>
+Compartilhar seleção
+</button> <button id="btn-limpar-historico" type="button">Limpar histórico</button> </div> </section> </div> </section> <section class="contribution" id="contribuicao"> <div class="container"> <h2>Contribua com nosso site</h2> <p>
+O Jogo na Hora é independente e gratuito. Se o projeto for útil para
+          você, considere apoiar a manutenção e a atualização dos dados.
+</p> <div class="pix-box"> <span>Chave PIX: 72af7962-0cf1-4f88-8d0f-1c4a58bcde4b</span> <button id="btn-copiar-pix" type="button">Copiar chave</button> </div> <p class="text-muted">
+Nenhuma aposta é processada por este site.
+</p> </div> </section>   </main> <div id="responsabilidade-modal" class="resp-modal" hidden> <div class="resp-card" role="dialog" aria-modal="true" aria-labelledby="resp-titulo"> <h2 id="resp-titulo">Termo de responsabilidade</h2> <p>
+Este site é independente, gratuito e destinado a pessoas com 18 anos
+          ou mais. As combinações são geradas por algoritmos e não garantem
+          prêmio nem vantagem estatística. Confirme que leu e aceita os termos
+          antes de continuar.
+</p> <label class="resp-check"> <input type="checkbox" id="resp-check">
+Li e aceito o termo de responsabilidade e os Termos de Uso.
+</label> <div class="resp-actions"> <a href="/termos">Ler termos completos</a> <button id="resp-confirm" type="button" disabled>Aceitar e continuar</button> </div> </div> </div>   <div class="container"> <p>
+&copy; 2026 — Jogo na Hora. Site independente de estudo e diversão sobre
+          loterias da CAIXA. Sem vínculo, afiliação ou endosso da Caixa Econômica
+          Federal. Jogo responsável. Público adulto (18+). Resultados válidos são
+          sempre os divulgados pela CAIXA.
+</p> </div> </body></html>

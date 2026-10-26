@@ -1,0 +1,46 @@
+---
+import Disclaimer from '../components/Disclaimer.astro';
+// Página "Sobre" — quem somos, propósito do projeto
+// Referência: tasks_loteria.md — T1.1 (Astro + TS estrito)
+
+import Base from '../layouts/Base.astro';
+---
+
+<Base>
+  <section class="page-header">
+    <div class="container">
+      <h1>Sobre o Jogo na Hora</h1>
+      <p>
+        Site independente de estudo e diversão sobre as loterias da CAIXA.
+        Projetado com transparência — fórmulas, dados e probabilidades
+        expostos para quem quer entender, não para quem quer ganhar.
+      </p>
+    </div>
+  </section>
+
+  <section class="container">
+    <h2>Objetivo</h2>
+    <p>
+      Fornecer uma ferramenta gratuita e acessível para consulta de dados
+      históricos, geração de jogos e estudo de probabilidades. Sem anúncios,
+      sem levantamento de dados de jogadores — apenas informação.
+    </p>
+
+    <h2>Princípios</h2>
+    <ul>
+      <li><strong>Uniformidade:</strong> toda combinação tem a mesma probabilidade.</li>
+      <li><strong>Transparência:</strong> fórmulas documentadas e calculadas a partir dos dados reais.</li>
+      <li><strong>Verdade:</strong> nenhum texto sugere previsão ou vantagem estatística.</li>
+      <li><strong>Respeito:</strong> sem indicação de vínculo com a CAIXA.</li>
+      <li><strong>Idade:</strong> conteúdo destinado a pessoas com 18 anos ou mais.</li>
+    </ul>
+
+    <h2>Fontes e licença</h2>
+    <p>
+      Os resultados históricos são derivados de dados públicos da CAIXA e da
+      compilação LotoAgora. O site não se apresenta como publicação oficial.
+    </p>
+  </section>
+
+  <Disclaimer />
+</Base>
