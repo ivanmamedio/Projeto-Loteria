@@ -3,5 +3,8 @@ Allow: /
 
 Sitemap: https://example.com/sitemap-index.xml
 
+# IMPORTANTE: Substitua 'https://example.com' pela URL real do seu site antes de publicar.
+# Exemplo: Sitemap: https://seusite.com.br/sitemap-index.xml
+
 # Regra defensiva: nenhum subdomínio/fundo de rastreamento que sugira
 # controle sobre o conteúdo da CAIXA. O site é independente.
