@@ -6,5 +6,11 @@ export default defineConfig({
   output: 'static',
   build: {
     assets: 'assets',
+    cssCodeSplit: false,
+  },
+  vite: {
+    build: {
+      cssCodeSplit: false,
+    },
   },
 });
