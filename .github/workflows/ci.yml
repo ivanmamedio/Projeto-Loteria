@@ -60,5 +60,15 @@ jobs:
       - name: Build for e2e
         run: npm run build
 
+      - name: Start preview server
+        run: |
+          npm run preview &
+          echo "PREVIEW_PID=$!" >> $GITHUB_ENV
+          sleep 10
+
       - name: Run Playwright tests
         run: npm run test:e2e
+
+      - name: Stop preview server
+        if: always()
+        run: kill $PREVIEW_PID || true
