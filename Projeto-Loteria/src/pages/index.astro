@@ -54,24 +54,27 @@ try {
           <a href="/como-funciona" class="btn btn-secondary btn-lg">Como funciona</a>
         </div>
 
-        <nav class="modality-picker" aria-label="Escolha a modalidade">
-          <a href="/?modalidade=mega-sena" class="modality-btn" aria-current={modalidade.id === 'mega-sena' ? 'page' : undefined}>
+        <nav class="modality-picker" aria-label="Escolha a modalidade" role="group">
+          <button type="button" class="modality-btn" data-modalidade="mega-sena" aria-pressed="true">
             <span class="modality-btn__label">Mega-Sena</span>
             <span class="modality-btn__meta">6 dezenas · R$ 6,00</span>
-          </a>
-          <a href="/?modalidade=lotofacil" class="modality-btn" aria-current={modalidade.id === 'lotofacil' ? 'page' : undefined}>
+          </button>
+          <button type="button" class="modality-btn" data-modalidade="lotofacil" aria-pressed="false">
             <span class="modality-btn__label">Lotofácil</span>
             <span class="modality-btn__meta">15 dezenas · R$ 3,50</span>
-          </a>
-          <a href="/?modalidade=quina" class="modality-btn" aria-current={modalidade.id === 'quina' ? 'page' : undefined}>
+          </button>
+          <button type="button" class="modality-btn" data-modalidade="quina" aria-pressed="false">
             <span class="modality-btn__label">Quina</span>
             <span class="modality-btn__meta">5 dezenas · R$ 3,00</span>
-          </a>
-          <a href="/?modalidade=lotomania" class="modality-btn" aria-current={modalidade.id === 'lotomania' ? 'page' : undefined}>
+          </button>
+          <button type="button" class="modality-btn" data-modalidade="lotomania" aria-pressed="false">
             <span class="modality-btn__label">Lotomania</span>
             <span class="modality-btn__meta">50 dezenas fixo · R$ 3,00</span>
-          </a>
+          </button>
         </nav>
+
+        <!-- Resultado do "Sortear agora" aparece aqui -->
+        <div id="hero-result" class="hero-result" aria-live="polite" style="margin-top: var(--space-6);"></div>
 
         <div class="hero-stats">
           <div class="stat-item">
@@ -298,6 +301,12 @@ try {
 
     const MODALIDADES_VALIDAS = ['mega-sena', 'lotofacil', 'quina', 'lotomania'] as const;
 
+    // Elementos do hero
+    const heroResult = document.getElementById('hero-result') as HTMLElement;
+    const btnSorteioHero = document.getElementById('btn-sorteio-hero') as HTMLButtonElement;
+    const modalityBtns = document.querySelectorAll('.modality-picker .modality-btn') as NodeListOf<HTMLButtonElement>;
+
+    // Elementos do gerador principal
     const selectMod = document.getElementById('modalidade') as HTMLSelectElement;
     const params = new URLSearchParams(window.location.search);
     const inicial = params.get('modalidade');
@@ -314,7 +323,6 @@ try {
     const autoSelecionar = document.getElementById('autoSelecionar') as HTMLInputElement;
     const btn = document.getElementById('btn-gerar') as HTMLButtonElement;
     const out = document.getElementById('resultado') as HTMLElement;
-    const outHero = document.getElementById('resultado-hero') as HTMLElement | null;
     const meta = document.getElementById('meta') as HTMLElement;
     const grade = document.getElementById('grade-dezenas') as HTMLElement;
     const selecaoInfo = document.getElementById('selecao-info') as HTMLElement;
@@ -325,11 +333,43 @@ try {
     const btnLimparHistorico = document.getElementById('btn-limpar-historico') as HTMLButtonElement;
     const btnCompartilharSelecao = document.getElementById('btn-compartilhar-selecao') as HTMLButtonElement | null;
     const btnCopiarPix = document.getElementById('btn-copiar-pix') as HTMLButtonElement | null;
-    const btnSorteioHero = document.getElementById('btn-sorteio-hero') as HTMLButtonElement | null;
 
     const selecionadas = new Set<number>();
     let ultimosJogos: number[][] = [];
-    let moverParaHero = false;
+    let modalidadeAtual = selectMod.value;
+
+    // --- Modalidade Picker (Hero) ---
+    function setModalidadeHero(mod: string): void {
+      modalidadeAtual = mod;
+      selectMod.value = mod;
+      
+      // Atualizar botões do hero
+      modalityBtns.forEach(b => {
+        const isActive = b.dataset.modalidade === mod;
+        b.setAttribute('aria-pressed', String(isActive));
+        if (isActive) {
+          b.classList.add('active');
+        } else {
+          b.classList.remove('active');
+        }
+      });
+      
+      // Re-renderizar grade
+      renderizarGrade();
+      atualizarBotao();
+    }
+
+    modalityBtns.forEach(b => {
+      b.addEventListener('click', () => {
+        const mod = b.dataset.modalidade;
+        if (mod) setModalidadeHero(mod);
+      });
+    });
+
+    // Sincronizar select do gerador com hero
+    selectMod.addEventListener('change', () => {
+      setModalidadeHero(selectMod.value);
+    });
 
     function dezenasUniverso(mod: string): number[] {
       const m = modalidadePorId(mod as ModalidadeId);
@@ -354,7 +394,7 @@ try {
         const b = document.createElement('button');
         b.type = 'button';
         b.className = `number-btn${isLotomania ? ' number-btn--lotomania' : ''}`;
-        b.textContent = isLotomania ? pad2(d) : pad2(d);
+        b.textContent = pad2(d);
         b.dataset.value = String(d);
         b.setAttribute('aria-label', `Dezena ${pad2(d)}`);
         b.setAttribute('aria-pressed', 'false');
@@ -515,9 +555,9 @@ try {
       return await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95));
     }
 
-    function criarGameCard(texto: string, modalidade: string): HTMLElement {
+    function criarGameCard(texto: string, modalidade: string, isHero: boolean = false): HTMLElement {
       const card = document.createElement('div');
-      card.className = 'game-card';
+      card.className = 'game-card' + (isHero ? ' hero-game-card' : '');
       card.innerHTML = `
         <div class="game-header">
           <span class="game-title">${modalidade}</span>
@@ -537,6 +577,121 @@ try {
         </div>
       `;
       return card;
+    }
+
+    async function executarSorteio(quantidade: number, targetContainer: HTMLElement, isHero: boolean = false): Promise<void> {
+      const modalidade = modalidadeAtual;
+      const m = modalidadePorId(modalidade as ModalidadeId);
+      const dezenas = dezenasUniverso(modalidade);
+
+      let marcadas: number[] = Array.from(selecionadas);
+      if (autoSelecionar.checked || marcadas.length < m.minDezenas) {
+        const faltam = Math.max(m.minDezenas, m.dezenasSorteadas + 6) - marcadas.length;
+        if (faltam > 0) {
+          const pool = dezenas.filter((d) => !marcadas.includes(d));
+          const extras = sampleNoReplace(pool.length, Math.min(pool.length, faltam), Math.random).map(
+            (idx) => pool[idx] as number,
+          );
+          marcadas = marcadas.concat(extras);
+        }
+      }
+
+      const opcoes: Record<string, unknown> = {
+        janela: Math.max(1, Number(janela.value) || 100),
+      };
+      const est = estrategia.value;
+      if (est === 'combinado') opcoes.estrategia = ['E1', 'E3', 'E4'];
+      else opcoes.estrategia = est;
+      if (filtros.checked) opcoes.filtros = true;
+      if (diversificar.checked) opcoes.diversificar = true;
+      if (evitaCal.checked) opcoes.evitaCalendario = true;
+
+      const originalBtn = isHero ? btnSorteioHero : btn;
+      const originalHTML = originalBtn?.innerHTML;
+      if (originalBtn) {
+        originalBtn.disabled = true;
+        originalBtn.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="animation: spin 1s linear infinite;">
+            <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+            <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1" stroke-linecap="round"/>
+          </svg>
+          Gerando…
+        `;
+      }
+
+      try {
+        const concursos = await concursosDaModalidade(modalidade);
+        if (concursos.length > 0) opcoes.concursos = concursos;
+        const resultado = generateGames(
+          { modalidade: modalidade as ModalidadeId, dezenasMarcadas: marcadas, opcoes },
+          quantidade,
+        ) as unknown as { games: GameResult[]; meta: { janela: number; taxaAceitacao: number } };
+        const lista = Array.isArray(resultado.games) ? resultado.games : [resultado as unknown as GameResult];
+        
+        targetContainer.innerHTML = '';
+        ultimosJogos = lista.map((g: GameResult) => g.dezenas);
+
+        for (const g of lista) {
+          const texto = g.dezenas.map((d: number) => pad2(d)).join(' - ');
+          const card = criarGameCard(texto, modalidade, isHero);
+          targetContainer.appendChild(card);
+
+          // Bind actions
+          card.querySelector('[data-action="copy"]')?.addEventListener('click', () => copiarTexto(texto));
+          card.querySelector('[data-action="download"]')?.addEventListener('click', async () => {
+            const blob = await gerarImagemJogos(ultimosJogos, modalidade);
+            if (blob) baixarBlob(blob, `jogo-na-hora-${modalidade}-${Date.now()}.jpg`);
+          });
+          card.querySelector('[data-action="share"]')?.addEventListener('click', async () => {
+            const textoCompartilhamento = `Jogo na Hora — ${modalidade}:\n${ultimosJogos.map(j => j.map(d => pad2(d)).join(' - ')).join('\n')}`;
+            const blob = await gerarImagemJogos(ultimosJogos, modalidade);
+            if (blob && navigator.share && navigator.canShare) {
+              const arquivo = new File([blob], 'jogo-na-hora.jpg', { type: 'image/jpeg' });
+              if (navigator.canShare({ files: [arquivo] })) {
+                try {
+                  await navigator.share({ title: 'Jogo na Hora', text: textoCompartilhamento, files: [arquivo] });
+                  return;
+                } catch {
+                  // fallback
+                }
+              }
+            }
+            window.open(`https://wa.me/?text=${encodeURIComponent(textoCompartilhamento)}`, '_blank', 'noopener,noreferrer');
+          });
+          card.querySelector('[data-action="txt"]')?.addEventListener('click', () => {
+            const conteudo = `Jogo na Hora\nModalidade: ${modalidade}\nDezenas:\n${ultimosJogos.map(j => j.map(d => pad2(d)).join(' - ')).join('\n')}\n\nAviso: toda combinação tem a mesma probabilidade de sorteio.`;
+            const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' });
+            baixarBlob(blob, `jogo-na-hora-${modalidade}-${Date.now()}.txt`);
+          });
+        }
+
+        if (!isHero) {
+          meta.textContent = `Janela: ${resultado.meta.janela} concursos · Taxa de aceitação: ${(resultado.meta.taxaAceitacao * 100).toFixed(1)}%`;
+
+          const timestamp = new Date().toISOString();
+          for (const g of lista) {
+            addHistory({
+              id: `${modalidade}-${timestamp}-${g.dezenas.join(',')}`,
+              modalidade,
+              dezenas: g.dezenas,
+              timestamp,
+            });
+          }
+          renderizarHistorico();
+
+          // Scroll para resultado
+          out.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      } catch (err) {
+        targetContainer.innerHTML = `<div class="alert alert-error" role="alert"><div class="alert-content"><p class="alert-message">${(err as Error).message}</p></div></div>`;
+        if (!isHero) meta.textContent = '';
+      } finally {
+        if (originalBtn) {
+          originalBtn.disabled = false;
+          originalBtn.innerHTML = originalHTML || '';
+          if (!isHero) atualizarBotao();
+        }
+      }
     }
 
     btnLimparGrade.addEventListener('click', () => {
@@ -571,142 +726,23 @@ try {
       renderizarHistorico();
     });
 
-    selectMod.addEventListener('change', () => {
-      renderizarGrade();
-    });
-
     qInput.addEventListener('input', atualizarBotao);
 
-    btn.addEventListener('click', async () => {
-      const modalidade = selectMod.value;
-      const m = modalidadePorId(modalidade as ModalidadeId);
-      const q = Math.max(1, Math.min(10, Number(qInput.value) || 3));
-      const dezenas = dezenasUniverso(modalidade);
+    btn.addEventListener('click', () => executarSorteio(Math.max(1, Math.min(10, Number(qInput.value) || 3)), out, false));
 
-      let marcadas: number[] = Array.from(selecionadas);
-      if (autoSelecionar.checked || marcadas.length < m.minDezenas) {
-        const faltam = Math.max(m.minDezenas, m.dezenasSorteadas + 6) - marcadas.length;
-        if (faltam > 0) {
-          const pool = dezenas.filter((d) => !marcadas.includes(d));
-          const extras = sampleNoReplace(pool.length, Math.min(pool.length, faltam), Math.random).map(
-            (idx) => pool[idx] as number,
-          );
-          marcadas = marcadas.concat(extras);
-        }
-      }
-
-      const opcoes: Record<string, unknown> = {
-        janela: Math.max(1, Number(janela.value) || 100),
-      };
-      const est = estrategia.value;
-      if (est === 'combinado') opcoes.estrategia = ['E1', 'E3', 'E4'];
-      else opcoes.estrategia = est;
-      if (filtros.checked) opcoes.filtros = true;
-      if (diversificar.checked) opcoes.diversificar = true;
-      if (evitaCal.checked) opcoes.evitaCalendario = true;
-
-      btn.disabled = true;
-      const originalHTML = btn.innerHTML;
-      btn.innerHTML = `
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="animation: spin 1s linear infinite;">
-          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
-          <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1" stroke-linecap="round"/>
-        </svg>
-        Gerando…
-      `;
-      try {
-        const concursos = await concursosDaModalidade(modalidade);
-        if (concursos.length > 0) opcoes.concursos = concursos;
-        const resultado = generateGames(
-          { modalidade: modalidade as ModalidadeId, dezenasMarcadas: marcadas, opcoes },
-          q,
-        ) as unknown as { games: GameResult[]; meta: { janela: number; taxaAceitacao: number } };
-        const lista = Array.isArray(resultado.games) ? resultado.games : [resultado as unknown as GameResult];
-        out.innerHTML = '';
-        ultimosJogos = lista.map((g: GameResult) => g.dezenas);
-
-        for (const g of lista) {
-          const texto = g.dezenas.map((d: number) => pad2(d)).join(' - ');
-          const card = criarGameCard(texto, modalidade);
-          out.appendChild(card);
-
-          // Bind actions
-          card.querySelector('[data-action="copy"]')?.addEventListener('click', () => copiarTexto(texto));
-          card.querySelector('[data-action="download"]')?.addEventListener('click', async () => {
-            const blob = await gerarImagemJogos(ultimosJogos, modalidade);
-            if (blob) baixarBlob(blob, `jogo-na-hora-${modalidade}-${Date.now()}.jpg`);
-          });
-          card.querySelector('[data-action="share"]')?.addEventListener('click', async () => {
-            const textoCompartilhamento = `Jogo na Hora — ${modalidade}:\n${ultimosJogos.map(j => j.map(d => pad2(d)).join(' - ')).join('\n')}`;
-            const blob = await gerarImagemJogos(ultimosJogos, modalidade);
-            if (blob && navigator.share && navigator.canShare) {
-              const arquivo = new File([blob], 'jogo-na-hora.jpg', { type: 'image/jpeg' });
-              if (navigator.canShare({ files: [arquivo] })) {
-                try {
-                  await navigator.share({ title: 'Jogo na Hora', text: textoCompartilhamento, files: [arquivo] });
-                  return;
-                } catch {
-                  // fallback
-                }
-              }
-            }
-            window.open(`https://wa.me/?text=${encodeURIComponent(textoCompartilhamento)}`, '_blank', 'noopener,noreferrer');
-          });
-          card.querySelector('[data-action="txt"]')?.addEventListener('click', () => {
-            const conteudo = `Jogo na Hora\nModalidade: ${modalidade}\nDezenas:\n${ultimosJogos.map(j => j.map(d => pad2(d)).join(' - ')).join('\n')}\n\nAviso: toda combinação tem a mesma probabilidade de sorteio.`;
-            const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' });
-            baixarBlob(blob, `jogo-na-hora-${modalidade}-${Date.now()}.txt`);
-          });
-        }
-
-        meta.textContent = `Janela: ${resultado.meta.janela} concursos · Taxa de aceitação: ${(resultado.meta.taxaAceitacao * 100).toFixed(1)}%`;
-
-        const timestamp = new Date().toISOString();
-        for (const g of lista) {
-          addHistory({
-            id: `${modalidade}-${timestamp}-${g.dezenas.join(',')}`,
-            modalidade,
-            dezenas: g.dezenas,
-            timestamp,
-          });
-        }
-        renderizarHistorico();
-
-        // Scroll para resultado
-        out.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } catch (err) {
-        out.innerHTML = `<div class="alert alert-error" role="alert"><div class="alert-content"><p class="alert-message">${(err as Error).message}</p></div></div>`;
-        meta.textContent = '';
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalHTML;
-        atualizarBotao();
-      }
+    // Hero: sortear 1 jogo e mostrar no hero-result
+    btnSorteioHero?.addEventListener('click', () => {
+      executarSorteio(1, heroResult, true);
+      heroResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
     btnCopiarPix?.addEventListener('click', () => {
       copiarTexto('72af7962-0cf1-4f88-8d0f-1c4a58bcde4b');
-      btnCopiarPix.textContent = 'Copiado!';
-      setTimeout(() => { if (btnCopiarPix) btnCopiarPix.textContent = 'Copiar'; }, 2000);
-    });
-
-    btnSorteioHero?.addEventListener('click', () => {
-      qInput.value = '1';
-      atualizarBotao();
-      moverParaHero = true;
-      btn.click();
-    });
-
-    // Observer para mover resultado pro hero se clicou no hero
-    const obsResultado = new MutationObserver(() => {
-      if (moverParaHero && out.children.length > 0 && outHero) {
-        while (out.firstChild) outHero.appendChild(out.firstChild);
-        out.innerHTML = '';
-        moverParaHero = false;
-        outHero.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (btnCopiarPix) {
+        btnCopiarPix.textContent = 'Copiado!';
+        setTimeout(() => { if (btnCopiarPix) btnCopiarPix.textContent = 'Copiar'; }, 2000);
       }
     });
-    obsResultado.observe(out, { childList: true });
 
     // Carregar contagem de concursos para hero stats
     async function carregarStatsHero() {
@@ -722,9 +758,13 @@ try {
     }
     carregarStatsHero();
 
-    renderizarGrade();
-    atualizarBotao();
-    renderizarHistorico();
+    // Inicializar modalidade ativa baseada na URL ou padrão
+    const urlModalidade = params.get('modalidade');
+    if (urlModalidade && MODALIDADES_VALIDAS.includes(urlModalidade)) {
+      setModalidadeHero(urlModalidade);
+    } else {
+      setModalidadeHero('mega-sena');
+    }
 
     // Estilo para spinner
     const style = document.createElement('style');
