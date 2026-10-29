@@ -1,5 +1,10 @@
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: process.env.SITE_URL || 'https://example.com',
+  site: 'https://ivanmamedio.github.io',
+  base: '/Projeto-Loteria',
+  output: 'static',
+  build: {
+    assets: 'assets',
+  },
 });
