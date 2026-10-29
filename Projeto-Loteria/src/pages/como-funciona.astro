@@ -1,0 +1,116 @@
+---
+// Página "Como funciona" — Fórmulas F1–F13 e métodos de sorteio
+// Referência: tasks_loteria.md — T1.1 (Astro + TS estrito)
+
+import Base from '../layouts/Base.astro';
+---
+
+<Base>
+  <section class="page-header">
+    <div class="container">
+      <h1>Como funciona</h1>
+      <p>
+        Fórmulas F1–F13 e métodos de sorteio. Toda combinação tem a mesma
+        probabilidade — use este conteúdo para organizar e diversificar jogos,
+        não para prometer vantagem.
+      </p>
+    </div>
+  </section>
+
+  <section class="container">
+    <div class="content-grid">
+      <aside class="side-nav">
+        <ul>
+          <li><a href="#f1-f3">Probabilidade F1–F3</a></li>
+          <li><a href="#f4-f7">Análise F4–F7 e F13</a></li>
+          <li><a href="#f8-f9">Frequência e atraso F8–F9</a></li>
+          <li><a href="#f10">Amostragem F10</a></li>
+          <li><a href="#f11">Filtros F11</a></li>
+          <li><a href="#f12">Diversificação F12</a></li>
+          <li><a href="#f13">Variância F13</a></li>
+        </ul>
+      </aside>
+
+      <div class="content">
+        <section id="f1-f3" class="formula-card">
+          <h2>F1–F3 — Probabilidade básica</h2>
+          <p>
+            F1: número de combinações possíveis — C(n, k) = n! / (k! · (n - k)!)
+          </p>
+          <p>
+            F2: probabilidade de acerto (ex.: Sena Mega-Sena) — 1 / C(60, 6)
+          </p>
+          <p>
+            F3: probabilidade de pelo menos k acertos em n tentativas
+          </p>
+          <p>
+            Ex.: Lotofácil — C(25, 15) = 3.268.760 combinações. Probabilidade de 15
+            acertos: <strong>1 em 3.268.760</strong>.
+          </p>
+        </section>
+
+        <section id="f4-f7" class="formula-card">
+          <h2>F4–F7 e F13 — Estatísticas</h2>
+          <p>
+            F4: frequência observada de cada dezena.
+          </p>
+          <p>
+            F5: atraso acumulado (quantos concursos sem sortear).
+          </p>
+          <p>
+            F6: valor-z da dezena — (observado - esperado) / desvio-padrão.
+          </p>
+          <p>
+            F7: qui-quadrado (χ²) — teste de uniformidade das dezenas.
+          </p>
+          <p>
+            F13: variância da soma de dezenas — mede a dispersão dos números.
+          </p>
+        </section>
+
+        <section id="f8-f9" class="formula-card">
+          <h2>F8–F9 — Frequência e atraso ponderados</h2>
+          <p>
+            F8: frequência ponderada por quantidade de concursos.
+          </p>
+          <p>
+            F9: atraso ponderado — dêniva a probabilidade estatística.
+          </p>
+        </section>
+
+        <section id="f10" class="formula-card">
+          <h2>F10 — Amostragem</h2>
+          <p>
+            Amostragem sem reposição com float em [0, 1). Implementação:
+            <code>mulberry32</code> + <code>newSeed()</code>.
+          </p>
+        </section>
+
+        <section id="f11" class="formula-card">
+          <h2>F11 — Filtros de equilíbrio</h2>
+          <p>
+            Faixas teóricas de soma, soma dos quadrados, frequência de pares/
+            ímpares e intervalo de atraso. Taxa de aceitação calculada e
+            apresentada como referência teórica.
+          </p>
+        </section>
+
+        <section id="f12" class="formula-card">
+          <h2>F12 — Diversificação do lote</h2>
+          <p>
+            Gera 3 jogos distintos usando ponderação por frequência/atraso. Exemplo
+            numérico com 6 dezenas por jogo.
+          </p>
+        </section>
+
+        <section id="f13" class="formula-card">
+          <h2>F13 — Variância da soma</h2>
+          <p>
+            Variância da soma dos números de uma combinação. Medida de dispersão
+            usada para filtrar combinações fora da faixa teórica.
+          </p>
+        </section>
+      </div>
+    </div>
+  </section>
+</Base>

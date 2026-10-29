@@ -1,0 +1,24 @@
+{
+  "files": {
+    "include": ["src/**/*.ts", "src/**/*.astro", "etl/**/*.ts", "tests/**/*.ts"],
+    "ignore": ["dist/**", "build/**", "node_modules/**", "public/data/**"]
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "lineWidth": 100,
+    "indentStyle": "space",
+    "indentWidth": 2
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "always"
+    }
+  }
+}

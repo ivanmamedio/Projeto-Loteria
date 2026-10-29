@@ -1,0 +1,577 @@
+---
+// Página inicial — Gerador de jogos
+// Referência: tasks_loteria.md — T1.1 (Astro + TS estrito)
+
+import Disclaimer from '../components/Disclaimer.astro';
+import { modalidadePorId } from '../domain/rules';
+import Base from '../layouts/Base.astro';
+
+interface Props {
+  modalidadeId?: string;
+}
+
+const { modalidadeId } = Astro.props;
+
+let modalidade: ReturnType<typeof modalidadePorId>;
+try {
+  modalidade = modalidadePorId(modalidadeId ?? 'mega-sena');
+} catch (err) {
+  modalidade = modalidadePorId('mega-sena');
+}
+---
+
+<Base>
+  <section class="hero">
+    <div class="container">
+      <h1>
+        <button id="btn-sorteio-hero" type="button" class="hero-title-btn">
+          Sorteie sua combinação
+        </button>
+      </h1>
+      <p>
+        Escolha uma modalidade e marque dezenas. Toda combinação tem a mesma
+        probabilidade de sorteio — use estas ferramentas para descrever,
+        organizar e diversificar jogos, jamais para prometer vantagem.
+      </p>
+      <div class="modality-picker">
+        <a
+          href="/?modalidade=mega-sena"
+          class="modality-btn"
+          aria-current={modalidade.id === 'mega-sena' ? 'page' : undefined}
+        >
+          <span class="modality-btn__label">Mega-Sena</span>
+          <span class="modality-btn__meta">6 dezenas · R$ 6,00</span>
+        </a>
+        <a
+          href="/?modalidade=lotofacil"
+          class="modality-btn"
+          aria-current={modalidade.id === 'lotofacil' ? 'page' : undefined}
+        >
+          <span class="modality-btn__label">Lotofácil</span>
+          <span class="modality-btn__meta">15 dezenas · R$ 3,50</span>
+        </a>
+        <a
+          href="/?modalidade=quina"
+          class="modality-btn"
+          aria-current={modalidade.id === 'quina' ? 'page' : undefined}
+        >
+          <span class="modality-btn__label">Quina</span>
+          <span class="modality-btn__meta">5 dezenas · R$ 3,00</span>
+        </a>
+        <a
+          href="/?modalidade=lotomania"
+          class="modality-btn"
+          aria-current={modalidade.id === 'lotomania' ? 'page' : undefined}
+        >
+          <span class="modality-btn__label">Lotomania</span>
+          <span class="modality-btn__meta">50 dezenas fixo · R$ 3,00</span>
+        </a>
+      </div>
+      <div id="resultado-hero" class="hero-result" aria-live="polite"></div>
+    </div>
+  </section>
+  <section class="benefits">
+    <div class="container">
+      <div class="benefits-grid">
+        <article>
+          <h2>Uniformidade</h2>
+          <p>Toda combinação válida tem a mesma probabilidade. Nenhum método altera as chances.</p>
+        </article>
+        <article>
+          <h2>Registrável</h2>
+          <p>Seus jogos ficam salvos no navegador, com histórico local, cópia e compartilhamento.</p>
+        </article>
+        <article>
+          <h2>Transparente</h2>
+          <p>Fórmulas F1–F13 documentadas e calculadas a partir dos dados reais.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <Disclaimer />
+
+    <section class="generator">
+      <div class="container">
+        <h2>Gerar jogos</h2>
+        <p>
+          Escolha uma modalidade, marque dezenas (ou use a seleção automática) e
+          gere combinações. Toda combinação tem a mesma probabilidade de sorteio.
+        </p>
+
+        <div class="controls">
+          <label>
+            Modalidade
+            <select id="modalidade">
+              <option value="mega-sena">Mega-Sena</option>
+              <option value="lotofacil">Lotofácil</option>
+              <option value="quina">Quina</option>
+              <option value="lotomania">Lotomania</option>
+            </select>
+          </label>
+          <label>
+            Quantidade (1–10)
+            <input id="quantidade" type="number" min="1" max="10" value="3" />
+          </label>
+          <label>
+            Estratégia
+            <select id="estrategia">
+              <option value="E0">E0 — Uniforme</option>
+              <option value="E1">E1 — Mais frequentes</option>
+              <option value="E2">E2 — Mais atrasadas</option>
+              <option value="E3">E3 — Filtros de equilíbrio</option>
+              <option value="E4">E4 — Diversificar lote</option>
+              <option value="combinado">Combinado (E1+E3+E4)</option>
+            </select>
+          </label>
+          <label><input id="filtros" type="checkbox" /> Filtros de equilíbrio (E3)</label>
+          <label><input id="diversificar" type="checkbox" /> Diversificar lote (E4)</label>
+          <label><input id="evitaCal" type="checkbox" /> Evitar padrão de calendário</label>
+          <label>
+            Janela de concursos
+            <input id="janela" type="number" min="1" value="100" />
+          </label>
+          <label><input id="autoSelecionar" type="checkbox" checked /> Seleção automática de dezenas</label>
+        </div>
+
+        <div class="grid-actions">
+          <button id="btn-limpar-grade" type="button">Limpar seleção</button>
+          <button id="btn-selecionar-todos" type="button">Marcar todos</button>
+          <span id="selecao-info" class="text-muted"></span>
+        </div>
+        <div id="grade-dezenas" class="dezenas-grid" aria-label="Grade de dezenas"></div>
+
+        <button id="btn-gerar" type="button">Gerar 3 jogos</button>
+        <div id="resultado" aria-live="polite"></div>
+        <p id="meta"></p>
+
+        <section class="history" aria-labelledby="historico-titulo">
+          <h3 id="historico-titulo">Histórico local</h3>
+          <p class="history-empty" id="historico-vazio">Nenhum jogo salvo ainda.</p>
+          <ul id="historico-lista" class="history-list"></ul>
+          <div class="grid-actions">
+            <button id="btn-compartilhar-selecao" type="button" class="btn-whatsapp">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+              Compartilhar seleção
+            </button>
+            <button id="btn-limpar-historico" type="button">Limpar histórico</button>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="contribution" id="contribuicao">
+      <div class="container">
+        <h2>Contribua com nosso site</h2>
+        <p>
+          O Jogo na Hora é independente e gratuito. Se o projeto for útil para
+          você, considere apoiar a manutenção e a atualização dos dados.
+        </p>
+        <div class="pix-box">
+          <span>Chave PIX: 72af7962-0cf1-4f88-8d0f-1c4a58bcde4b</span>
+          <button id="btn-copiar-pix" type="button">Copiar chave</button>
+        </div>
+        <p class="text-muted">
+          Nenhuma aposta é processada por este site.
+        </p>
+      </div>
+    </section>
+
+    <script>
+      import { generateGames } from '../domain/generate';
+      import { sampleNoReplace } from '../domain/sampling';
+      import { modalidadePorId, type ModalidadeId } from '../domain/rules';
+      import { loadData } from '../ui/load-data';
+      import { addHistory, clearHistory, loadHistory } from '../ui/history';
+      import { pad2 } from '../ui/format';
+
+      type GameResult = {
+        dezenas: number[];
+        meta: { janela: number; taxaAceitacao: number };
+      };
+
+      const MODALIDADES_VALIDAS = ['mega-sena', 'lotofacil', 'quina', 'lotomania'] as const;
+
+      const selectMod = document.getElementById('modalidade') as HTMLSelectElement;
+      const params = new URLSearchParams(window.location.search);
+      const inicial = params.get('modalidade');
+      if (inicial && (MODALIDADES_VALIDAS as readonly string[]).includes(inicial)) {
+        selectMod.value = inicial;
+      }
+
+      const qInput = document.getElementById('quantidade') as HTMLInputElement;
+      const estrategia = document.getElementById('estrategia') as HTMLSelectElement;
+      const filtros = document.getElementById('filtros') as HTMLInputElement;
+      const diversificar = document.getElementById('diversificar') as HTMLInputElement;
+      const evitaCal = document.getElementById('evitaCal') as HTMLInputElement;
+      const janela = document.getElementById('janela') as HTMLInputElement;
+      const autoSelecionar = document.getElementById('autoSelecionar') as HTMLInputElement;
+      const btn = document.getElementById('btn-gerar') as HTMLButtonElement;
+      const out = document.getElementById('resultado') as HTMLElement;
+      const outHero = document.getElementById('resultado-hero') as HTMLElement | null;
+      const meta = document.getElementById('meta') as HTMLElement;
+      const grade = document.getElementById('grade-dezenas') as HTMLElement;
+      const selecaoInfo = document.getElementById('selecao-info') as HTMLElement;
+      const btnLimparGrade = document.getElementById('btn-limpar-grade') as HTMLButtonElement;
+      const btnSelecionarTodos = document.getElementById('btn-selecionar-todos') as HTMLButtonElement;
+      const historicoLista = document.getElementById('historico-lista') as HTMLElement;
+      const historicoVazio = document.getElementById('historico-vazio') as HTMLElement;
+      const btnLimparHistorico = document.getElementById('btn-limpar-historico') as HTMLButtonElement;
+      const btnCompartilharSelecao = document.getElementById('btn-compartilhar-selecao') as HTMLButtonElement | null;
+
+      const selecionadas = new Set<number>();
+      let ultimosJogos: number[][] = [];
+
+      function dezenasUniverso(mod: string): number[] {
+        const m = modalidadePorId(mod as ModalidadeId);
+        const total = m.universo + (mod === 'lotomania' ? 1 : 0);
+        const min = mod === 'lotomania' ? 0 : 1;
+        return Array.from({ length: total }, (_, i) => min + i);
+      }
+
+      function atualizarSelecaoInfo(): void {
+        selecaoInfo.textContent = `${selecionadas.size} dezena(s) selecionada(s)`;
+      }
+
+      function renderizarGrade(): void {
+        const mod = selectMod.value;
+        const dezenas = dezenasUniverso(mod);
+        grade.innerHTML = '';
+        selecionadas.clear();
+        for (const d of dezenas) {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'dezena-btn';
+          b.textContent = pad2(d);
+          b.dataset.value = String(d);
+          b.addEventListener('click', () => {
+            if (selecionadas.has(d)) {
+              selecionadas.delete(d);
+              b.classList.remove('selected');
+            } else {
+              selecionadas.add(d);
+              b.classList.add('selected');
+            }
+            atualizarSelecaoInfo();
+          });
+          grade.appendChild(b);
+        }
+        atualizarSelecaoInfo();
+      }
+
+      function atualizarBotao(): void {
+        const q = Math.max(1, Math.min(10, Number(qInput.value) || 3));
+        btn.textContent = `Gerar ${q} jogo${q > 1 ? 's' : ''}`;
+      }
+
+      async function concursosDaModalidade(mod: string): Promise<number[][]> {
+        const res = await loadData<{ concursos: { dezenas: number[] }[] }>(`/data/${mod}.json`);
+        if (!res.ok || !res.data) return [];
+        return (res.data.concursos || []).map((c) => c.dezenas);
+      }
+
+      function renderizarHistorico(): void {
+        const entries = loadHistory();
+        historicoLista.innerHTML = '';
+        if (entries.length === 0) {
+          historicoVazio.style.display = '';
+          return;
+        }
+        historicoVazio.style.display = 'none';
+        for (const e of entries) {
+          const li = document.createElement('li');
+          li.className = 'history-item';
+          const nums = document.createElement('span');
+          nums.className = 'numbers';
+          nums.textContent = e.dezenas.map((d) => pad2(d)).join(' - ');
+          const metaSpan = document.createElement('span');
+          metaSpan.className = 'text-muted';
+          metaSpan.textContent = `${e.modalidade} · ${new Date(e.timestamp).toLocaleString('pt-BR')}`;
+          li.appendChild(nums);
+          li.appendChild(metaSpan);
+          historicoLista.appendChild(li);
+        }
+      }
+
+      function copiarTexto(texto: string): void {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(texto).catch(() => {});
+        }
+      }
+
+      function baixarBlob(blob: Blob, nome: string): void {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = nome;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      async function gerarImagemJogo(dezenas: number[], modalidade: string): Promise<Blob | null> {
+        const canvas = document.createElement('canvas');
+        canvas.width = 900;
+        canvas.height = 360;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return null;
+
+        ctx.fillStyle = '#f7faf5';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = '#2f7a12';
+        ctx.font = 'bold 40px Segoe UI, system-ui, sans-serif';
+        ctx.fillText('Jogo na Hora', 40, 60);
+
+        ctx.fillStyle = '#4b5a43';
+        ctx.font = '22px Segoe UI, system-ui, sans-serif';
+        ctx.fillText(`Modalidade: ${modalidade}`, 40, 95);
+
+        const balls = dezenas.map((d) => d.toString().padStart(2, '0'));
+        let x = 40;
+        const y = 185;
+        for (const ball of balls) {
+          ctx.beginPath();
+          ctx.arc(x + 32, y, 32, 0, Math.PI * 2);
+          ctx.fillStyle = '#5dd921';
+          ctx.fill();
+          ctx.fillStyle = '#111';
+          ctx.font = 'bold 20px Segoe UI, system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(ball, x + 32, y);
+          ctx.textAlign = 'start';
+          ctx.textBaseline = 'alphabetic';
+          x += 76;
+          if (x > canvas.width - 80) {
+            x = 40;
+          }
+        }
+
+        ctx.fillStyle = '#4b5a43';
+        ctx.font = '14px Segoe UI, system-ui, sans-serif';
+        ctx.fillText('Aviso: toda combinação tem a mesma probabilidade de sorteio.', 40, 320);
+        ctx.fillText('Site independente. Resultados válidos são os divulgados pela CAIXA.', 40, 342);
+
+        return await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+      }
+
+      async function gerarImagemJogos(jogos: number[][], modalidade: string): Promise<Blob | null> {
+        const canvas = document.createElement('canvas');
+        canvas.width = 900;
+        canvas.height = Math.max(360, 120 + jogos.length * 56 + 80);
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return null;
+
+        ctx.fillStyle = '#f7faf5';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = '#2f7a12';
+        ctx.font = 'bold 40px Segoe UI, system-ui, sans-serif';
+        ctx.fillText('Jogo na Hora', 40, 60);
+
+        ctx.fillStyle = '#4b5a43';
+        ctx.font = '22px Segoe UI, system-ui, sans-serif';
+        ctx.fillText(`Modalidade: ${modalidade}`, 40, 95);
+
+        let y = 150;
+        for (const dezenas of jogos) {
+          const texto = dezenas.map((d) => d.toString().padStart(2, '0')).join('  ');
+          ctx.fillStyle = '#111';
+          ctx.font = 'bold 24px Segoe UI, system-ui, sans-serif';
+          ctx.fillText(texto, 40, y);
+          y += 46;
+        }
+
+        ctx.fillStyle = '#4b5a43';
+        ctx.font = '14px Segoe UI, system-ui, sans-serif';
+        ctx.fillText('Aviso: toda combinação tem a mesma probabilidade de sorteio.', 40, canvas.height - 42);
+        ctx.fillText('Site independente. Resultados válidos são os divulgados pela CAIXA.', 40, canvas.height - 20);
+
+        return await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+      }
+
+      btnLimparGrade.addEventListener('click', () => {
+        selecionadas.clear();
+        grade.querySelectorAll('.dezena-btn').forEach((el) => el.classList.remove('selected'));
+        atualizarSelecaoInfo();
+      });
+
+      btnSelecionarTodos.addEventListener('click', () => {
+        dezenasUniverso(selectMod.value).forEach((d) => selecionadas.add(d));
+        grade.querySelectorAll('.dezena-btn').forEach((el) => el.classList.add('selected'));
+        atualizarSelecaoInfo();
+      });
+
+      btnCompartilharSelecao?.addEventListener('click', () => {
+        const nums = Array.from(selecionadas)
+          .sort((a, b) => a - b)
+          .map((d) => pad2(d))
+          .join(' - ');
+        const texto = `Jogo na Hora — ${selectMod.value}: ${nums || 'nenhuma dezena selecionada'}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank', 'noopener,noreferrer');
+      });
+
+      btnLimparHistorico.addEventListener('click', () => {
+        clearHistory();
+        renderizarHistorico();
+      });
+
+      selectMod.addEventListener('change', () => {
+        renderizarGrade();
+      });
+
+      qInput.addEventListener('input', atualizarBotao);
+
+      btn.addEventListener('click', async () => {
+        const modalidade = selectMod.value;
+        const m = modalidadePorId(modalidade as ModalidadeId);
+        const q = Math.max(1, Math.min(10, Number(qInput.value) || 3));
+        const dezenas = dezenasUniverso(modalidade);
+
+        let marcadas: number[] = Array.from(selecionadas);
+        if (autoSelecionar.checked || marcadas.length < m.minDezenas) {
+          const faltam = Math.max(m.minDezenas, m.dezenasSorteadas + 6) - marcadas.length;
+          if (faltam > 0) {
+            const pool = dezenas.filter((d) => !marcadas.includes(d));
+            const extras = sampleNoReplace(pool.length, Math.min(pool.length, faltam), Math.random).map(
+              (idx) => pool[idx] as number,
+            );
+            marcadas = marcadas.concat(extras);
+          }
+        }
+
+        const opcoes: Record<string, unknown> = {
+          janela: Math.max(1, Number(janela.value) || 100),
+        };
+        const est = estrategia.value;
+        if (est === 'combinado') opcoes.estrategia = ['E1', 'E3', 'E4'];
+        else opcoes.estrategia = est;
+        if (filtros.checked) opcoes.filtros = true;
+        if (diversificar.checked) opcoes.diversificar = true;
+        if (evitaCal.checked) opcoes.evitaCalendario = true;
+
+        btn.disabled = true;
+        btn.textContent = 'Gerando…';
+        try {
+          const concursos = await concursosDaModalidade(modalidade);
+          if (concursos.length > 0) opcoes.concursos = concursos;
+          const resultado = generateGames(
+            { modalidade: modalidade as ModalidadeId, dezenasMarcadas: marcadas, opcoes },
+            q,
+          ) as unknown as { games: GameResult[]; meta: { janela: number; taxaAceitacao: number } };
+          const lista = Array.isArray(resultado.games) ? resultado.games : [resultado as unknown as GameResult];
+          out.innerHTML = '';
+          const bloco = document.createElement('div');
+          bloco.className = 'game-block';
+          const textosJogos = lista.map((g: GameResult) => g.dezenas.map((d: number) => pad2(d)).join(' - '));
+          ultimosJogos = lista.map((g: GameResult) => g.dezenas);
+          for (const texto of textosJogos) {
+            const p = document.createElement('p');
+            p.className = 'game-numbers';
+            p.textContent = texto;
+            bloco.appendChild(p);
+          }
+
+          const actions = document.createElement('div');
+          actions.className = 'game-actions';
+
+          const copyBtn = document.createElement('button');
+          copyBtn.type = 'button';
+          copyBtn.textContent = 'Copiar jogo';
+          copyBtn.addEventListener('click', () => copiarTexto(textosJogos.join('\n')));
+          actions.appendChild(copyBtn);
+
+          const imgBtn = document.createElement('button');
+          imgBtn.type = 'button';
+          imgBtn.textContent = 'Baixar jogo';
+          imgBtn.addEventListener('click', async () => {
+            const blob = await gerarImagemJogos(ultimosJogos, modalidade);
+            if (blob) baixarBlob(blob, `jogo-na-hora-${modalidade}-${Date.now()}.jpg`);
+          });
+          actions.appendChild(imgBtn);
+
+          const shareBtn = document.createElement('button');
+          shareBtn.type = 'button';
+          shareBtn.textContent = 'Compartilhar no WhatsApp';
+          shareBtn.addEventListener('click', async () => {
+            const textoCompartilhamento = `Jogo na Hora — ${modalidade}:\n${textosJogos.join('\n')}`;
+            const blob = await gerarImagemJogos(ultimosJogos, modalidade);
+            if (blob && navigator.share && navigator.canShare) {
+              const arquivo = new File([blob], 'jogo-na-hora.jpg', { type: 'image/jpeg' });
+              if (navigator.canShare({ files: [arquivo] })) {
+                try {
+                  await navigator.share({ title: 'Jogo na Hora', text: textoCompartilhamento, files: [arquivo] });
+                  return;
+                } catch {
+                  // fallback below
+                }
+              }
+            }
+            const url = `https://wa.me/?text=${encodeURIComponent(textoCompartilhamento)}`;
+            window.open(url, '_blank', 'noopener,noreferrer');
+          });
+          actions.appendChild(shareBtn);
+
+          const txtBtn = document.createElement('button');
+          txtBtn.type = 'button';
+          txtBtn.textContent = 'Baixar arquivo';
+          txtBtn.addEventListener('click', () => {
+            const conteudo = `Jogo na Hora\nModalidade: ${modalidade}\nDezenas:\n${textosJogos.join('\n')}\n\nAviso: toda combinação tem a mesma probabilidade de sorteio.`;
+            const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' });
+            baixarBlob(blob, `jogo-na-hora-${modalidade}-${Date.now()}.txt`);
+          });
+          actions.appendChild(txtBtn);
+
+          bloco.appendChild(actions);
+          out.appendChild(bloco);
+
+          meta.textContent = `Janela: ${resultado.meta.janela} concursos · Taxa de aceitação: ${(resultado.meta.taxaAceitacao * 100).toFixed(1)}%`;
+
+          const timestamp = new Date().toISOString();
+          for (const g of lista) {
+            addHistory({
+              id: `${modalidade}-${timestamp}-${g.dezenas.join(',')}`,
+              modalidade,
+              dezenas: g.dezenas,
+              timestamp,
+            });
+          }
+          renderizarHistorico();
+        } catch (err) {
+          out.textContent = (err as Error).message;
+          meta.textContent = '';
+        } finally {
+          btn.disabled = false;
+          atualizarBotao();
+        }
+      });
+
+      const btnCopiarPix = document.getElementById('btn-copiar-pix') as HTMLButtonElement | null;
+      btnCopiarPix?.addEventListener('click', () => copiarTexto('72af7962-0cf1-4f88-8d0f-1c4a58bcde4b'));
+
+      const btnSorteioHero = document.getElementById('btn-sorteio-hero') as HTMLButtonElement | null;
+      let moverParaHero = false;
+      const obsResultado = new MutationObserver(() => {
+        if (moverParaHero && out.children.length > 0 && outHero) {
+          while (out.firstChild) outHero.appendChild(out.firstChild);
+          out.innerHTML = '';
+          moverParaHero = false;
+          outHero.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+      obsResultado.observe(out, { childList: true });
+
+      btnSorteioHero?.addEventListener('click', () => {
+        qInput.value = '1';
+        atualizarBotao();
+        moverParaHero = true;
+        btn.click();
+      });
+
+      renderizarGrade();
+      atualizarBotao();
+      renderizarHistorico();
+    </script>
+</Base>
