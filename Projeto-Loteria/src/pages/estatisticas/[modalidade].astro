@@ -97,107 +97,222 @@ const paridadeTeorica = paridadeEsperada(regras.universo, regras.dezenasSorteada
 ---
 
 <Base>
-  <section class="page-header">
+  <header class="page-header" aria-labelledby="page-title">
     <div class="container">
-      <h1>Estatísticas — {regras.nome}</h1>
-      <p>
+      <h1 id="page-title" class="page-title">Estatísticas — {regras.nome}</h1>
+      <p class="page-description">
         Frequência, atraso e análise estatística das {regras.universo} dezenas.
         Toda combinação tem a mesma probabilidade — estatísticas são para
-        <em class="text-muted"> descrição, não previsão.</em>
+        <em class="text-muted">descrição, não previsão.</em>
       </p>
     </div>
-  </section>
+  </header>
 
-  <section class="container">
-    <div class="summary-card">
-      <p>
-        <strong>Modalidade:</strong> {regras.nome}
-      </p>
-      <p>
-        <strong>Universo:</strong> {regras.universo} dezenas
-      </p>
-      <p>
-        <strong>Sorteio:</strong> {regras.dezenasSorteadas} dezenas
-      </p>
-      <p>
-        <strong>Faixa de aposta:</strong> {regras.minDezenas}–{regras.maxDezenas} dezenas
-      </p>
-      <p>
-        <strong>Preço mínimo:</strong> {regras.precoMinimo}
-      </p>
-    </div>
+  <section class="section">
+    <div class="container">
+      <div class="grid grid-4" style="margin-bottom: var(--space-8);">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Modalidade</h3>
+          </div>
+          <div class="card-body">
+            <p style="font-size: var(--text-xl); font-weight: var(--font-semibold); margin: 0;">{regras.nome}</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Universo</h3>
+          </div>
+          <div class="card-body">
+            <p style="font-size: var(--text-xl); font-weight: var(--font-semibold); margin: 0;">{regras.universo} dezenas</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Sorteio</h3>
+          </div>
+          <div class="card-body">
+            <p style="font-size: var(--text-xl); font-weight: var(--font-semibold); margin: 0;">{regras.dezenasSorteadas} dezenas</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Concursos</h3>
+          </div>
+          <div class="card-body">
+            <p style="font-size: var(--text-xl); font-weight: var(--font-semibold); margin: 0;">{concursos.length.toLocaleString('pt-BR')}</p>
+          </div>
+        </div>
+      </div>
 
-    <div class="stats-grid">
-      <div class="stat-box">
-        <h3>Frequência (F4)</h3>
-        <p>Total de concursos: {concursos.length}</p>
-        <p>
-          Mais frequentes:{' '}
-          {topFreq.map((x) => `${String(x.dezena).padStart(2, '0')} (${x.n})`).join(', ')}
-        </p>
-      </div>
-      <div class="stat-box">
-        <h3>Atraso acumulado (F5)</h3>
-        <p>
-          Maiores atrasos:{' '}
-          {topAtraso.map((x) => `${String(x.dezena).padStart(2, '0')} (${x.atraso})`).join(', ')}
-        </p>
-      </div>
-      <div class="stat-box">
-        <h3>Qui-quadrado (F7)</h3>
-        <p>χ² = {chi.chi2.toFixed(2)} · gl = {chi.graus}</p>
-        <p>p-valor = {chi.pValor.toFixed(4)}</p>
-      </div>
-      <div class="stat-box">
-        <h3>Variância da soma (F13)</h3>
-        <p>σ² (amostral) = {varSoma.toFixed(2)}</p>
-        <p>Pares/ímpares: {paridade.pares}/{paridade.impares}</p>
-        <p>Janela recente: {janela.length} concursos</p>
-      </div>
-    </div>
+      <div class="grid grid-2" style="margin-bottom: var(--space-8);">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Frequência <span class="badge badge-secondary">F4</span></h3>
+          </div>
+          <div class="card-body">
+            <p style="margin: 0;">Mais frequentes:</p>
+            <p style="font-family: var(--font-mono); font-size: var(--text-lg); margin-top: var(--space-2); color: var(--color-accent);">
+              {topFreq.map((x) => `${String(x.dezena).padStart(2, '0')} (${x.n})`).join(', ')}
+            </p>
+          </div>
+        </div>
 
-    <div class="stats-grid" style="margin-top:1rem;">
-      <div class="stat-box">
-        <h3>Probabilidade básica</h3>
-        <p>Total de combinações: {totalCombinacoes.toLocaleString('pt-BR')}</p>
-        <p>Acertos esperados (aposta de {apostadosRepresentativos}): {acertosEsperados.toFixed(2)}</p>
-        <p>Desvio padrão dos acertos: {desvioAcertosValor.toFixed(3)}</p>
-      </div>
-      <div class="stat-box">
-        <h3>Soma das dezenas</h3>
-        <p>Média teórica: {somaMediaTeorica.toFixed(2)}</p>
-        <p>Desvio padrão teórico: {somaDesvioTeorico.toFixed(2)}</p>
-        <p>Gap médio teórico: {gapMedio.toFixed(2)}</p>
-      </div>
-      <div class="stat-box">
-        <h3>Paridade teórica</h3>
-        <p>Pares esperados: {paridadeTeorica.pares.toFixed(2)}</p>
-        <p>Ímpares esperados: {paridadeTeorica.impares.toFixed(2)}</p>
-        <p>Variancia dos acertos: {varianciaAcertosValor.toFixed(3)}</p>
-      </div>
-      <div class="stat-box">
-        <h3>Chance de prêmio</h3>
-        <p>Aposta de {apostadosRepresentativos} dezenas</p>
-        <p>Probabilidade de faixa premiada: {(probabilidadePremio * 100).toFixed(4)}%</p>
-        <p>1 em {probabilidadePremio > 0 ? Math.round(1 / probabilidadePremio).toLocaleString('pt-BR') : '—'}</p>
-      </div>
-    </div>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Atraso acumulado <span class="badge badge-secondary">F5</span></h3>
+          </div>
+          <div class="card-body">
+            <p style="margin: 0;">Maiores atrasos:</p>
+            <p style="font-family: var(--font-mono); font-size: var(--text-lg); margin-top: var(--space-2); color: var(--color-accent);">
+              {topAtraso.map((x) => `${String(x.dezena).padStart(2, '0')} (${x.atraso})`).join(', ')}
+            </p>
+          </div>
+        </div>
 
-    <div class="data-notes" style="margin-top:1rem;">
-      <h3>Distribuição teórica de acertos</h3>
-      <p>Probabilidade de cada quantidade de acertos ao apostar {apostadosRepresentativos} dezenas (modelo hipergeométrico, sem reposição).</p>
-      <table class="stats-table">
-        <thead><tr><th>Acertos</th><th>Probabilidade</th><th>1 em</th></tr></thead>
-        <tbody>
-          {distribuicao.map((d) => (
-            <tr>
-              <td>{d.acertos}</td>
-              <td>{(d.probabilidade * 100).toFixed(4)}%</td>
-              <td>{d.probabilidade > 0 ? Math.round(1 / d.probabilidade).toLocaleString('pt-BR') : '—'}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Qui-quadrado <span class="badge badge-secondary">F7</span></h3>
+          </div>
+          <div class="card-body">
+            <p style="margin: 0;">χ² = {chi.chi2.toFixed(2)} · gl = {chi.graus}</p>
+            <p style="margin-top: var(--space-2); font-family: var(--font-mono); color: {chi.pValor < 0.05 ? 'var(--color-error)' : 'var(--color-accent)'};">
+              p-valor = {chi.pValor.toFixed(4)} {chi.pValor < 0.05 ? '(rejeita uniformidade)' : '(compatível com uniforme)'}
+            </p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Variância da soma <span class="badge badge-secondary">F13</span></h3>
+          </div>
+          <div class="card-body">
+            <p style="margin: 0;">σ² (amostral) = {varSoma.toFixed(2)}</p>
+            <p style="margin-top: var(--space-2);">Pares/ímpares: {paridade.pares}/{paridade.impares}</p>
+            <p style="margin-top: var(--space-2);">Janela recente: {janela.length} concursos</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-bottom: var(--space-8);">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Probabilidade básica</h3>
+          </div>
+          <div class="card-body">
+            <dl style="margin: 0; display: grid; gap: var(--space-3);">
+              <div>
+                <dt style="font-size: var(--text-xs); color: var(--color-text-subtle); text-transform: uppercase; letter-spacing: 0.05em;">Total de combinações</dt>
+                <dd style="margin: 0; font-family: var(--font-mono); font-size: var(--text-xl); font-weight: var(--font-semibold);">{totalCombinacoes.toLocaleString('pt-BR')}</dd>
+              </div>
+              <div>
+                <dt style="font-size: var(--text-xs); color: var(--color-text-subtle); text-transform: uppercase; letter-spacing: 0.05em;">Acertos esperados</dt>
+                <dd style="margin: 0; font-family: var(--font-mono); font-size: var(--text-xl); font-weight: var(--font-semibold);">{acertosEsperados.toFixed(2)}</dd>
+              </div>
+              <div>
+                <dt style="font-size: var(--text-xs); color: var(--color-text-subtle); text-transform: uppercase; letter-spacing: 0.05em;">Desvio padrão acertos</dt>
+                <dd style="margin: 0; font-family: var(--font-mono); font-size: var(--text-xl); font-weight: var(--font-semibold);">{desvioAcertosValor.toFixed(3)}</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Soma das dezenas</h3>
+          </div>
+          <div class="card-body">
+            <dl style="margin: 0; display: grid; gap: var(--space-3);">
+              <div>
+                <dt style="font-size: var(--text-xs); color: var(--color-text-subtle); text-transform: uppercase; letter-spacing: 0.05em;">Média teórica</dt>
+                <dd style="margin: 0; font-family: var(--font-mono); font-size: var(--text-xl); font-weight: var(--font-semibold);">{somaMediaTeorica.toFixed(2)}</dd>
+              </div>
+              <div>
+                <dt style="font-size: var(--text-xs); color: var(--color-text-subtle); text-transform: uppercase; letter-spacing: 0.05em;">Desvio padrão</dt>
+                <dd style="margin: 0; font-family: var(--font-mono); font-size: var(--text-xl); font-weight: var(--font-semibold);">{somaDesvioTeorico.toFixed(2)}</dd>
+              </div>
+              <div>
+                <dt style="font-size: var(--text-xs); color: var(--color-text-subtle); text-transform: uppercase; letter-spacing: 0.05em;">Gap médio teórico</dt>
+                <dd style="margin: 0; font-family: var(--font-mono); font-size: var(--text-xl); font-weight: var(--font-semibold);">{gapMedio.toFixed(2)}</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Paridade teórica</h3>
+          </div>
+          <div class="card-body">
+            <dl style="margin: 0; display: grid; gap: var(--space-3);">
+              <div>
+                <dt style="font-size: var(--text-xs); color: var(--color-text-subtle); text-transform: uppercase; letter-spacing: 0.05em;">Pares esperados</dt>
+                <dd style="margin: 0; font-family: var(--font-mono); font-size: var(--text-xl); font-weight: var(--font-semibold);">{paridadeTeorica.pares.toFixed(2)}</dd>
+              </div>
+              <div>
+                <dt style="font-size: var(--text-xs); color: var(--color-text-subtle); text-transform: uppercase; letter-spacing: 0.05em;">Ímpares esperados</dt>
+                <dd style="margin: 0; font-family: var(--font-mono); font-size: var(--text-xl); font-weight: var(--font-semibold);">{paridadeTeorica.impares.toFixed(2)}</dd>
+              </div>
+              <div>
+                <dt style="font-size: var(--text-xs); color: var(--color-text-subtle); text-transform: uppercase; letter-spacing: 0.05em;">Variância acertos</dt>
+                <dd style="margin: 0; font-family: var(--font-mono); font-size: var(--text-xl); font-weight: var(--font-semibold);">{varianciaAcertosValor.toFixed(3)}</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Chance de prêmio</h3>
+          </div>
+          <div class="card-body">
+            <p style="margin: 0 0 var(--space-2); color: var(--color-text-muted); font-size: var(--text-sm);">Aposta de {apostadosRepresentativos} dezenas</p>
+            <dl style="margin: 0; display: grid; gap: var(--space-3);">
+              <div>
+                <dt style="font-size: var(--text-xs); color: var(--color-text-subtle); text-transform: uppercase; letter-spacing: 0.05em;">Probabilidade</dt>
+                <dd style="margin: 0; font-family: var(--font-mono); font-size: var(--text-xl); font-weight: var(--font-semibold); color: var(--color-accent);">
+                  {(probabilidadePremio * 100).toFixed(4)}%
+                </dd>
+              </div>
+              <div>
+                <dt style="font-size: var(--text-xs); color: var(--color-text-subtle); text-transform: uppercase; letter-spacing: 0.05em;">1 em</dt>
+                <dd style="margin: 0; font-family: var(--font-mono); font-size: var(--text-xl); font-weight: var(--font-semibold);">
+                  {probabilidadePremio > 0 ? Math.round(1 / probabilidadePremio).toLocaleString('pt-BR') : '—'}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom: var(--space-8);">
+        <div class="card-header">
+          <h3 class="card-title">Distribuição teórica de acertos</h3>
+        </div>
+        <div class="card-body">
+          <p style="margin-bottom: var(--space-4);">Probabilidade de cada quantidade de acertos ao apostar {apostadosRepresentativos} dezenas (modelo hipergeométrico, sem reposição).</p>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Acertos</th>
+                  <th>Probabilidade</th>
+                  <th>1 em</th>
+                </tr>
+              </thead>
+              <tbody>
+                {distribuicao.map((d) => (
+                  <tr>
+                    <td style="font-weight: var(--font-semibold);">{d.acertos}</td>
+                    <td>{(d.probabilidade * 100).toFixed(4)}%</td>
+                    <td style="font-family: var(--font-mono);">{d.probabilidade > 0 ? Math.round(1 / d.probabilidade).toLocaleString('pt-BR') : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 

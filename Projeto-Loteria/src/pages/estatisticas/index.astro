@@ -3,19 +3,63 @@ import Base from '../../layouts/Base.astro';
 ---
 
 <Base>
-  <section class="page-header">
+  <header class="page-header" aria-labelledby="page-title">
     <div class="container">
-      <h1>Estatísticas</h1>
-      <p>Escolha uma modalidade para ver frequência, atraso, qui-quadrado e probabilidades.</p>
+      <h1 id="page-title" class="page-title">Estatísticas</h1>
+      <p class="page-description">
+        Escolha uma modalidade para ver frequência, atraso, qui-quadrado e probabilidades
+        calculadas a partir dos dados oficiais da CAIXA.
+      </p>
     </div>
-  </section>
+  </header>
 
-  <section class="container">
-    <div class="benefits-grid">
-      <a class="prob-card" href="/estatisticas/mega-sena"><h3>Mega-Sena</h3><p>60 dezenas · 6 sorteadas</p></a>
-      <a class="prob-card" href="/estatisticas/lotofacil"><h3>Lotofácil</h3><p>25 dezenas · 15 sorteadas</p></a>
-      <a class="prob-card" href="/estatisticas/quina"><h3>Quina</h3><p>80 dezenas · 5 sorteadas</p></a>
-      <a class="prob-card" href="/estatisticas/lotomania"><h3>Lotomania</h3><p>100 dezenas · 20 sorteadas</p></a>
+  <section class="section">
+    <div class="container">
+      <div class="grid grid-2" style="max-width: 720px; margin: 0 auto;">
+        <a href="/estatisticas/mega-sena" class="card feature-card" style="text-align: left;">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Mega-Sena</h3>
+          <p class="feature-description">60 dezenas · 6 sorteadas · Sorteios às quartas e sábados</p>
+        </a>
+
+        <a href="/estatisticas/lotofacil" class="card feature-card" style="text-align: left;">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Lotofácil</h3>
+          <p class="feature-description">25 dezenas · 15 sorteadas · Sorteios diários</p>
+        </a>
+
+        <a href="/estatisticas/quina" class="card feature-card" style="text-align: left;">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Quina</h3>
+          <p class="feature-description">80 dezenas · 5 sorteadas · Sorteios diários</p>
+        </a>
+
+        <a href="/estatisticas/lotomania" class="card feature-card" style="text-align: left;">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M9 9h6v6H9z"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Lotomania</h3>
+          <p class="feature-description">100 dezenas · 20 sorteadas (50 fixas) · Sorteios às terças e sextas</p>
+        </a>
+      </div>
     </div>
   </section>
 </Base>

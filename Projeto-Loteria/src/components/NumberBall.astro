@@ -6,9 +6,10 @@
 interface Props {
   value: number;
   size?: 'sm' | 'md' | 'lg';
+  variant?: 'primary' | 'secondary';
 }
 
-const { value, size = 'md' } = Astro.props;
+const { value, size = 'md', variant = 'primary' } = Astro.props;
 
 const sizes = {
   sm: { width: '28px', height: '28px', fontSize: '0.85rem' },
@@ -16,18 +17,22 @@ const sizes = {
   lg: { width: '56px', height: '56px', fontSize: '1.5rem' },
 };
 
+const bgColor = variant === 'primary' ? 'var(--color-accent)' : 'var(--color-text-muted)';
+const textColor = variant === 'primary' ? '#111' : '#fff';
+
 const style = {
   width: sizes[size].width,
   height: sizes[size].height,
   fontSize: sizes[size].fontSize,
-  backgroundColor: '#5dd921',
-  color: '#111',
+  backgroundColor: bgColor,
+  color: textColor,
   borderRadius: '50%',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   fontWeight: '600',
   userSelect: 'none',
+  flexShrink: '0',
 };
 ---
 
@@ -35,5 +40,5 @@ const style = {
   style={style}
   aria-label={`Dezena ${value}`}
 >
-  {value}
+  {value < 10 ? `0${value}` : value}
 </span>

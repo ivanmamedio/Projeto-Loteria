@@ -6,110 +6,143 @@ import Base from '../layouts/Base.astro';
 ---
 
 <Base>
-  <section class="page-header">
+  <header class="page-header" aria-labelledby="page-title">
     <div class="container">
-      <h1>Como funciona</h1>
-      <p>
+      <h1 id="page-title" class="page-title">Como funciona</h1>
+      <p class="page-description">
         Fórmulas F1–F13 e métodos de sorteio. Toda combinação tem a mesma
         probabilidade — use este conteúdo para organizar e diversificar jogos,
         não para prometer vantagem.
       </p>
     </div>
-  </section>
+  </header>
 
-  <section class="container">
-    <div class="content-grid">
-      <aside class="side-nav">
-        <ul>
-          <li><a href="#f1-f3">Probabilidade F1–F3</a></li>
-          <li><a href="#f4-f7">Análise F4–F7 e F13</a></li>
-          <li><a href="#f8-f9">Frequência e atraso F8–F9</a></li>
-          <li><a href="#f10">Amostragem F10</a></li>
-          <li><a href="#f11">Filtros F11</a></li>
-          <li><a href="#f12">Diversificação F12</a></li>
-          <li><a href="#f13">Variância F13</a></li>
-        </ul>
-      </aside>
+  <section class="section">
+    <div class="container">
+      <div class="layout-sidebar">
+        <aside class="sidebar" aria-label="Navegação das fórmulas">
+          <nav class="sidebar-nav">
+            <a href="#f1-f3" class="sidebar-link">Probabilidade F1–F3</a>
+            <a href="#f4-f7" class="sidebar-link">Estatísticas F4–F7, F13</a>
+            <a href="#f8-f9" class="sidebar-link">Freq. e atraso F8–F9</a>
+            <a href="#f10" class="sidebar-link">Amostragem F10</a>
+            <a href="#f11" class="sidebar-link">Filtros F11</a>
+            <a href="#f12" class="sidebar-link">Diversificação F12</a>
+            <a href="#f13" class="sidebar-link">Variância F13</a>
+          </nav>
+        </aside>
 
-      <div class="content">
-        <section id="f1-f3" class="formula-card">
-          <h2>F1–F3 — Probabilidade básica</h2>
-          <p>
-            F1: número de combinações possíveis — C(n, k) = n! / (k! · (n - k)!)
-          </p>
-          <p>
-            F2: probabilidade de acerto (ex.: Sena Mega-Sena) — 1 / C(60, 6)
-          </p>
-          <p>
-            F3: probabilidade de pelo menos k acertos em n tentativas
-          </p>
-          <p>
-            Ex.: Lotofácil — C(25, 15) = 3.268.760 combinações. Probabilidade de 15
-            acertos: <strong>1 em 3.268.760</strong>.
-          </p>
-        </section>
+        <div class="main-content">
+          <section id="f1-f3" class="accordion" aria-label="Fórmulas de probabilidade">
+            <div class="accordion-item" open>
+              <button class="accordion-trigger" aria-expanded="true" aria-controls="f1-f3-content">
+                <span>F1–F3 — Probabilidade básica</span>
+                <svg class="accordion-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div id="f1-f3-content" class="accordion-content">
+                <p><strong>F1</strong>: número de combinações possíveis — C(n, k) = n! / (k! · (n - k)!)</p>
+                <p><strong>F2</strong>: probabilidade de acerto (ex.: Sena Mega-Sena) — 1 / C(60, 6)</p>
+                <p><strong>F3</strong>: probabilidade de pelo menos k acertos em n tentativas</p>
+                <p>Exemplo — Lotofácil: C(25, 15) = 3.268.760 combinações. Probabilidade de 15 acertos: <strong>1 em 3.268.760</strong>.</p>
+              </div>
+            </div>
+          </section>
 
-        <section id="f4-f7" class="formula-card">
-          <h2>F4–F7 e F13 — Estatísticas</h2>
-          <p>
-            F4: frequência observada de cada dezena.
-          </p>
-          <p>
-            F5: atraso acumulado (quantos concursos sem sortear).
-          </p>
-          <p>
-            F6: valor-z da dezena — (observado - esperado) / desvio-padrão.
-          </p>
-          <p>
-            F7: qui-quadrado (χ²) — teste de uniformidade das dezenas.
-          </p>
-          <p>
-            F13: variância da soma de dezenas — mede a dispersão dos números.
-          </p>
-        </section>
+          <section id="f4-f7" class="accordion" aria-label="Fórmulas estatísticas">
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false" aria-controls="f4-f7-content">
+                <span>F4–F7 e F13 — Estatísticas descritivas</span>
+                <svg class="accordion-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div id="f4-f7-content" class="accordion-content">
+                <p><strong>F4</strong>: frequência observada de cada dezena.</p>
+                <p><strong>F5</strong>: atraso acumulado (quantos concursos sem sortear).</p>
+                <p><strong>F6</strong>: valor-z da dezena — (observado - esperado) / desvio-padrão.</p>
+                <p><strong>F7</strong>: qui-quadrado (χ²) — teste de uniformidade das dezenas.</p>
+                <p><strong>F13</strong>: variância da soma de dezenas — mede a dispersão dos números.</p>
+              </div>
+            </div>
+          </section>
 
-        <section id="f8-f9" class="formula-card">
-          <h2>F8–F9 — Frequência e atraso ponderados</h2>
-          <p>
-            F8: frequência ponderada por quantidade de concursos.
-          </p>
-          <p>
-            F9: atraso ponderado — dêniva a probabilidade estatística.
-          </p>
-        </section>
+          <section id="f8-f9" class="accordion" aria-label="Fórmulas de frequência e atraso ponderados">
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false" aria-controls="f8-f9-content">
+                <span>F8–F9 — Frequência e atraso ponderados</span>
+                <svg class="accordion-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div id="f8-f9-content" class="accordion-content">
+                <p><strong>F8</strong>: frequência ponderada por quantidade de concursos.</p>
+                <p><strong>F9</strong>: atraso ponderado — dá peso à probabilidade estatística.</p>
+              </div>
+            </div>
+          </section>
 
-        <section id="f10" class="formula-card">
-          <h2>F10 — Amostragem</h2>
-          <p>
-            Amostragem sem reposição com float em [0, 1). Implementação:
-            <code>mulberry32</code> + <code>newSeed()</code>.
-          </p>
-        </section>
+          <section id="f10" class="accordion" aria-label="Fórmula de amostragem">
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false" aria-controls="f10-content">
+                <span>F10 — Amostragem sem reposição</span>
+                <svg class="accordion-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div id="f10-content" class="accordion-content">
+                <p>Amostragem sem reposição com float em [0, 1). Implementação: <code>mulberry32</code> + <code>newSeed()</code>.</p>
+                <p>Garante aleatoriedade uniforme e reprodutível para testes.</p>
+              </div>
+            </div>
+          </section>
 
-        <section id="f11" class="formula-card">
-          <h2>F11 — Filtros de equilíbrio</h2>
-          <p>
-            Faixas teóricas de soma, soma dos quadrados, frequência de pares/
-            ímpares e intervalo de atraso. Taxa de aceitação calculada e
-            apresentada como referência teórica.
-          </p>
-        </section>
+          <section id="f11" class="accordion" aria-label="Filtros de equilíbrio">
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false" aria-controls="f11-content">
+                <span>F11 — Filtros de equilíbrio</span>
+                <svg class="accordion-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div id="f11-content" class="accordion-content">
+                <p>Faixas teóricas de soma, soma dos quadrados, frequência de pares/ímpares e intervalo de atraso.</p>
+                <p>Taxa de aceitação calculada e apresentada como referência teórica.</p>
+              </div>
+            </div>
+          </section>
 
-        <section id="f12" class="formula-card">
-          <h2>F12 — Diversificação do lote</h2>
-          <p>
-            Gera 3 jogos distintos usando ponderação por frequência/atraso. Exemplo
-            numérico com 6 dezenas por jogo.
-          </p>
-        </section>
+          <section id="f12" class="accordion" aria-label="Diversificação do lote">
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false" aria-controls="f12-content">
+                <span>F12 — Diversificação do lote</span>
+                <svg class="accordion-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div id="f12-content" class="accordion-content">
+                <p>Gera 3 jogos distintos usando ponderação por frequência/atraso.</p>
+                <p>Exemplo numérico com 6 dezenas por jogo.</p>
+              </div>
+            </div>
+          </section>
 
-        <section id="f13" class="formula-card">
-          <h2>F13 — Variância da soma</h2>
-          <p>
-            Variância da soma dos números de uma combinação. Medida de dispersão
-            usada para filtrar combinações fora da faixa teórica.
-          </p>
-        </section>
+          <section id="f13" class="accordion" aria-label="Variância da soma">
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false" aria-controls="f13-content">
+                <span>F13 — Variância da soma</span>
+                <svg class="accordion-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div id="f13-content" class="accordion-content">
+                <p>Variância da soma dos números de uma combinação.</p>
+                <p>Medida de dispersão usada para filtrar combinações fora da faixa teórica.</p>
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   </section>
