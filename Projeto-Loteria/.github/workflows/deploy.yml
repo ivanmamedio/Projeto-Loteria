@@ -17,6 +17,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Projeto-Loteria
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,11 +32,9 @@ jobs:
           cache-dependency-path: Projeto-Loteria/package-lock.json
 
       - name: Install dependencies
-        working-directory: Projeto-Loteria
         run: npm ci
 
       - name: Build
-        working-directory: Projeto-Loteria
         run: npm run build
 
       - name: Upload artifact
