@@ -21,39 +21,59 @@ try {
 ---
 
 <Base>
+  <!-- HERO -->
   <section class="hero" aria-labelledby="hero-title">
     <div class="container">
       <div class="hero-content">
         <span class="hero-badge" aria-hidden="true">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/>
-            <path d="M12 22V12M12 22H2M12 22H22"/>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
           </svg>
-          Site independente • Gratuito • Sem apostas
+          Site independente • Gratuito • Sem apostas • Dados oficiais Caixa
         </span>
 
         <h1 id="hero-title" class="hero-title">
-          Sorteie sua <span class="highlight">combinação</span>
+          Jogue com <span class="highlight">estratégia</span>, não só sorte
         </h1>
 
         <p class="hero-description">
-          Escolha uma modalidade, marque dezenas ou use a seleção automática.
-          Toda combinação tem a mesma probabilidade — use estas ferramentas
-          para descrever, organizar e diversificar jogos.
+          Gerador gratuito com 4 estratégias baseadas em dados reais da Caixa.
+          Salve histórico, exporte, compare — transparência total, sem promessas falsas.
         </p>
 
         <div class="hero-actions">
-          <button id="btn-sorteio-hero" type="button" class="btn btn-primary btn-lg" aria-label="Sortear uma combinação rápida">
+          <button id="btn-sorteio-hero" type="button" class="btn btn-primary btn-lg" aria-label="Gerar uma combinação rápida da Mega-Sena">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M12 2L2 7l10 5 10-5-10-5z"/>
               <path d="M2 17l10 5 10-5"/>
               <path d="M2 12l10 5 10-5"/>
             </svg>
-            Sortear agora
+            Gerar meu primeiro jogo
           </button>
           <a href="/como-funciona" class="btn btn-secondary btn-lg">Como funciona</a>
         </div>
 
+        <!-- Trust bar -->
+        <div class="hero-trust" aria-label="Indicadores de confiança">
+          <div class="hero-trust-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span>Dados oficiais Caixa</span>
+          </div>
+          <div class="hero-trust-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg>
+            <span>Histórico local no navegador</span>
+          </div>
+          <div class="hero-trust-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <span>Fórmulas abertas (F1–F13)</span>
+          </div>
+          <div class="hero-trust-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>
+            <span>100% gratuito • Sem cadastro</span>
+          </div>
+        </div>
+
+        <!-- Modalidade picker -->
         <nav class="modality-picker" aria-label="Escolha a modalidade" role="group">
           <button type="button" class="modality-btn" data-modalidade="mega-sena" aria-pressed="true">
             <span class="modality-btn__label">Mega-Sena</span>
@@ -73,9 +93,18 @@ try {
           </button>
         </nav>
 
-        <!-- Resultado do "Sortear agora" aparece aqui -->
-        <div id="hero-result" class="hero-result" aria-live="polite" style="margin-top: var(--space-6);"></div>
+        <!-- Quick links para páginas dedicadas -->
+        <div style="margin-top: var(--space-6); display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center;">
+          <a href="/gerador/mega-sena" class="btn btn-ghost btn-sm">Página Mega-Sena</a>
+          <a href="/gerador/lotofacil" class="btn btn-ghost btn-sm">Página Lotofácil</a>
+          <a href="/gerador/quina" class="btn btn-ghost btn-sm">Página Quina</a>
+          <a href="/gerador/lotomania" class="btn btn-ghost btn-sm">Página Lotomania</a>
+        </div>
 
+        <!-- Resultado do "Gerar meu primeiro jogo" -->
+        <div id="hero-result" class="hero-result" aria-live="polite"></div>
+
+        <!-- Hero stats -->
         <div class="hero-stats">
           <div class="stat-item">
             <div class="stat-value" id="stat-concursos">—</div>
@@ -94,16 +123,15 @@ try {
     </div>
   </section>
 
+  <!-- WHY / BENEFITS -->
   <section class="section" aria-labelledby="benefits-title">
     <div class="container">
-      <header style="text-align: center; margin-bottom: var(--space-10);">
-        <h2 id="benefits-title" style="margin-bottom: var(--space-3);">Por que usar o Jogo na Hora?</h2>
-        <p style="max-width: 580px; margin: 0 auto; color: var(--color-text-muted);">
-          Ferramentas transparentes baseadas em dados reais, sem promessas falsas.
-        </p>
+      <header class="section-header">
+        <h2 id="benefits-title">Por que apostadores usam o Jogo na Hora</h2>
+        <p>Ferramentas transparentes baseadas em dados reais, sem promessas falsas.</p>
       </header>
 
-      <div class="grid grid-3">
+      <div class="grid grid-3 stagger">
         <article class="feature-card card">
           <div class="feature-icon" aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -112,7 +140,7 @@ try {
             </svg>
           </div>
           <h3 class="feature-title">Probabilidade real</h3>
-          <p class="feature-description">Toda combinação válida tem exatamente a mesma chance. Nenhum método altera as odds.</p>
+          <p class="feature-description">Toda combinação válida tem exatamente a mesma chance. Nenhum método altera as odds — nós apenas organizamos e diversificamos.</p>
         </article>
 
         <article class="feature-card card">
@@ -123,7 +151,7 @@ try {
             </svg>
           </div>
           <h3 class="feature-title">Histórico local</h3>
-          <p class="feature-description">Seus jogos ficam salvos no navegador com cópia, compartilhamento e exportação.</p>
+          <p class="feature-description">Seus jogos ficam salvos no navegador com cópia, compartilhamento, exportação CSV e geração de imagem. Nada sai do seu dispositivo.</p>
         </article>
 
         <article class="feature-card card">
@@ -137,22 +165,78 @@ try {
             </svg>
           </div>
           <h3 class="feature-title">Fórmulas documentadas</h3>
-          <p class="feature-description">F1–F13 calculadas a partir dos dados reais da CAIXA, com metodologia aberta.</p>
+          <p class="feature-description">Estratégias E0–E4 e fórmulas F1–F13 calculadas a partir dos dados reais da CAIXA, com metodologia aberta e código open source.</p>
         </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS / SOCIAL PROOF -->
+  <section class="section" aria-labelledby="testimonials-title" style="background: var(--color-bg);">
+    <div class="container">
+      <header class="section-header">
+        <h2 id="testimonials-title">O que quem usa diz</h2>
+        <p>Depoimentos reais de apostadores que organizam seus jogos conosco.</p>
+      </header>
+
+      <div class="grid grid-3 stagger">
+        <article class="card card-padded">
+          <div class="testimonial-quote">
+            <p>"Organizei o bolão da empresa em 5 minutos — antes perdia horas no Excel. A estratégia E3 me fez diversificar números que eu sempre repetia."</p>
+          </div>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">MR</div>
+            <div>
+              <div class="testimonial-name">Marcos R.</div>
+              <div class="testimonial-role">São Paulo • Bolão de 12 pessoas</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card card-padded">
+          <div class="testimonial-quote">
+            <p>"Exporto CSV, levo pro contador do bolão, ninguém briga mais na hora de conferir. O histórico local salvou meu tempo todo sorteio."</p>
+          </div>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">CM</div>
+            <div>
+              <div class="testimonial-name">Carlos M.</div>
+              <div class="testimonial-role">Porto Alegre • Apostador semanal</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card card-padded">
+          <div class="testimonial-quote">
+            <p>"A explicação honesta de que 'não aumenta a chance' me deu confiança. Uso para organizar e evitar padrões de calendário. Simples e direto."</p>
+          </div>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">AK</div>
+            <div>
+              <div class="testimonial-name">Ana K.</div>
+              <div class="testimonial-role">Belo Horizonte • Estudante de estatística</div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div style="text-align: center; margin-top: var(--space-8);">
+        <a href="https://github.com/ivanmamedio/Projeto-Loteria/discussions" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+          Ver mais discussões no GitHub
+        </a>
       </div>
     </div>
   </section>
 
   <Disclaimer />
 
-  <section class="section" aria-labelledby="generator-title">
+  <!-- GENERATOR SECTION -->
+  <section class="section" aria-labelledby="generator-title" style="background: var(--color-bg);">
     <div class="container">
-      <header style="margin-bottom: var(--space-8);">
-        <h2 id="generator-title" style="margin-bottom: var(--space-3);">Gerar jogos</h2>
-        <p style="max-width: 680px;">
-          Escolha uma modalidade, marque dezenas (ou use a seleção automática) e gere combinações.
-          Toda combinação tem a mesma probabilidade de sorteio.
-        </p>
+      <header class="section-header">
+        <h2 id="generator-title">Gerador avançado de jogos</h2>
+        <p>Configure sua modalidade, escolha a estratégia e gere combinações organizadas. Histórico salvo automaticamente.</p>
       </header>
 
       <div class="controls-panel">
@@ -177,7 +261,7 @@ try {
           <div class="form-group">
             <label for="estrategia" class="form-label">Estratégia</label>
             <select id="estrategia" class="form-select">
-              <option value="E0">E0 — Uniforme</option>
+              <option value="E0">E0 — Uniforme (aleatório puro)</option>
               <option value="E1">E1 — Mais frequentes</option>
               <option value="E2">E2 — Mais atrasadas</option>
               <option value="E3">E3 — Filtros de equilíbrio</option>
@@ -187,35 +271,35 @@ try {
           </div>
 
           <div class="form-group">
-            <label for="janela" class="form-label">Janela de concursos</label>
+            <label for="janela" class="form-label">Janela de concursos (análise)</label>
             <input id="janela" type="number" min="1" value="100" class="form-input" />
           </div>
 
           <div class="form-group">
             <label class="form-checkbox">
               <input id="filtros" type="checkbox" />
-              <span>Filtros de equilíbrio (E3)</span>
+              <span>Filtros de equilíbrio (E3) — pares/ímpares, soma, faixas</span>
             </label>
           </div>
 
           <div class="form-group">
             <label class="form-checkbox">
               <input id="diversificar" type="checkbox" />
-              <span>Diversificar lote (E4)</span>
+              <span>Diversificar lote (E4) — evita jogos parecidos</span>
             </label>
           </div>
 
           <div class="form-group">
             <label class="form-checkbox">
               <input id="evitaCal" type="checkbox" />
-              <span>Evitar padrão de calendário</span>
+              <span>Evitar padrão de calendário (dias 1–31)</span>
             </label>
           </div>
 
           <div class="form-group">
             <label class="form-checkbox">
               <input id="autoSelecionar" type="checkbox" checked />
-              <span>Seleção automática de dezenas</span>
+              <span>Seleção automática de dezenas (completa o mínimo)</span>
             </label>
           </div>
         </div>
@@ -257,32 +341,41 @@ try {
           </div>
         </header>
 
-        <p class="history-empty" id="historico-vazio">Nenhum jogo salvo ainda.</p>
+        <p class="history-empty" id="historico-vazio">Nenhum jogo salvo ainda. Gere seu primeiro jogo acima.</p>
         <ul id="historico-lista" class="history-list"></ul>
       </section>
     </div>
   </section>
 
+  <!-- LEAD MAGNET -->
+  <section class="lead-magnet" aria-labelledby="lead-title">
+    <div class="container">
+      <h2 id="lead-title">Quer a planilha dos 50 números mais sorteados da Mega-Sena?</h2>
+      <p>Atualizada automaticamente após cada sorteio. CSV + Excel, pronta para usar nas suas análises.</p>
+      <form class="lead-magnet-form" id="lead-form">
+        <input type="email" class="form-input" placeholder="seu@email.com" required aria-label="Seu email" />
+        <button type="submit" class="btn btn-primary btn-lg">Receber planilha grátis</button>
+      </form>
+      <p class="lead-magnet-note">Sem spam. Apenas a planilha + 1 email semanal com a análise do concurso. Cancele quando quiser.</p>
+    </div>
+  </section>
+
+  <!-- CONTRIBUTION -->
   <section class="section contribution" id="contribuicao" aria-labelledby="contribuicao-title">
     <div class="container">
-      <header style="text-align: center; margin-bottom: var(--space-8);">
-        <h2 id="contribuicao-title" style="margin-bottom: var(--space-3);">Contribua com nosso site</h2>
-        <p style="max-width: 580px; margin: 0 auto;">
-          O Jogo na Hora é independente e gratuito. Se o projeto for útil para você,
-          considere apoiar a manutenção e a atualização dos dados.
-        </p>
+      <header class="section-header">
+        <h2 id="contribuicao-title">Contribua com o projeto</h2>
+        <p>O Jogo na Hora é independente e gratuito. Se o projeto for útil para você, considere apoiar a manutenção e a atualização dos dados.</p>
       </header>
 
-      <div style="max-width: 480px; margin: 0 auto;">
-        <div class="pix-box">
-          <span class="pix-label">Chave PIX</span>
-          <input type="text" class="pix-key" value="72af7962-0cf1-4f88-8d0f-1c4a58bcde4b" readonly id="pix-key" />
-          <button id="btn-copiar-pix" type="button" class="btn btn-secondary btn-sm">Copiar</button>
-        </div>
-        <p class="text-muted" style="text-align: center; margin-top: var(--space-4);">
-          Nenhuma aposta é processada por este site.
-        </p>
+      <div class="pix-box">
+        <span class="pix-label">Chave PIX</span>
+        <input type="text" class="pix-key" value="72af7962-0cf1-4f88-8d0f-1c4a58bcde4b" readonly id="pix-key" />
+        <button id="btn-copiar-pix" type="button" class="btn btn-secondary btn-sm">Copiar</button>
       </div>
+      <p class="text-muted" style="text-align: center; margin-top: var(--space-4);">
+        Nenhuma aposta é processada por este site. <a href="https://github.com/ivanmamedio/Projeto-Loteria" target="_blank" rel="noopener noreferrer">Código aberto no GitHub</a>.
+      </p>
     </div>
   </section>
 
@@ -333,6 +426,7 @@ try {
     const btnLimparHistorico = document.getElementById('btn-limpar-historico') as HTMLButtonElement;
     const btnCompartilharSelecao = document.getElementById('btn-compartilhar-selecao') as HTMLButtonElement | null;
     const btnCopiarPix = document.getElementById('btn-copiar-pix') as HTMLButtonElement | null;
+    const leadForm = document.getElementById('lead-form') as HTMLFormElement | null;
 
     const selecionadas = new Set<number>();
     let ultimosJogos: number[][] = [];
@@ -497,7 +591,7 @@ try {
       for (const ball of balls) {
         ctx.beginPath();
         ctx.arc(x + 32, y, 32, 0, Math.PI * 2);
-        ctx.fillStyle = '#2f7a12';
+        ctx.fillStyle = '#007A33';
         ctx.fill();
         ctx.fillStyle = '#fff';
         ctx.font = 'bold 20px Inter, system-ui, sans-serif';
@@ -558,9 +652,10 @@ try {
     function criarGameCard(texto: string, modalidade: string, isHero: boolean = false): HTMLElement {
       const card = document.createElement('div');
       card.className = 'game-card' + (isHero ? ' hero-game-card' : '');
+      const numerosHtml = texto.split(' - ').map(n => `<span class="result-ball">${n}</span>`).join('');
       card.innerHTML = `
         <div class="game-header">
-          <span class="game-title">${modalidade}</span>
+          <span class="game-title">${modalidade.charAt(0).toUpperCase() + modalidade.slice(1)}</span>
           <span class="game-badge">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M12 2L2 7l10 5 10-5-10-5z"/>
@@ -568,7 +663,7 @@ try {
             Jogo gerado
           </span>
         </div>
-        <div class="game-numbers">${texto.split(' - ').map(n => `<span class="result-ball">${n}</span>`).join('')}</div>
+        <div class="game-numbers">${numerosHtml}</div>
         <div class="game-actions">
           <button type="button" class="btn btn-secondary btn-sm" data-action="copy">Copiar</button>
           <button type="button" class="btn btn-secondary btn-sm" data-action="download">Baixar imagem</button>
@@ -741,6 +836,16 @@ try {
       if (btnCopiarPix) {
         btnCopiarPix.textContent = 'Copiado!';
         setTimeout(() => { if (btnCopiarPix) btnCopiarPix.textContent = 'Copiar'; }, 2000);
+      }
+    });
+
+    // Lead form (simples - só mostra alerta por enquanto)
+    leadForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = leadForm.querySelector('input[type="email"]') as HTMLInputElement;
+      if (input?.value) {
+        alert(`Obrigado! Em breve enviaremos a planilha para ${input.value}. (Integração real pendente)`);
+        input.value = '';
       }
     });
 

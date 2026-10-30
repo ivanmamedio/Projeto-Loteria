@@ -1,0 +1,24 @@
+# Jogo na Hora
+Gerador gratuito de combinações para loterias da Caixa (Mega-Sena, Lotofácil, Quina, Lotomania) 
+com 4 estratégias baseadas em dados históricos oficiais. Histórico local no navegador, exportação CSV, 
+sem cadastro, sem tracking, open source.
+
+## Ferramentas principais
+- / — Gerador principal com estratégias E0–E4, filtros de equilíbrio, diversificação
+- /gerador/mega-sena — Gerador dedicado Mega-Sena
+- /gerador/lotofacil — Gerador dedicado Lotofácil
+- /gerador/quina — Gerador dedicado Quina
+- /gerador/lotomania — Gerador dedicado Lotomania
+- /como-funciona — Metodologia das estratégias (E0–E4), fórmulas F1–F13, probabilidade
+- /estatisticas — Números mais frequentes, mais atrasados, pares/ímpares, soma por concurso
+- /dados — Base bruta de concursos (CSV, JSON), fonte: Caixa Loterias
+
+## Dados & Transparência
+- Fonte: Caixa Econômica Federal (resultados oficiais)
+- Atualização: automática via script público
+- Licença dados: domínio público | Código: MIT
+- Aviso: toda combinação válida tem mesma probabilidade; estratégias organizam, não aumentam odds
+
+## Contato
+- Issues: github.com/ivanmamedio/Projeto-Loteria/issues
+- PIX (doação): 72af7962-0cf1-4f88-8d0f-1c4a58bcde4b
