@@ -25,11 +25,11 @@ describe('probability', () => {
   });
 
   it('probabilidadeAcerto for a certain combination', () => {
-    expect(probabilidadeAcerto(2n, 2n)).toBe(1n);
+    expect(probabilidadeAcerto(2n, 2n)).toBe(1);
   });
 
   it('hypergeometric boundaries', () => {
-    expect(distribuicaHipergeometrica(10n, 4n, 3n, 0n)).toBe(1n);
-    expect(distribuicaHipergeometrica(10n, 4n, 3n, 10n)).toBe(0n);
+    expect(distribuicaHipergeometrica(10n, 4n, 3n, 0n)).toBe(1);
+    expect(distribuicaHipergeometrica(10n, 4n, 3n, 10n)).toBe(0);
   });
 });

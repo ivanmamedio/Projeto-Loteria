@@ -77,7 +77,7 @@ export function sampleWeighted(
   rng: () => number,
 ): number[] {
   return pool
-    .map((n, i) => ({ n, key: Math.log(rng() || Number.MIN_VALUE) / (weights[i] ?? 1) }))
+    .map((n, i) => ({ n, key: Math.log(rng() || Number.MIN_VALUE) / ((weights[i] ?? 1) || 1) }))
     .sort((a, b) => b.key - a.key)
     .slice(0, k)
     .map((x) => x.n)

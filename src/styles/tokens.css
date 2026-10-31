@@ -1,0 +1,191 @@
+/* Design Tokens — Inspirados no AGR Studio */
+/* Fonte única de verdade para cores, espaçamento, tipografia, sombras, bordas, transições */
+
+:root {
+  /* ============================================================
+     CORES — Paleta AGR-inspirada (verde sofisticado + neutros quentes)
+     ============================================================ */
+
+  /* Primária — Verde escuro elegante (AGR usa #2f7a12) */
+  --color-primary: #1f5e0d;
+  --color-primary-light: #2f7a12;
+  --color-primary-lighter: #4bc418;
+  --color-primary-pale: #e8ffe0;      /* Backgrounds sutis, badges */
+
+  /* Neutros — Escala cinza-verde quente */
+  --color-neutral-950: #0f140d;       /* Texto principal mais escuro */
+  --color-neutral-900: #152012;       /* Headlines (atual --cor-texto) */
+  --color-neutral-800: #1f2e1a;
+  --color-neutral-700: #2d3d26;       /* Subtítulos */
+  --color-neutral-600: #4b5a43;       /* Texto secundário/muted (atual --cor-texto-claro) */
+  --color-neutral-500: #6b7d63;
+  --color-neutral-400: #8a9a83;       /* Placeholders, ícones secundários */
+  --color-neutral-300: #d8e6d2;       /* Borders, divisors (atual --border) */
+  --color-neutral-200: #eef3ec;       /* Backgrounds de cards */
+  --color-neutral-100: #f7faf5;       /* Background principal (atual --cor-fundo) */
+  --color-neutral-50: #fafcf9;        /* Background seções alternadas */
+  --color-white: #ffffff;
+
+  /* Semânticas */
+  --color-success: #2f7a12;
+  --color-success-bg: #e8ffe0;
+  --color-success-border: #b7e8a3;
+
+  --color-warning: #e65100;
+  --color-warning-bg: #fff8e1;
+  --color-warning-border: #ffe082;
+
+  --color-error: #c62828;
+  --color-error-bg: #fdeaea;
+  --color-error-border: #ef9a9a;
+
+  --color-info: #1565c0;
+  --color-info-bg: #e3f2fd;
+  --color-info-border: #90caf9;
+
+  /* WhatsApp */
+  --color-whatsapp: #25d366;
+  --color-whatsapp-hover: #1ebe5d;
+
+  /* Modalidades — Cores decorativas (nunca única forma de identificação) */
+  --color-mega-sena: #1f5e0d;
+  --color-mega-sena-bg: #e8ffe0;
+  --color-lotofacil: #e65100;
+  --color-lotofacil-bg: #fff8e1;
+  --color-quina: #1565c0;
+  --color-quina-bg: #e3f2fd;
+  --color-lotomania: #6a1b9a;
+  --color-lotomania-bg: #f3e5f5;
+
+  /* ============================================================
+     ESPAÇAMENTO — Escala base 4px
+     ============================================================ */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  --space-20: 5rem;     /* 80px */
+
+  /* ============================================================
+     TIPOGRAFIA — Escala fluida com clamp()
+     ============================================================ */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+
+  /* Tamanhos fluidos */
+  --text-xs: clamp(0.7rem, 0.65rem + 0.25vw, 0.75rem);
+  --text-sm: clamp(0.8rem, 0.75rem + 0.25vw, 0.875rem);
+  --text-base: clamp(0.95rem, 0.9rem + 0.25vw, 1rem);
+  --text-lg: clamp(1.05rem, 1rem + 0.25vw, 1.125rem);
+  --text-xl: clamp(1.2rem, 1.1rem + 0.5vw, 1.375rem);
+  --text-2xl: clamp(1.5rem, 1.3rem + 1vw, 1.875rem);
+  --text-3xl: clamp(1.875rem, 1.5rem + 1.5vw, 2.5rem);
+  --text-4xl: clamp(2.25rem, 1.8rem + 2vw, 3.5rem);
+
+  /* Pesos */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+
+  /* Line heights */
+  --leading-tight: 1.1;
+  --leading-snug: 1.35;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.75;
+
+  /* ============================================================
+     BORDAS E RAIOS
+     ============================================================ */
+  --radius-sm: 0.375rem;   /* 6px */
+  --radius-md: 0.5rem;     /* 8px */
+  --radius-lg: 0.75rem;    /* 12px */
+  --radius-xl: 1rem;       /* 16px */
+  --radius-full: 9999px;
+
+  /* ============================================================
+     SOMBRAS — Camadas suaves, verdes sutis
+     ============================================================ */
+  --shadow-xs: 0 1px 2px rgba(15, 20, 13, 0.05);
+  --shadow-sm: 0 1px 3px rgba(15, 20, 13, 0.08), 0 1px 2px rgba(15, 20, 13, 0.06);
+  --shadow-md: 0 4px 6px rgba(15, 20, 13, 0.07), 0 2px 4px rgba(15, 20, 13, 0.06);
+  --shadow-lg: 0 10px 15px rgba(15, 20, 13, 0.1), 0 4px 6px rgba(15, 20, 13, 0.05);
+  --shadow-xl: 0 20px 25px rgba(15, 20, 13, 0.15), 0 10px 10px rgba(15, 20, 13, 0.04);
+
+  --shadow-primary: 0 4px 16px rgba(47, 122, 18, 0.15);
+  --shadow-primary-lg: 0 8px 24px rgba(47, 122, 18, 0.2);
+
+  /* ============================================================
+     TRANSIÇÕES
+     ============================================================ */
+  --transition-fast: 100ms ease;
+  --transition-base: 150ms ease;
+  --transition-slow: 250ms ease;
+
+  /* ============================================================
+     CONTAINER E LAYOUT
+     ============================================================ */
+  --container-max: 1100px;
+  --container-padding: 1.25rem;
+  --header-height: 64px;
+
+  /* ============================================================
+     Z-INDEX
+     ============================================================ */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal-backdrop: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+}
+
+/* ============================================================
+   DARK MODE (opcional — preparar para futuro)
+   ============================================================ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-neutral-950: #f7faf5;
+    --color-neutral-900: #eef3ec;
+    --color-neutral-800: #e8f0e0;
+    --color-neutral-700: #d8e6d2;
+    --color-neutral-600: #a8b8a0;
+    --color-neutral-500: #8a9a83;
+    --color-neutral-400: #6b7d63;
+    --color-neutral-300: #4b5a43;
+    --color-neutral-200: #2d3d26;
+    --color-neutral-100: #152012;
+    --color-neutral-50: #0f140d;
+    --color-primary-pale: #1a3d12;
+    --color-success-bg: #1a3d12;
+    --color-warning-bg: #3d2a00;
+    --color-error-bg: #3d1a1a;
+    --color-info-bg: #1a2d3d;
+  }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0ms;
+    --transition-base: 0ms;
+    --transition-slow: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

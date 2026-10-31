@@ -39,23 +39,29 @@ export function combina(n: bigint, k: bigint): bigint {
 }
 
 // F2: Probabilidade de acerto exato (1 / C(n, k))
-export function probabilidadeAcerto(exatos: bigint, total: bigint): bigint {
-  return 1n / combina(total, exatos);
+export function probabilidadeAcerto(exatos: bigint, total: bigint): number {
+  const combinacoes = combina(total, exatos);
+  if (combinacoes === 0n) return 0;
+  return 1 / Number(combinacoes);
 }
 
 // F3: Probabilidade de pelo menos k acertos em n tentativas (aproximação)
 // F3 usa soma de distribuição hipergeométrica:
 // P(X >= k) = Σ C(K, i) * C(N-K, n-i) / C(N, n)
-export function distribuicaHipergeometrica(N: bigint, K: bigint, n: bigint, k: bigint): bigint {
-  if (k <= 0n) return 1n;
-  if (k > (K < n ? K : n)) return 0n;
+export function distribuicaHipergeometrica(N: bigint, K: bigint, n: bigint, k: bigint): number {
+  if (k <= 0n) return 1;
+  const maxAcertos = K < n ? K : n;
+  if (k > maxAcertos) return 0;
 
-  let acumulado = 0n;
-  const inicio = k;
-  const fim = n < K ? n : K;
+  const total = combina(N, n);
+  if (total === 0n) return 0;
 
-  for (let i = Number(inicio); i <= Number(fim); i++) {
-    const termo = (combina(K, BigInt(i)) * combina(N - K, n - BigInt(i))) / combina(N, n);
+  let acumulado = 0;
+  const inicio = Number(k);
+  const fim = Number(maxAcertos);
+
+  for (let i = inicio; i <= fim; i++) {
+    const termo = Number(combina(K, BigInt(i)) * combina(N - K, n - BigInt(i))) / Number(total);
     acumulado += termo;
   }
 

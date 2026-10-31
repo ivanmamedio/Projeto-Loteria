@@ -18,6 +18,7 @@ try {
 } catch (err) {
   modalidade = modalidadePorId('mega-sena');
 }
+const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
 ---
 
 <Base>
@@ -29,16 +30,17 @@ try {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
           </svg>
-          Site independente • Gratuito • Sem apostas • Dados oficiais Caixa
+          Site independente · Gratuito · Sem apostas · Dados oficiais CAIXA
         </span>
 
         <h1 id="hero-title" class="hero-title">
-          Jogue com <span class="highlight">estratégia</span>, não só sorte
+          Gere jogos com <span class="highlight">metodologia transparente</span>
         </h1>
 
         <p class="hero-description">
-          Gerador gratuito com 4 estratégias baseadas em dados reais da Caixa.
-          Salve histórico, exporte, compare — transparência total, sem promessas falsas.
+          Escolha a modalidade, configure a estratégia e gere combinações.
+          Toda combinação tem a mesma probabilidade — use nossas ferramentas
+          para descrever, organizar e diversificar seus jogos com base em dados reais.
         </p>
 
         <div class="hero-actions">
@@ -50,7 +52,7 @@ try {
             </svg>
             Gerar meu primeiro jogo
           </button>
-          <a href="/como-funciona" class="btn btn-secondary btn-lg">Como funciona</a>
+          <a href={`${base}como-funciona`} class="btn btn-secondary btn-lg">Como funciona</a>
         </div>
 
         <!-- Trust bar -->
@@ -75,31 +77,25 @@ try {
 
         <!-- Modalidade picker -->
         <nav class="modality-picker" aria-label="Escolha a modalidade" role="group">
-          <button type="button" class="modality-btn" data-modalidade="mega-sena" aria-pressed="true">
-            <span class="modality-btn__label">Mega-Sena</span>
-            <span class="modality-btn__meta">6 dezenas · R$ 6,00</span>
+          <button type="button" class="modality-card" data-modalidade="mega-sena" aria-pressed="true">
+            <span class="modality-card__label">Mega-Sena</span>
+            <span class="modality-card__meta">6 dezenas · R$ 6,00</span>
           </button>
-          <button type="button" class="modality-btn" data-modalidade="lotofacil" aria-pressed="false">
-            <span class="modality-btn__label">Lotofácil</span>
-            <span class="modality-btn__meta">15 dezenas · R$ 3,50</span>
+          <button type="button" class="modality-card" data-modalidade="lotofacil" aria-pressed="false">
+            <span class="modality-card__label">Lotofácil</span>
+            <span class="modality-card__meta">15 dezenas · R$ 3,50</span>
           </button>
-          <button type="button" class="modality-btn" data-modalidade="quina" aria-pressed="false">
-            <span class="modality-btn__label">Quina</span>
-            <span class="modality-btn__meta">5 dezenas · R$ 3,00</span>
+          <button type="button" class="modality-card" data-modalidade="quina" aria-pressed="false">
+            <span class="modality-card__label">Quina</span>
+            <span class="modality-card__meta">5 dezenas · R$ 3,00</span>
           </button>
-          <button type="button" class="modality-btn" data-modalidade="lotomania" aria-pressed="false">
-            <span class="modality-btn__label">Lotomania</span>
-            <span class="modality-btn__meta">50 dezenas fixo · R$ 3,00</span>
+          <button type="button" class="modality-card" data-modalidade="lotomania" aria-pressed="false">
+            <span class="modality-card__label">Lotomania</span>
+            <span class="modality-card__meta">50 dezenas fixo · R$ 3,00</span>
           </button>
         </nav>
 
-        <!-- Quick links para páginas dedicadas -->
-        <div style="margin-top: var(--space-6); display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center;">
-          <a href="/gerador/mega-sena" class="btn btn-ghost btn-sm">Página Mega-Sena</a>
-          <a href="/gerador/lotofacil" class="btn btn-ghost btn-sm">Página Lotofácil</a>
-          <a href="/gerador/quina" class="btn btn-ghost btn-sm">Página Quina</a>
-          <a href="/gerador/lotomania" class="btn btn-ghost btn-sm">Página Lotomania</a>
-        </div>
+        <!-- Modalidades disponíveis no gerador principal abaixo -->
 
         <!-- Resultado do "Gerar meu primeiro jogo" -->
         <div id="hero-result" class="hero-result" aria-live="polite"></div>
@@ -111,125 +107,21 @@ try {
             <div class="stat-label">Concursos analisados</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value" id="stat-modalidades">4</div>
+            <div class="stat-value">4</div>
             <div class="stat-label">Modalidades</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value" id="stat-gratuito">100%</div>
+            <div class="stat-value">100%</div>
             <div class="stat-label">Gratuito</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="stat-atualizado">—</div>
+            <div class="stat-label">Última atualização</div>
           </div>
         </div>
       </div>
     </div>
   </section>
-
-  <!-- WHY / BENEFITS -->
-  <section class="section" aria-labelledby="benefits-title">
-    <div class="container">
-      <header class="section-header">
-        <h2 id="benefits-title">Por que apostadores usam o Jogo na Hora</h2>
-        <p>Ferramentas transparentes baseadas em dados reais, sem promessas falsas.</p>
-      </header>
-
-      <div class="grid grid-3 stagger">
-        <article class="feature-card card">
-          <div class="feature-icon" aria-hidden="true">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M12 6v6l4 2"/>
-            </svg>
-          </div>
-          <h3 class="feature-title">Probabilidade real</h3>
-          <p class="feature-description">Toda combinação válida tem exatamente a mesma chance. Nenhum método altera as odds — nós apenas organizamos e diversificamos.</p>
-        </article>
-
-        <article class="feature-card card">
-          <div class="feature-icon" aria-hidden="true">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="2" y="3" width="20" height="14" rx="2"/>
-              <path d="M8 21h8M12 17v4"/>
-            </svg>
-          </div>
-          <h3 class="feature-title">Histórico local</h3>
-          <p class="feature-description">Seus jogos ficam salvos no navegador com cópia, compartilhamento, exportação CSV e geração de imagem. Nada sai do seu dispositivo.</p>
-        </article>
-
-        <article class="feature-card card">
-          <div class="feature-icon" aria-hidden="true">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="16" y1="13" x2="8" y2="13"/>
-              <line x1="16" y1="17" x2="8" y2="17"/>
-              <polyline points="10 9 9 9 8 9"/>
-            </svg>
-          </div>
-          <h3 class="feature-title">Fórmulas documentadas</h3>
-          <p class="feature-description">Estratégias E0–E4 e fórmulas F1–F13 calculadas a partir dos dados reais da CAIXA, com metodologia aberta e código open source.</p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- TESTIMONIALS / SOCIAL PROOF -->
-  <section class="section" aria-labelledby="testimonials-title" style="background: var(--color-bg);">
-    <div class="container">
-      <header class="section-header">
-        <h2 id="testimonials-title">O que quem usa diz</h2>
-        <p>Depoimentos reais de apostadores que organizam seus jogos conosco.</p>
-      </header>
-
-      <div class="grid grid-3 stagger">
-        <article class="card card-padded">
-          <div class="testimonial-quote">
-            <p>"Organizei o bolão da empresa em 5 minutos — antes perdia horas no Excel. A estratégia E3 me fez diversificar números que eu sempre repetia."</p>
-          </div>
-          <div class="testimonial-author">
-            <div class="testimonial-avatar">MR</div>
-            <div>
-              <div class="testimonial-name">Marcos R.</div>
-              <div class="testimonial-role">São Paulo • Bolão de 12 pessoas</div>
-            </div>
-          </div>
-        </article>
-
-        <article class="card card-padded">
-          <div class="testimonial-quote">
-            <p>"Exporto CSV, levo pro contador do bolão, ninguém briga mais na hora de conferir. O histórico local salvou meu tempo todo sorteio."</p>
-          </div>
-          <div class="testimonial-author">
-            <div class="testimonial-avatar">CM</div>
-            <div>
-              <div class="testimonial-name">Carlos M.</div>
-              <div class="testimonial-role">Porto Alegre • Apostador semanal</div>
-            </div>
-          </div>
-        </article>
-
-        <article class="card card-padded">
-          <div class="testimonial-quote">
-            <p>"A explicação honesta de que 'não aumenta a chance' me deu confiança. Uso para organizar e evitar padrões de calendário. Simples e direto."</p>
-          </div>
-          <div class="testimonial-author">
-            <div class="testimonial-avatar">AK</div>
-            <div>
-              <div class="testimonial-name">Ana K.</div>
-              <div class="testimonial-role">Belo Horizonte • Estudante de estatística</div>
-            </div>
-          </div>
-        </article>
-      </div>
-
-      <div style="text-align: center; margin-top: var(--space-8);">
-        <a href="https://github.com/ivanmamedio/Projeto-Loteria/discussions" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
-          Ver mais discussões no GitHub
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <Disclaimer />
 
   <!-- GENERATOR SECTION -->
   <section class="section" aria-labelledby="generator-title" style="background: var(--color-bg);">
@@ -344,19 +236,212 @@ try {
         <p class="history-empty" id="historico-vazio">Nenhum jogo salvo ainda. Gere seu primeiro jogo acima.</p>
         <ul id="historico-lista" class="history-list"></ul>
       </section>
+
+  <!-- PROCESS STEPS (AGR-style: Discover → Design → Build → Launch adapted) -->
+  <section class="section" aria-labelledby="process-title" style="background: var(--color-bg);">
+    <div class="container">
+      <header class="section-header">
+        <h2 id="process-title">Como funciona em 4 passos</h2>
+        <p>Simples, transparente, sem cadastro. Do zero ao jogo em segundos.</p>
+      </header>
+
+      <ol class="process-steps">
+        <li class="process-step">
+          <div class="step-content">
+            <h3>Escolha a modalidade</h3>
+            <p>Mega-Sena, Lotofácil, Quina ou Lotomania. Cada uma com suas regras, probabilidades e preço.</p>
+          </div>
+        </li>
+        <li class="process-step">
+          <div class="step-content">
+            <h3>Configure a estratégia</h3>
+            <p>Selecione quantidade (1–10), estratégia (E0–E4), filtros de equilíbrio, janela de análise.</p>
+          </div>
+        </li>
+        <li class="process-step">
+          <div class="step-content">
+            <h3>Gere as combinações</h3>
+            <p>Resultados com dezenas legíveis, resumo do método usado, taxa de aceitação dos filtros.</p>
+          </div>
+        </li>
+        <li class="process-step">
+          <div class="step-content">
+            <h3>Entenda e use com responsabilidade</h3>
+            <p>Copie, compartilhe, salve no histórico. Lembre-se: toda combinação tem a mesma probabilidade.</p>
+          </div>
+        </li>
+      </ol>
     </div>
   </section>
 
-  <!-- LEAD MAGNET -->
-  <section class="lead-magnet" aria-labelledby="lead-title">
+  <!-- TRUST GRID (Sinais de confiança) -->
+  <section class="section section-trust" aria-labelledby="trust-title" style="background: var(--color-bg);">
     <div class="container">
-      <h2 id="lead-title">Quer a planilha dos 50 números mais sorteados da Mega-Sena?</h2>
-      <p>Atualizada automaticamente após cada sorteio. CSV + Excel, pronta para usar nas suas análises.</p>
-      <form class="lead-magnet-form" id="lead-form">
-        <input type="email" class="form-input" placeholder="seu@email.com" required aria-label="Seu email" />
-        <button type="submit" class="btn btn-primary btn-lg">Receber planilha grátis</button>
-      </form>
-      <p class="lead-magnet-note">Sem spam. Apenas a planilha + 1 email semanal com a análise do concurso. Cancele quando quiser.</p>
+      <header class="section-header">
+        <h2 id="trust-title">Transparência e confiança</h2>
+        <p>Não prometemos ganhos. Prometemos clareza.</p>
+      </header>
+
+      <div class="trust-grid">
+        <div class="trust-item">
+          <div class="trust-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <h3>Dados Oficiais CAIXA</h3>
+          <p>Resultados importados diretamente das fontes oficiais, com data de atualização visível em cada página.</p>
+        </div>
+
+        <div class="trust-item">
+          <div class="trust-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <h3>Metodologia Aberta</h3>
+          <p>Todas as fórmulas (F1–F13), estratégias (E0–E4) e filtros documentados com limitações claras.</p>
+        </div>
+
+        <div class="trust-item">
+          <div class="trust-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          </div>
+          <h3>Privacidade Real</h3>
+          <p>Zero coleta de dados pessoais. Histórico fica só no seu navegador. Sem cookies de rastreamento.</p>
+        </div>
+
+        <div class="trust-item">
+          <div class="trust-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h3>Performance</h3>
+          <p>Astro + CSS puro = carregamento instantâneo. Funciona offline (PWA básico). Core Web Vitals otimizados.</p>
+        </div>
+
+        <div class="trust-item">
+          <div class="trust-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+          <h3>Código Aberto</h3>
+          <p>Lógica de geração e regras auditáveis no GitHub. Qualquer um pode verificar a implementação.</p>
+        </div>
+
+        <div class="trust-item">
+          <div class="trust-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <h3>Atualizações Regulares</h3>
+          <p>Dados atualizados após cada sorteio. Veja a <a href={`${base}dados`} style="color: var(--color-primary); font-weight: 600;">página de dados</a> para detalhes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- METHOD CARDS (Metodologias E0–E4 — estilo Case Studies) -->
+  <section class="section" aria-labelledby="methods-title">
+    <div class="container">
+      <header class="section-header">
+        <h2 id="methods-title">Estratégias de geração (E0–E4)</h2>
+        <p>Cada estratégia serve a um propósito descritivo/organizacional — nenhuma aumenta a chance de ganhar.</p>
+      </header>
+
+      <div class="grid grid-3">
+        <article class="method-card card">
+          <header class="method-header">
+            <span class="method-badge">E0</span>
+            <h3>Uniforme (Padrão)</h3>
+          </header>
+          <p class="method-description">Seleção completamente aleatória, cada dezena tem a mesma probabilidade. Base para comparação.</p>
+          <ul class="method-details">
+            <li>Uso: Referência, baseline</li>
+            <li>Viés: Nenhum</li>
+            <li>Indicado: Qualquer situação</li>
+          </ul>
+          <a href={`${base}metodologia#e0`} class="method-link">Ver fórmula e exemplos <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </article>
+
+        <article class="method-card card">
+          <header class="method-header">
+            <span class="method-badge">E1</span>
+            <h3>Mais Frequentes</h3>
+          </header>
+          <p class="method-description">Prioriza dezenas que mais saíram na janela selecionada. Descritivo — não preditivo.</p>
+          <ul class="method-details">
+            <li>Uso: Ver dezenas "quentes" históricas</li>
+            <li>Viés: Frequência passada</li>
+            <li>Limitação: Não prevê futuras</li>
+          </ul>
+          <a href={`${base}metodologia#e1`} class="method-link">Ver fórmula e exemplos <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </article>
+
+        <article class="method-card card">
+          <header class="method-header">
+            <span class="method-badge">E2</span>
+            <h3>Mais Atrasadas</h3>
+          </header>
+          <p class="method-description">Prioriza dezenas que não saem há mais tempo. Baseada no conceito descritivo de "atraso".</p>
+          <ul class="method-details">
+            <li>Uso: Ver dezenas "frias" históricas</li>
+            <li>Viés: Atraso passada</li>
+            <li>Limitação: Falácia do jogador</li>
+          </ul>
+          <a href={`${base}metodologia#e2`} class="method-link">Ver fórmula e exemplos <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </article>
+
+        <article class="method-card card">
+          <header class="method-header">
+            <span class="method-badge">E3</span>
+            <h3>Filtros de Equilíbrio</h3>
+          </header>
+          <p class="method-description">Aplica filtros: par/ímpar, soma das dezenas, faixas numéricas, desvio padrão. Organiza o lote.</p>
+          <ul class="method-details">
+            <li>Uso: Jogos balanceados</li>
+            <li>Viés: Distribuição histórica</li>
+            <li>Taxa aceitação: Variável</li>
+          </ul>
+          <a href={`${base}metodologia#e3`} class="method-link">Ver fórmula e exemplos <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </article>
+
+        <article class="method-card card">
+          <header class="method-header">
+            <span class="method-badge">E4</span>
+            <h3>Diversificar Lote</h3>
+          </header>
+          <p class="method-description">Maximiza a diferença entre jogos do mesmo lote (distância de Hamming). Evita jogos iguais.</p>
+          <ul class="method-details">
+            <li>Uso: Bolões, múltiplos jogos</li>
+            <li>Viés: Diversidade combinatória</li>
+            <li>Limite: Espaço amostral</li>
+          </ul>
+          <a href={`${base}metodologia#e4`} class="method-link">Ver fórmula e exemplos <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </article>
+
+        <article class="method-card card">
+          <header class="method-header">
+            <span class="method-badge">★</span>
+            <h3>Combinado (E1+E3+E4)</h3>
+          </header>
+          <p class="method-description">Combina frequência + equilíbrio + diversificação. Recomendado para quem quer organização máxima.</p>
+          <ul class="method-details">
+            <li>Uso: Configuração completa</li>
+            <li>Viés: Múltiplos descritivos</li>
+            <li>Melhor para: Bolões sérios</li>
+          </ul>
+          <a href={`${base}metodologia#combinado`} class="method-link">Ver fórmula e exemplos <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </article>
+      </div>
+  </section>
+
+  <Disclaimer />
+
+    </div>
+  </section>
+
+  <!-- DADOS -->
+  <section class="section" aria-labelledby="lead-title" style="background: var(--color-bg);">
+    <div class="container" style="text-align: center;">
+      <h2 id="lead-title">Dados históricos disponíveis</h2>
+      <p>Os concursos estão disponíveis em JSON e CSV na página de dados, com origem e data de atualização.</p>
+      <div style="margin-top: var(--space-6);">
+        <a href={`${base}dados`} class="btn btn-primary btn-lg">Ver dados</a>
+      </div>
     </div>
   </section>
 
@@ -383,6 +468,7 @@ try {
     import { generateGames } from '../domain/generate';
     import { sampleNoReplace } from '../domain/sampling';
     import { modalidadePorId, type ModalidadeId } from '../domain/rules';
+    import { mulberry32, newSeed } from '../domain/rng';
     import { loadData } from '../ui/load-data';
     import { addHistory, clearHistory, loadHistory } from '../ui/history';
     import { pad2 } from '../ui/format';
@@ -397,7 +483,7 @@ try {
     // Elementos do hero
     const heroResult = document.getElementById('hero-result') as HTMLElement;
     const btnSorteioHero = document.getElementById('btn-sorteio-hero') as HTMLButtonElement;
-    const modalityBtns = document.querySelectorAll('.modality-picker .modality-btn') as NodeListOf<HTMLButtonElement>;
+    const modalityBtns = document.querySelectorAll('.modality-picker .modality-card') as NodeListOf<HTMLButtonElement>;
 
     // Elementos do gerador principal
     const selectMod = document.getElementById('modalidade') as HTMLSelectElement;
@@ -426,7 +512,6 @@ try {
     const btnLimparHistorico = document.getElementById('btn-limpar-historico') as HTMLButtonElement;
     const btnCompartilharSelecao = document.getElementById('btn-compartilhar-selecao') as HTMLButtonElement | null;
     const btnCopiarPix = document.getElementById('btn-copiar-pix') as HTMLButtonElement | null;
-    const leadForm = document.getElementById('lead-form') as HTMLFormElement | null;
 
     const selecionadas = new Set<number>();
     let ultimosJogos: number[][] = [];
@@ -522,7 +607,8 @@ try {
     }
 
     async function concursosDaModalidade(mod: string): Promise<number[][]> {
-      const res = await loadData<{ concursos: { dezenas: number[] }[] }>(`/data/${mod}.json`);
+      const baseClient = (import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/';
+      const res = await loadData<{ concursos: { dezenas: number[] }[] }>(`${baseClient}data/${mod}.json`);
       if (!res.ok || !res.data) return [];
       return (res.data.concursos || []).map((c) => c.dezenas);
     }
@@ -684,7 +770,7 @@ try {
         const faltam = Math.max(m.minDezenas, m.dezenasSorteadas + 6) - marcadas.length;
         if (faltam > 0) {
           const pool = dezenas.filter((d) => !marcadas.includes(d));
-          const extras = sampleNoReplace(pool.length, Math.min(pool.length, faltam), Math.random).map(
+          const extras = sampleNoReplace(pool.length, Math.min(pool.length, faltam), mulberry32(newSeed()).next).map(
             (idx) => pool[idx] as number,
           );
           marcadas = marcadas.concat(extras);
@@ -778,8 +864,19 @@ try {
           out.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       } catch (err) {
-        targetContainer.innerHTML = `<div class="alert alert-error" role="alert"><div class="alert-content"><p class="alert-message">${(err as Error).message}</p></div></div>`;
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-error';
+        alertDiv.setAttribute('role', 'alert');
+        const content = document.createElement('div');
+        content.className = 'alert-content';
+        const p = document.createElement('p');
+        p.className = 'alert-message';
+        p.textContent = (err as Error).message;
+        content.appendChild(p);
+        alertDiv.appendChild(content);
+        targetContainer.replaceChildren(alertDiv);
         if (!isHero) meta.textContent = '';
+
       } finally {
         if (originalBtn) {
           originalBtn.disabled = false;
@@ -839,26 +936,35 @@ try {
       }
     });
 
-    // Lead form (simples - só mostra alerta por enquanto)
-    leadForm?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const input = leadForm.querySelector('input[type="email"]') as HTMLInputElement;
-      if (input?.value) {
-        alert(`Obrigado! Em breve enviaremos a planilha para ${input.value}. (Integração real pendente)`);
-        input.value = '';
-      }
-    });
+    // Lead form removido: coleta de email sem integração funcional (ver correcoes.md §6).
+    // Dados disponíveis em /dados.
 
     // Carregar contagem de concursos para hero stats
     async function carregarStatsHero() {
       try {
         let total = 0;
+        let latestDate: Date | null = null;
         for (const mod of MODALIDADES_VALIDAS) {
-          const res = await loadData<{ concursos: { dezenas: number[] }[] }>(`/data/${mod}.json`);
-          if (res.ok && res.data?.concursos) total += res.data.concursos.length;
+          const baseClient = (import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/';
+      const res = await loadData<{ concursos: { dezenas: number[]; data?: string }[] }>(`${baseClient}data/${mod}.json`);
+          if (res.ok && res.data?.concursos) {
+            total += res.data.concursos.length;
+            // Encontrar data mais recente
+            for (const c of res.data.concursos) {
+              if (c.data) {
+                const d = new Date(c.data);
+                if (!latestDate || d > latestDate) latestDate = d;
+              }
+            }
+          }
         }
         const el = document.getElementById('stat-concursos');
         if (el) el.textContent = total.toLocaleString('pt-BR');
+        
+        const elDate = document.getElementById('stat-atualizado');
+        if (elDate && latestDate) {
+          elDate.textContent = latestDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
       } catch {}
     }
     carregarStatsHero();

@@ -1,5 +1,5 @@
 /**
- * Histórico local de lotes gerados (versionado, limite 50).
+ * Histórico local de lotes gerados (versionado, limite 20).
  */
 
 export const HISTORY_STORAGE_KEY = 'loteria:history:v1';

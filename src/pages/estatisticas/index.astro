@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
 ---
 
 <Base>
@@ -12,10 +13,10 @@ import Base from '../../layouts/Base.astro';
 
   <section class="container">
     <div class="benefits-grid">
-      <a class="prob-card" href="/estatisticas/mega-sena"><h3>Mega-Sena</h3><p>60 dezenas · 6 sorteadas</p></a>
-      <a class="prob-card" href="/estatisticas/lotofacil"><h3>Lotofácil</h3><p>25 dezenas · 15 sorteadas</p></a>
-      <a class="prob-card" href="/estatisticas/quina"><h3>Quina</h3><p>80 dezenas · 5 sorteadas</p></a>
-      <a class="prob-card" href="/estatisticas/lotomania"><h3>Lotomania</h3><p>100 dezenas · 20 sorteadas</p></a>
+      <a class="prob-card" href={`${base}estatisticas/mega-sena`}><h3>Mega-Sena</h3><p>60 dezenas · 6 sorteadas</p></a>
+      <a class="prob-card" href={`${base}estatisticas/lotofacil`}><h3>Lotofácil</h3><p>25 dezenas · 15 sorteadas</p></a>
+      <a class="prob-card" href={`${base}estatisticas/quina`}><h3>Quina</h3><p>80 dezenas · 5 sorteadas</p></a>
+      <a class="prob-card" href={`${base}estatisticas/lotomania`}><h3>Lotomania</h3><p>100 dezenas · 20 sorteadas</p></a>
     </div>
   </section>
 </Base>

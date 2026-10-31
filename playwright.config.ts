@@ -10,7 +10,7 @@ export default defineConfig({
   },
   webServer: {
     command: 'npm run preview',
-    url: 'http://localhost:4321',
+    url: 'http://localhost:4321/Projeto-Loteria/',
     reuseExistingServer: true,
     timeout: 120_000,
   },

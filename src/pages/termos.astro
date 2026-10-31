@@ -4,6 +4,7 @@ import Disclaimer from '../components/Disclaimer.astro';
 // Referência: tasks_loteria.md — Review jurídica (T6.5)
 
 import Base from '../layouts/Base.astro';
+const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
 ---
 
 <Base>
@@ -40,7 +41,7 @@ import Base from '../layouts/Base.astro';
 
     <h2>4. Dados e privacidade</h2>
     <p>
-      Consulte a <a href="/privacidade">Política de Privacidade</a> para
+      Consulte a <a href={`${base}privacidade`}>Política de Privacidade</a> para
       detalhes.
     </p>
 

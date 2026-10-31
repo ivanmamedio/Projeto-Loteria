@@ -16,7 +16,9 @@
  *   - concursosTeimosinha: quantidade de concursos consecutivos para a teimosinha.
  */
 
-export type ModalidadeId = 'mega-sena' | 'lotofacil' | 'quina' | 'lotomania';
+import type { ModalidadeId } from './types';
+
+export type { ModalidadeId };
 
 export interface Premiacao {
   readonly aceitos: number;

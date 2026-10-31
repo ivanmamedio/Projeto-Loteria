@@ -53,11 +53,21 @@ export function quiQuadrado(
   const totalConcursos = registros.length;
   const dezenasPorSorteio = registros[0]?.length ?? 0;
 
+  // Determina se as dezenas são 0-based (ex.: Lotomania) ou 1-based.
+  let minObs = Number.POSITIVE_INFINITY;
+  for (const sorteio of registros) {
+    for (const d of sorteio) {
+      if (d < minObs) minObs = d;
+    }
+  }
+  const zeroBased = minObs === 0;
+  const offset = zeroBased ? 0 : 1;
+
   // Contar ocorrencias
   const contagens = new Array(universo).fill(0);
   for (const sorteio of registros) {
     for (const d of sorteio) {
-      if (d >= 0 && d < universo) contagens[d]++;
+      if (d >= offset && d < offset + universo) contagens[d - offset]++;
     }
   }
 
