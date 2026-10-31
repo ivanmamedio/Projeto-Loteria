@@ -402,6 +402,57 @@ img { max-width: 100%; height: auto; display: block; }
 /* Hero result */
 .hero-result { margin-top: var(--space-8); }
 
+/* Resultado do gerador avançado */
+.resultado-avancado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+}
+
+.resultado-avancado .game-card {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  color: var(--color-neutral-900);
+}
+
+.resultado-avancado .game-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 150px;
+}
+
+.resultado-avancado .game-title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.resultado-avancado .game-numbers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 200px;
+}
+
+.resultado-avancado .result-ball {
+  background: var(--color-neutral-900);
+  color: var(--color-white);
+}
+
+.resultado-avancado .game-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
 /* Hero stats */
 .hero-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-10); margin-top: var(--space-12); padding-top: var(--space-8); border-top: 1px solid rgba(255, 255, 255, 0.1); }
 .stat-item { text-align: center; }
@@ -506,18 +557,18 @@ img { max-width: 100%; height: auto; display: block; }
 /* --------------------------------------------------------------------------
    Footer
    -------------------------------------------------------------------------- */
-.footer { background: var(--color-bg-alt); color: var(--color-text); padding: var(--space-12) 0 var(--space-8); margin-top: auto; border-top: 1px solid var(--color-border); }
+.footer { background: var(--color-primary-pale); color: var(--color-neutral-900); padding: var(--space-12) 0 var(--space-8); margin-top: auto; border-top: 1px solid var(--color-border); }
 .footer .container { display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: var(--space-8); padding-top: var(--space-8); border-top: 1px solid var(--color-border); }
 .footer-brand { max-width: 320px; }
-.footer-logo { font-size: var(--text-xl); font-weight: 700; margin-bottom: var(--space-3); color: var(--color-text); }
-.footer-tagline { font-size: var(--text-base); color: var(--color-text-muted); line-height: var(--leading-relaxed); margin-bottom: var(--space-6); }
+.footer-logo { font-size: var(--text-xl); font-weight: 700; margin-bottom: var(--space-3); color: var(--color-primary); }
+.footer-tagline { font-size: var(--text-base); color: var(--color-neutral-600); line-height: var(--leading-relaxed); margin-bottom: var(--space-6); }
 .footer-links { display: flex; flex-direction: column; gap: var(--space-2); }
-.footer-links a { color: var(--color-text-muted); font-size: var(--text-sm); }
+.footer-links a { color: var(--color-neutral-600); font-size: var(--text-sm); }
 .footer-links a:hover { color: var(--color-primary); }
-.footer-heading { font-size: var(--text-sm); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-muted); margin-bottom: var(--space-4); }
-.footer-bottom { grid-column: 1 / -1; margin-top: var(--space-8); padding-top: var(--space-8); border-top: 1px solid var(--color-border); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-4); font-size: var(--text-sm); color: var(--color-text-muted); }
-.footer-bottom a { color: rgba(255, 255, 255, 0.5); }
-.footer-bottom a:hover { color: var(--color-accent); }
+.footer-heading { font-size: var(--text-sm); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-neutral-600); margin-bottom: var(--space-4); }
+.footer-bottom { grid-column: 1 / -1; margin-top: var(--space-8); padding-top: var(--space-8); border-top: 1px solid var(--color-border); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-4); font-size: var(--text-sm); color: var(--color-neutral-600); }
+.footer-bottom a { color: var(--color-neutral-600); }
+.footer-bottom a:hover { color: var(--color-primary); }
 
 /* --------------------------------------------------------------------------
    Alerts / Messages

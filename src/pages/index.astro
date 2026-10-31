@@ -208,6 +208,9 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
         </div>
       </div>
 
+      <!-- Resultado do gerador avançado (abaixo dos controles) -->
+      <div id="resultado-avancado" class="resultado-avancado" aria-live="polite" aria-label="Resultados gerados"></div>
+
       <div class="form-group" style="margin-top: var(--space-6);">
         <label class="form-label">Marcar dezenas manualmente (opcional)</label>
         <div class="grid-actions">
@@ -920,7 +923,8 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
 
     qInput.addEventListener('input', atualizarBotao);
 
-    btn.addEventListener('click', () => executarSorteio(Math.max(1, Math.min(10, Number(qInput.value) || 3)), out, false));
+    const outAvancado = document.getElementById('resultado-avancado') as HTMLElement;
+    btn.addEventListener('click', () => executarSorteio(Math.max(1, Math.min(10, Number(qInput.value) || 3)), outAvancado, false));
 
     // Hero: sortear 1 jogo e mostrar no hero-result
     btnSorteioHero?.addEventListener('click', () => {

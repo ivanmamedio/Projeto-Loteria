@@ -148,7 +148,7 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
       // Marca link ativo do menu
       const baseNoSlash = (import.meta.env.BASE_URL || '/').replace(/\/$/, '') || '/';
       const path = window.location.pathname.replace(/\/$/, '') || '/';
-      document.querySelectorAll('.nav-list a').forEach((a) => {
+      document.querySelectorAll('.header .nav-list a').forEach((a) => {
         const rawHref = a.getAttribute('href') || '';
         const hasHash = rawHref.includes('#');
         const hrefPath = rawHref.split('#')[0].replace(/\/$/, '') || '/';

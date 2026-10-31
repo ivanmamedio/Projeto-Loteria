@@ -7,32 +7,32 @@
      ============================================================ */
 
   /* Primária — Verde escuro elegante (AGR usa #2f7a12) */
-  --color-primary: #1f5e0d;
-  --color-primary-light: #2f7a12;
-  --color-primary-lighter: #4bc418;
-  --color-primary-pale: #e8ffe0;      /* Backgrounds sutis, badges */
+  --color-primary: #1b5e20;
+  --color-primary-light: #2e7d32;
+  --color-primary-lighter: #4caf50;
+  --color-primary-pale: #e8f5e9;      /* Backgrounds sutis, badges */
 
   /* Neutros — Escala cinza-verde quente */
-  --color-neutral-950: #0f140d;       /* Texto principal mais escuro */
-  --color-neutral-900: #152012;       /* Headlines (atual --cor-texto) */
-  --color-neutral-800: #1f2e1a;
-  --color-neutral-700: #2d3d26;       /* Subtítulos */
-  --color-neutral-600: #4b5a43;       /* Texto secundário/muted (atual --cor-texto-claro) */
-  --color-neutral-500: #6b7d63;
-  --color-neutral-400: #8a9a83;       /* Placeholders, ícones secundários */
-  --color-neutral-300: #d8e6d2;       /* Borders, divisors (atual --border) */
-  --color-neutral-200: #eef3ec;       /* Backgrounds de cards */
-  --color-neutral-100: #f7faf5;       /* Background principal (atual --cor-fundo) */
-  --color-neutral-50: #fafcf9;        /* Background seções alternadas */
+  --color-neutral-950: #0d1b0e;       /* Texto principal mais escuro */
+  --color-neutral-900: #142715;       /* Headlines (atual --cor-texto) */
+  --color-neutral-800: #1e371f;
+  --color-neutral-700: #2a4d2b;       /* Subtítulos */
+  --color-neutral-600: #3d6b3e;       /* Texto secundário/muted (atual --cor-texto-claro) */
+  --color-neutral-500: #5a8a5b;
+  --color-neutral-400: #7fa87f;       /* Placeholders, ícones secundários */
+  --color-neutral-300: #b9d7b9;       /* Borders, divisors (atual --border) */
+  --color-neutral-200: #dceddc;       /* Backgrounds de cards */
+  --color-neutral-100: #f1f8f1;       /* Background principal (atual --cor-fundo) */
+  --color-neutral-50: #f7fdf7;        /* Background seções alternadas */
   --color-white: #ffffff;
 
   /* Semânticas */
-  --color-success: #2f7a12;
-  --color-success-bg: #e8ffe0;
-  --color-success-border: #b7e8a3;
+  --color-success: #2e7d32;
+  --color-success-bg: #e8f5e9;
+  --color-success-border: #a5d6a7;
 
-  --color-warning: #e65100;
-  --color-warning-bg: #fff8e1;
+  --color-warning: #f9a825;
+  --color-warning-bg: #fff3e0;
   --color-warning-border: #ffe082;
 
   --color-error: #c62828;
