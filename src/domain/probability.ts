@@ -56,16 +56,17 @@ export function distribuicaHipergeometrica(N: bigint, K: bigint, n: bigint, k: b
   const total = combina(N, n);
   if (total === 0n) return 0;
 
-  let acumulado = 0;
+  let numeradorAcumulado = 0n;
   const inicio = Number(k);
   const fim = Number(maxAcertos);
 
   for (let i = inicio; i <= fim; i++) {
-    const termo = Number(combina(K, BigInt(i)) * combina(N - K, n - BigInt(i))) / Number(total);
-    acumulado += termo;
+    const termoNumerador = combina(K, BigInt(i)) * combina(N - K, n - BigInt(i));
+    numeradorAcumulado += termoNumerador;
   }
 
-  return acumulado;
+  // Divide apenas no final para preservar precisão
+  return Number(numeradorAcumulado) / Number(total);
 }
 
 // Cálculo de MDC (algoritmo de Euclides)

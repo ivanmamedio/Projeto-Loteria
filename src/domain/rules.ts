@@ -125,6 +125,24 @@ export function modalidadePorId(id: ModalidadeId): ModalidadeRegras {
   return regras;
 }
 
+/** Retorna o valor mínimo do universo de dezenas para uma modalidade. */
+export function minUniverso(id: ModalidadeId): number {
+  return id === 'lotomania' ? 0 : 1;
+}
+
+/** Retorna o valor máximo do universo de dezenas para uma modalidade. */
+export function maxUniverso(id: ModalidadeId): number {
+  const regras = modalidadePorId(id);
+  return regras.universo;
+}
+
+/** Retorna array com todas as dezenas possíveis do universo de uma modalidade. */
+export function dezenasDoUniverso(id: ModalidadeId): number[] {
+  const min = minUniverso(id);
+  const max = maxUniverso(id);
+  return Array.from({ length: max - min + 1 }, (_, i) => min + i);
+}
+
 // Spec-aligned rules table (reference implementation from tasks_loteria.md §5.6)
 export const RULES = {
   'mega-sena': {

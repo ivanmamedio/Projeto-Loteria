@@ -6,7 +6,12 @@ import Disclaimer from '../../components/Disclaimer.astro';
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { MODALIDADES, type ModalidadeId, modalidadePorId } from '../../domain/rules';
+import {
+  MODALIDADES,
+  type ModalidadeId,
+  dezenasDoUniverso,
+  modalidadePorId,
+} from '../../domain/rules';
 import Base from '../../layouts/Base.astro';
 
 import {
@@ -50,10 +55,7 @@ const chi = quiQuadrado(concursos, regras.universo);
 const varSoma = varianciaSomaDezenas(concursos, regras.universo);
 const paridade = distribuicaoPares(concursos);
 
-const dezenasUniverso = Array.from(
-  { length: regras.universo + (regras.id === 'lotomania' ? 1 : 0) },
-  (_, i) => (regras.id === 'lotomania' ? i : i + 1),
-);
+const dezenasUniverso = dezenasDoUniverso(regras.id);
 const topFreq = Object.entries(freq)
   .map(([d, n]) => ({ dezena: Number(d), n }))
   .sort((a, b) => b.n - a.n)

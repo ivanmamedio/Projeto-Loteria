@@ -17,14 +17,14 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
     <meta property="og:site_name" content="Jogo na Hora" />
     <meta property="og:title" content="Jogo na Hora — Gerador de combinações de loteria" />
     <meta property="og:description" content="Gere jogos da Mega-Sena, Lotofácil, Quina e Lotomania com 4 estratégias baseadas em dados reais. Histórico local, exportação CSV, sem cadastro." />
-    <meta property="og:image" content="/og-image.jpg" />
+    <meta property="og:image" content={`${base}og-image.svg`} />
     <meta property="og:url" content="https://ivanmamedio.github.io/Projeto-Loteria/" />
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Jogo na Hora — Gerador de combinações de loteria" />
     <meta name="twitter:description" content="Gere jogos com estratégias baseadas em dados reais da Caixa. Gratuito, transparente, sem tracking." />
-    <meta name="twitter:image" content="/og-image.jpg" />
+    <meta name="twitter:image" content={`${base}og-image.svg`} />
     
     <!-- Preconnect para fonts (system fonts não precisam, mas mantemos para og:image) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

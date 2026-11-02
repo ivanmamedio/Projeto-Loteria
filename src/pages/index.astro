@@ -470,7 +470,7 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
   <script>
     import { generateGames } from '../domain/generate';
     import { sampleNoReplace } from '../domain/sampling';
-    import { modalidadePorId, type ModalidadeId } from '../domain/rules';
+    import { modalidadePorId, dezenasDoUniverso, type ModalidadeId } from '../domain/rules';
     import { mulberry32, newSeed } from '../domain/rng';
     import { loadData } from '../ui/load-data';
     import { addHistory, clearHistory, loadHistory } from '../ui/history';
@@ -553,20 +553,13 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
       setModalidadeHero(selectMod.value);
     });
 
-    function dezenasUniverso(mod: string): number[] {
-      const m = modalidadePorId(mod as ModalidadeId);
-      const total = m.universo + (mod === 'lotomania' ? 1 : 0);
-      const min = mod === 'lotomania' ? 0 : 1;
-      return Array.from({ length: total }, (_, i) => min + i);
-    }
-
     function atualizarSelecaoInfo(): void {
       selecaoInfo.textContent = `${selecionadas.size} dezena(s) selecionada(s)`;
     }
 
     function renderizarGrade(): void {
       const mod = selectMod.value;
-      const dezenas = dezenasUniverso(mod);
+      const dezenas = dezenasDoUniverso(mod as ModalidadeId);
       grade.innerHTML = '';
       selecionadas.clear();
 
@@ -741,39 +734,80 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
     function criarGameCard(texto: string, modalidade: string, isHero: boolean = false): HTMLElement {
       const card = document.createElement('div');
       card.className = 'game-card' + (isHero ? ' hero-game-card' : '');
-      const numerosHtml = texto.split(' - ').map(n => `<span class="result-ball">${n}</span>`).join('');
-      card.innerHTML = `
-        <div class="game-header">
-          <span class="game-title">${modalidade.charAt(0).toUpperCase() + modalidade.slice(1)}</span>
-          <span class="game-badge">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            </svg>
-            Jogo gerado
-          </span>
-        </div>
-        <div class="game-numbers">${numerosHtml}</div>
-        <div class="game-actions">
-          <button type="button" class="btn btn-secondary btn-sm" data-action="copy">Copiar</button>
-          <button type="button" class="btn btn-secondary btn-sm" data-action="download">Baixar imagem</button>
-          <button type="button" class="btn btn-secondary btn-sm" data-action="share">WhatsApp</button>
-          <button type="button" class="btn btn-secondary btn-sm" data-action="txt">Arquivo .txt</button>
-        </div>
-      `;
+
+      const gameHeader = document.createElement('div');
+      gameHeader.className = 'game-header';
+
+      const gameTitle = document.createElement('span');
+      gameTitle.className = 'game-title';
+      gameTitle.textContent = modalidade.charAt(0).toUpperCase() + modalidade.slice(1);
+
+      const gameBadge = document.createElement('span');
+      gameBadge.className = 'game-badge';
+      const badgeSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      badgeSvg.setAttribute('width', '12');
+      badgeSvg.setAttribute('height', '12');
+      badgeSvg.setAttribute('viewBox', '0 0 24 24');
+      badgeSvg.setAttribute('fill', 'none');
+      badgeSvg.setAttribute('stroke', 'currentColor');
+      badgeSvg.setAttribute('stroke-width', '2');
+      badgeSvg.setAttribute('aria-hidden', 'true');
+      const badgePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      badgePath.setAttribute('d', 'M12 2L2 7l10 5 10-5-10-5z');
+      badgeSvg.appendChild(badgePath);
+      gameBadge.appendChild(badgeSvg);
+      gameBadge.appendChild(document.createTextNode(' Jogo gerado'));
+
+      gameHeader.appendChild(gameTitle);
+      gameHeader.appendChild(gameBadge);
+
+      const gameNumbers = document.createElement('div');
+      gameNumbers.className = 'game-numbers';
+      for (const n of texto.split(' - ')) {
+        const ball = document.createElement('span');
+        ball.className = 'result-ball';
+        ball.textContent = n;
+        gameNumbers.appendChild(ball);
+      }
+
+      const gameActions = document.createElement('div');
+      gameActions.className = 'game-actions';
+      const actions = [
+        { action: 'copy', label: 'Copiar' },
+        { action: 'download', label: 'Baixar imagem' },
+        { action: 'share', label: 'WhatsApp' },
+        { action: 'txt', label: 'Arquivo .txt' },
+      ];
+      for (const a of actions) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-secondary btn-sm';
+        btn.dataset.action = a.action;
+        btn.textContent = a.label;
+        gameActions.appendChild(btn);
+      }
+
+      card.appendChild(gameHeader);
+      card.appendChild(gameNumbers);
+      card.appendChild(gameActions);
       return card;
     }
 
     async function executarSorteio(quantidade: number, targetContainer: HTMLElement, isHero: boolean = false): Promise<void> {
       const modalidade = modalidadeAtual;
       const m = modalidadePorId(modalidade as ModalidadeId);
-      const dezenas = dezenasUniverso(modalidade);
+      const dezenas = dezenasDoUniverso(modalidade as ModalidadeId);
+
+      // RNG para seleção automática de dezenas
+      const rng = mulberry32(newSeed());
 
       let marcadas: number[] = Array.from(selecionadas);
       if (autoSelecionar.checked || marcadas.length < m.minDezenas) {
         const faltam = Math.max(m.minDezenas, m.dezenasSorteadas + 6) - marcadas.length;
         if (faltam > 0) {
           const pool = dezenas.filter((d) => !marcadas.includes(d));
-          const extras = sampleNoReplace(pool.length, Math.min(pool.length, faltam), mulberry32(newSeed()).next).map(
+          const rngFn = () => rng.next();
+          const extras = sampleNoReplace(pool.length, Math.min(pool.length, faltam), rngFn).map(
             (idx) => pool[idx] as number,
           );
           marcadas = marcadas.concat(extras);
@@ -899,7 +933,7 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
     });
 
     btnSelecionarTodos.addEventListener('click', () => {
-      dezenasUniverso(selectMod.value).forEach((d) => selecionadas.add(d));
+      dezenasDoUniverso(selectMod.value as ModalidadeId).forEach((d) => selecionadas.add(d));
       grade.querySelectorAll('.number-btn').forEach((el) => {
         el.classList.add('selected');
         el.setAttribute('aria-pressed', 'true');

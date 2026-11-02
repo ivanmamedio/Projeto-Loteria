@@ -160,10 +160,15 @@ export function generateGames(
   request: GameRequest,
   quantidade?: number,
   rngOrSeed: IRandom | number = mulberry32(newSeed()),
+  _fallbackDepth = 0,
 ): Game[] & {
   games: Game[];
   meta: { algorithmVersion: string; seed: number; janela: number; taxaAceitacao: number };
 } {
+  // Previne recursão infinita
+  if (_fallbackDepth > 2) {
+    throw new Error('Limite de fallbacks excedido.');
+  }
   const modalidade = modalidadePorId(request.modalidade);
 
   const dezenasValidas = request.dezenasMarcadas.filter(
@@ -316,7 +321,9 @@ export function generateGames(
   };
 
   const rngFn = () => rng.next();
-  const maxTentativas = Math.max(100, q * 100);
+  // Aumenta tentativas quando filtros estão ativos (taxa de aceitação baixa)
+  const baseTentativas = Math.max(100, q * 100);
+  const maxTentativas = filtrosAtivos || evitaCal ? baseTentativas * 20 : baseTentativas;
 
   const games: Game[] = [];
   const usados = new Set<string>();
@@ -345,11 +352,58 @@ export function generateGames(
         modalidade: request.modalidade,
       });
     }
+    // Fallback: se filtros muito restritivos impedem geração, relaxa filtros
+    if (games.length < q && (filtrosAtivos || evitaCal) && _fallbackDepth < 2) {
+      console.warn('[generate] Filtros muito restritivos, tentando sem E3/EvitaCal...');
+      const estrategiaOriginal = opcoes?.estrategia;
+      const estrategiaFiltrada = Array.isArray(estrategiaOriginal)
+        ? estrategiaOriginal.filter((e) => {
+            const s = String(e).toLowerCase();
+            return !s.includes('e3') && !s.includes('filtro') && !s.includes('equil');
+          })
+        : estrategiaOriginal;
+      return generateGames(
+        {
+          ...request,
+          opcoes: {
+            ...opcoes,
+            filtros: false,
+            evitaCalendario: false,
+            diversificar: false,
+            estrategia: estrategiaFiltrada,
+          },
+        },
+        quantidade,
+        rng,
+        _fallbackDepth + 1,
+      );
+    }
+    // Último recurso: gera sem nenhum filtro (E0) - sempre tenta, sem limite de profundidade
+    if (games.length < q) {
+      console.warn('[generate] Fallback final: gerando sem filtros (E0)...');
+      return generateGames(
+        {
+          ...request,
+          opcoes: {
+            ...opcoes,
+            estrategia: 'E0',
+            filtros: false,
+            diversificar: false,
+            evitaCalendario: false,
+          },
+        },
+        quantidade,
+        rng,
+        _fallbackDepth + 1,
+      );
+    }
   } else {
-    const totalCandidatos = Math.max(30, 20 * q);
+    // E4: modo diversificação — precisa de mais tentativas pois filtra candidatos
+    const maxTentativasE4 = Math.max(maxTentativas, 10000);
+    const totalCandidatos = Math.max(50, 30 * q);
     const candidatos: number[][] = [];
     const vistos = new Set<string>();
-    while (candidatos.length < totalCandidatos && tentativas < maxTentativas) {
+    while (candidatos.length < totalCandidatos && tentativas < maxTentativasE4) {
       const cand = sampleWeighted(dezenasValidas, weights, tamanho, rngFn);
       tentativas++;
       if (!passaFiltros(cand)) continue;
@@ -359,8 +413,31 @@ export function generateGames(
       candidatos.push(cand);
       aceitos++;
     }
+    // Fallback: se não conseguiu gerar candidatos com E4, tenta sem E4 (apenas E1+E3)
     if (candidatos.length === 0) {
-      throw new Error('Não foi possível gerar jogos distintos.');
+      if (_fallbackDepth >= 2) {
+        throw new Error('Não foi possível gerar jogos mesmo com fallbacks.');
+      }
+      console.warn('[generate] E4 falhou, tentando sem diversificação...');
+      const estrategiaOriginal = opcoes?.estrategia;
+      const estrategiaFiltrada = Array.isArray(estrategiaOriginal)
+        ? estrategiaOriginal.filter((e) => String(e).toLowerCase() !== 'e4')
+        : estrategiaOriginal;
+      return generateGames(
+        {
+          ...request,
+          opcoes: {
+            ...opcoes,
+            diversificar: false,
+            filtros: false,
+            evitaCalendario: false,
+            estrategia: estrategiaFiltrada,
+          },
+        },
+        quantidade,
+        rng,
+        _fallbackDepth + 1,
+      );
     }
     const selecionados: number[][] = [candidatos[0] as number[]];
     const restantes = candidatos.slice(1);
@@ -389,6 +466,13 @@ export function generateGames(
       }
       const escolhido = restantes.splice(melhorIdx, 1)[0] as number[];
       selecionados.push(escolhido);
+    }
+    // Fallback final: se não conseguiu diversificar o suficiente, usa os primeiros
+    if (selecionados.length < q && _fallbackDepth < 2) {
+      console.warn('[generate] E4: não diversificou o suficiente, completando com primeiros...');
+      while (selecionados.length < q && restantes.length > 0) {
+        selecionados.push(restantes.shift() as number[]);
+      }
     }
     for (const dezenas of selecionados) {
       const chave = dezenas.join(',');
