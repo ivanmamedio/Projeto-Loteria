@@ -53,54 +53,105 @@ O AGR Studio demonstra padrões de design de **alto nível para B2B** que podem 
 
 ```css
 :root {
-  /* Primária - Verde AGR inspirado, mais sofisticado */
-  --color-primary: #1f5e0d;           /* Verde escuro principal (AGR usa #2f7a12) */
-  --color-primary-light: #2f7a12;     /* Hover/active */
-  --color-primary-lighter: #4bc418;   /* Botões, accents */
-  --color-primary-pale: #e8ffe0;      /* Backgrounds sutis, badges */
-  
-  /* Neutros - Escala cinza quente estilo AGR */
-  --color-neutral-950: #0f140d;       /* Texto principal */
-  --color-neutral-900: #152012;       /* Headlines */
-  --color-neutral-700: #2d3d26;       /* Subtítulos */
-  --color-neutral-600: #4b5a43;       /* Texto secundário (muted) */
-  --color-neutral-400: #8a9a83;       /* Placeholders, borders sutis */
-  --color-neutral-300: #d8e6d2;       /* Borders, divisors */
-  --color-neutral-200: #eef3ec;       /* Backgrounds de cards */
-  --color-neutral-100: #f7faf5;       /* Background principal */
-  --color-neutral-50: #fafcf9;        /* Background seções alternadas */
-  --color-white: #ffffff;
-  
+  /* Primária — Verde vibrante, usado como acento (10%) */
+  --color-primary: #2f7a3d;
+  --color-primary-hover: #245a2e;
+  --color-primary-light: #3f8f4d;
+  --color-primary-lighter: #4caf50;
+  --color-primary-pale: #eaf3e6;      /* Fundos sutis, badges, hero */
+
+  /* Neutros — Escala verde-quente clara (60/30%) */
+  --color-neutral-950: #1e2b1e;       /* Texto principal mais escuro */
+  --color-neutral-900: #243224;       /* Headlines */
+  --color-neutral-800: #2f3f2f;
+  --color-neutral-700: #3e523e;       /* Subtítulos */
+  --color-neutral-600: #5a6b5a;       /* Texto secundário/muted */
+  --color-neutral-500: #7a8f7a;
+  --color-neutral-400: #9fb39f;       /* Placeholders, ícones secundários */
+  --color-neutral-300: #d3ddd0;       /* Borders, divisors */
+  --color-neutral-200: #e3ebe0;       /* Backgrounds de cards */
+  --color-neutral-100: #f6f8f4;       /* Background principal */
+  --color-neutral-50: #fbfcfa;        /* Background seções alternadas */
+  --color-border-focus: var(--color-primary-light); /* Focus ring color */
+
   /* Semânticas */
-  --color-success: #2f7a12;
-  --color-warning: #e65100;
-  --color-warning-bg: #fff8e1;
+  --color-success: #2e7d32;
+  --color-success-bg: #e8f5e9;
+  --color-success-border: #a5d6a7;
+
+  --color-warning: #f2a900;
+  --color-warning-bg: #fde68a;
   --color-warning-border: #ffe082;
+
   --color-error: #c62828;
   --color-error-bg: #fdeaea;
-  --color-info: #1565c0;
+  --color-error-border: #ef9a9a;
+
+  --color-info: #3a7ca5;
   --color-info-bg: #e3f2fd;
-  
+  --color-info-border: #90caf9;
+
+  /* Acento complementar (CTAs de alto contraste) */
+  --color-accent: #e67e22;
+  --color-accent-hover: #d36e1a;
+
   /* WhatsApp */
   --color-whatsapp: #25d366;
   --color-whatsapp-hover: #1ebe5d;
-  
-  /* Lotomania (azul diferenciado) */
-  --color-lotomania: #1e88e5;
-  --color-lotomania-bg: #e3f2fd;
+
+  /* Modalidades — Cores decorativas */
+  --color-mega-sena: #1f5e0d;
+  --color-mega-sena-bg: #e8ffe0;
+  --color-lotofacil: #e65100;
+  --color-lotofacil-bg: #fef3c7;
+  --color-quina: #1565c0;
+  --color-quina-bg: #e3f2fd;
+  --color-lotomania: #6a1b9a;
+  --color-lotomania-bg: #f3e5f5;
 }
 
-/* Dark mode (opcional, futuro) */
+/* Dark mode (prefers-color-scheme: dark) */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-neutral-950: #f7faf5;
-    --color-neutral-900: #eef3ec;
-    --color-neutral-100: #152012;
-    --color-neutral-50: #0f140d;
-    --color-primary-pale: #1a3d12;
+    --color-neutral-950: #e8f0e5;
+    --color-neutral-900: #dce8d9;
+    --color-neutral-800: #c8d8c4;
+    --color-neutral-700: #b0c4ac;
+    --color-neutral-600: #8fa88a;
+    --color-neutral-500: #6e8a69;
+    --color-neutral-400: #50694d;
+    --color-neutral-300: #354a33;
+    --color-neutral-200: #243224;
+    --color-neutral-100: #162016;
+    --color-neutral-50: #0f160f;
+    --color-primary-pale: #1a3d1a;
+    --color-success-bg: #1a3d1a;
+    --color-warning-bg: #3d2e00;
+    --color-error-bg: #3d1a1a;
+    --color-info-bg: #1a2d3d;
+    --color-accent: #ff9f43;
+    --color-accent-hover: #ff8c1a;
+  }
+}
+
+/* High contrast mode (prefers-contrast: high) */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border: #000000;
+    --color-border-focus: #000000;
+    --color-text-muted: #000000;
+    --color-primary-pale: #ffffff;
+    --color-success-light: #ffffff;
+    --color-warning-light: #ffffff;
+    --color-error-light: #ffffff;
+    --color-info-bg: #ffffff;
+    --shadow-md: none;
+    --shadow-lg: none;
   }
 }
 ```
+
+
 
 ### Espaçamento (Escala 4px base)
 
