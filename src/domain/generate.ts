@@ -10,7 +10,9 @@ import { atrasoAcumulado, frequenciaDezenas, ultimosN } from './stats';
 import type { Game, GameRequest } from './types';
 import type { ModalidadeId } from './types';
 import { ALGORITHM_VERSION } from './version';
+import { patternWeights, patternFilter } from './patterns';
 import { atrasoWeights, frequencyWeights } from './weights';
+import { getCacheStats, clearCombinatoricsCache } from './combinatorics';
 
 export type { Game, GameRequest };
 
@@ -299,6 +301,18 @@ export function generateGames(
     weights = dezenasValidas.map(() => 1);
   }
 
+  // Análise de padrões (teorias_analise_padroes.md) aplicada no back:
+  // influencia os pesos de forma transparente quando há histórico disponível.
+  if (windowed.length > 0) {
+    const pw = patternWeights({
+      historico: windowed,
+      universo: modalidade.universo,
+      dezenasValidas,
+      k: tamanho,
+    });
+    weights = weights.map((x, i) => x * (pw[i] ?? 1));
+  }
+
   const filtrosAtivos = usarE3;
   const passaFiltros = (dezenas: number[]): boolean => {
     if (!filtrosAtivos) return true;
@@ -317,6 +331,8 @@ export function generateGames(
       if (c > maxPorFaixa) return false;
     }
     if (evitaCal && !evitaPadraoCalendario(dezenas)) return false;
+    // Filtros de padrões (gaps/entropia) aplicados no back quando filtros ativos
+    if (filtrosAtivos && !patternFilter(dezenas, modalidade.universo, windowed)) return false;
     return true;
   };
 
@@ -492,9 +508,25 @@ export function generateGames(
     throw new Error('Não foi possível gerar jogos distintos.');
   }
 
+  const cacheStats = getCacheStats();
+
   const result = games as Game[] & {
     games: Game[];
-    meta: { algorithmVersion: string; seed: number; janela: number; taxaAceitacao: number };
+    meta: {
+      algorithmVersion: string;
+      seed: number;
+      janela: number;
+      taxaAceitacao: number;
+      estrategiasAtivas: string[];
+      tamanhoAposta: number;
+      dezenasMarcadas: number;
+      universo: number;
+      tentativas: number;
+      jogosGerados: number;
+      cacheHits: number;
+      cacheSize: number;
+      fallbackDepth: number;
+    };
   };
   result.games = games;
   result.meta = {
@@ -502,6 +534,21 @@ export function generateGames(
     seed,
     janela: janelaUsada,
     taxaAceitacao: tentativas > 0 ? aceitos / tentativas : 1,
+    estrategiasAtivas: [
+      usarE0 && 'E0 (uniforme)',
+      usarE1 && 'E1 (frequência)',
+      usarE2 && 'E2 (atraso)',
+      usarE3 && 'E3 (filtros)',
+      usarE4 && 'E4 (diversificação)',
+    ].filter(Boolean) as string[],
+    tamanhoAposta: tamanho,
+    dezenasMarcadas: dezenasValidas.length,
+    universo: modalidade.universo,
+    tentativas,
+    jogosGerados: games.length,
+    cacheHits: cacheStats.comb + cacheStats.factorial,
+    cacheSize: cacheStats.comb + cacheStats.factorial,
+    fallbackDepth: _fallbackDepth,
   };
   return result;
 }

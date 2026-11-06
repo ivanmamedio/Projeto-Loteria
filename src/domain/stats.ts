@@ -45,6 +45,100 @@ export function valorZ(observado: number, esperado: number, desvioPadrao: number
   return (observado - esperado) / desvioPadrao;
 }
 
+/**
+ * Log-gamma (aproximação de Lanczos, precisão ~1e-15)
+ * Usado para p-valor exato do qui-quadrado via incomplete gamma
+ */
+function logGamma(z: number): number {
+  if (z <= 0) return NaN;
+  // Coeficientes de Lanczos g=7
+  const p = [
+    0.99999999999980993,
+    676.5203681218851,
+    -1259.1392167224028,
+    771.32342877765313,
+    -176.61502916214059,
+    12.507343278686905,
+    -0.13857109526572012,
+    9.9843695780195716e-6,
+    1.5056327351493116e-7,
+  ];
+  if (z < 0.5) {
+    return Math.log(Math.PI / Math.sin(Math.PI * z)) - logGamma(1 - z);
+  }
+  z -= 1;
+  let x = p[0];
+  for (let i = 1; i < p.length; i++) x += p[i] / (z + i);
+  const t = z + 7.5;
+  return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+}
+
+/**
+ * Incomplete gamma lower: γ(s, x) = ∫₀ˣ tˢ⁻¹ e⁻ᵗ dt
+ * Série convergente para x < s+1, continuação para x ≥ s+1
+ */
+function lowerGamma(s: number, x: number): number {
+  if (x <= 0) return 0;
+  if (s <= 0) return 1;
+
+  // Série para x < s+1
+  if (x < s + 1) {
+    let sum = 0;
+    let term = 1;
+    for (let k = 0; k < 200; k++) {
+      term *= x / (s + k);
+      sum += term;
+      if (Math.abs(term) < 1e-15) break;
+    }
+    return sum * Math.exp(-x + s * Math.log(x) - logGamma(s));
+  }
+
+  // Continuação fracionária para x ≥ s+1 (Lentz's method)
+  // Γ(s, x) = Γ(s) - γ(s, x), então γ(s, x) = Γ(s) - Γ(s, x)
+  const gammaS = Math.exp(logGamma(s));
+  let a0 = 1;
+  let a1 = x;
+  let b0 = 0;
+  let b1 = 1;
+  let c = 1;
+
+  for (let n = 1; n < 200; n++) {
+    const an = n;
+    const bn = x + n - s;
+    const aNext = bn * a1 + an * a0;
+    const bNext = bn * b1 + an * b0;
+
+    if (bNext !== 0) {
+      const cNext = aNext / bNext;
+      if (Math.abs(cNext - c) / Math.abs(cNext) < 1e-14) {
+        c = cNext;
+        break;
+      }
+      c = cNext;
+    }
+    a0 = a1;
+    a1 = aNext;
+    b0 = b1;
+    b1 = bNext;
+  }
+
+  const upperGamma = Math.exp(-x + s * Math.log(x)) * c;
+  return gammaS - upperGamma;
+}
+
+/**
+ * p-valor exato do qui-quadrado: P(χ² > x) = 1 - γ(k/2, x/2) / Γ(k/2)
+ * Substitui Wilson-Hilferty (aproximação) por cálculo exato via incomplete gamma
+ */
+export function pValorChiQuadradoExato(chi2: number, graus: number): number {
+  if (chi2 <= 0) return 1;
+  if (graus <= 0) return 0;
+  const s = graus / 2;
+  const x = chi2 / 2;
+  const cdf = lowerGamma(s, x) / Math.exp(logGamma(s));
+  return Math.max(0, Math.min(1, 1 - cdf));
+}
+
 // F7: Qui-quadrado ajustado (chi2) de uniformidade das dezenas
 export function quiQuadrado(
   registros: number[][],
@@ -88,7 +182,8 @@ export function quiQuadrado(
   const chi2 = chi2Bruto * fator;
 
   const graus = universo - 1;
-  const pValor = pValorWilsonHilferty(chi2, graus);
+  // USA p-VALOR EXATO (incomplete gamma) em vez de Wilson-Hilferty
+  const pValor = pValorChiQuadradoExato(chi2, graus);
 
   return { chi2, graus, pValor };
 }
@@ -110,6 +205,7 @@ export function varianciaSomaDezenas(registros: number[][], _universo: number): 
   return variancia;
 }
 
+// Mantido para compatibilidade (Wilson-Hilferty - legado)
 function pValorWilsonHilferty(chi2: number, graus: number): number {
   if (graus <= 0) return 1;
   const w = (Math.cbrt(chi2 / graus) - (1 - 2 / (9 * graus))) / Math.sqrt(2 / (9 * graus));
@@ -127,6 +223,7 @@ function normalCdf(x: number): number {
       Math.exp(-ax * ax);
   return 0.5 * (1 + sign * erf);
 }
+
 // Helpers de janela e distribuicoes (T3.7)
 export function ultimosN<T>(registros: T[], n: number): T[] {
   if (n <= 0) return [];

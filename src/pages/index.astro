@@ -731,7 +731,7 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
       return await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95));
     }
 
-    function criarGameCard(texto: string, modalidade: string, isHero: boolean = false): HTMLElement {
+    function criarGameCard(texto: string, modalidade: string, isHero: boolean = false, indice?: number): HTMLElement {
       const card = document.createElement('div');
       card.className = 'game-card' + (isHero ? ' hero-game-card' : '');
 
@@ -740,7 +740,8 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
 
       const gameTitle = document.createElement('span');
       gameTitle.className = 'game-title';
-      gameTitle.textContent = modalidade.charAt(0).toUpperCase() + modalidade.slice(1);
+      const numLabel = indice !== undefined ? ` ${String(indice).padStart(2, '0')}` : '';
+      gameTitle.textContent = `${modalidade.charAt(0).toUpperCase() + modalidade.slice(1)}${numLabel}`;
 
       const gameBadge = document.createElement('span');
       gameBadge.className = 'game-badge';
@@ -849,9 +850,10 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
         targetContainer.innerHTML = '';
         ultimosJogos = lista.map((g: GameResult) => g.dezenas);
 
-        for (const g of lista) {
+        for (let gi = 0; gi < lista.length; gi++) {
+           const g = lista[gi] as GameResult;
           const texto = g.dezenas.map((d: number) => pad2(d)).join(' - ');
-          const card = criarGameCard(texto, modalidade, isHero);
+          const card = criarGameCard(texto, modalidade, isHero, gi + 1);
           targetContainer.appendChild(card);
 
           // Bind actions

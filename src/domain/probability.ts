@@ -6,7 +6,18 @@
  * grandes, como C(100, 20) em Lotomania).
  */
 
-// F1: n! (fatorial)
+import {
+  combCached,
+  combBigInt,
+  gcd,
+  fractionToDecimal,
+  probabilidadeAcertoExact,
+  hipergeometricaAcumuladaExact,
+  hipergeometricaPmfExact,
+  ProbabilityExact,
+} from './combinatorics';
+
+// F1: n! (fatorial) - mantido para compatibilidade
 export function fatorial(n: bigint): bigint {
   if (n < 0n) return 0n;
   if (n === 0n) return 1n;
@@ -19,30 +30,19 @@ export function fatorial(n: bigint): bigint {
 
 // F1: C(n, k) — coeficiente binomial (n! / (k! * (n - k)!))
 export function combina(n: bigint, k: bigint): bigint {
-  if (k < 0n || k > n) return 0n;
-  if (k === 0n || k === n) return 1n;
-
-  // Otimização: C(n, k) = C(n, n - k) — escolhe o menor fatorial
-  const kMin = k < n - k ? k : n - k;
-
-  let numerador = 1n;
-  let denominador = 1n;
-  for (let i = 0n; i < kMin; i++) {
-    numerador *= n - i;
-    denominador *= i + 1n;
-    // Simplificar a fração a cada passo para manter os números menores
-    const mcd = gcd(numerador, denominador);
-    numerador /= mcd;
-    denominador /= mcd;
-  }
-  return numerador / denominador;
+  return combBigInt(n, k);
 }
 
-// F2: Probabilidade de acerto exato (1 / C(n, k))
+// F2: Probabilidade de acerto exato (1 / C(n, k)) - versão number para compatibilidade
 export function probabilidadeAcerto(exatos: bigint, total: bigint): number {
   const combinacoes = combina(total, exatos);
   if (combinacoes === 0n) return 0;
   return 1 / Number(combinacoes);
+}
+
+// Nova: versão exata com alta precisão
+export function probabilidadeAcertoHighPrecision(exatos: number, total: number): ProbabilityExact {
+  return probabilidadeAcertoExact(exatos, total);
 }
 
 // F3: Probabilidade de pelo menos k acertos em n tentativas (aproximação)
@@ -69,27 +69,34 @@ export function distribuicaHipergeometrica(N: bigint, K: bigint, n: bigint, k: b
   return Number(numeradorAcumulado) / Number(total);
 }
 
-// Cálculo de MDC (algoritmo de Euclides)
-function gcd(a: bigint, b: bigint): bigint {
-  let x = a;
-  let y = b;
-  while (y !== 0n) {
-    const t = y;
-    y = x % y;
-    x = t;
-  }
-  return x;
+// Nova: versão exata com alta precisão
+export function distribuicaHipergeometricaHighPrecision(
+  N: number, K: number, n: number, k: number
+): ProbabilityExact {
+  return hipergeometricaAcumuladaExact(N, K, n, k);
 }
+
+// Nova: PMF hipergeométrica exata P(X = k)
+export function hipergeometricaPmfHighPrecision(
+  N: number, K: number, n: number, k: number
+): ProbabilityExact {
+  return hipergeometricaPmfExact(N, K, n, k);
+}
+
+// Cálculo de MDC (algoritmo de Euclides) - exportado para compatibilidade
+export function gcdBigInt(a: bigint, b: bigint): bigint {
+  return gcd(a, b);
+}
+
 // Spec-aligned helpers (reference implementation from tasks_loteria.md §5.6)
 export function comb(n: number, k: number): bigint {
-  if (k < 0 || k > n) return 0n;
-  const kk = Math.min(k, n - k);
-  let r = 1n;
-  for (let i = 1; i <= kk; i++) r = (r * BigInt(n - kk + i)) / BigInt(i);
-  return r;
+  return combCached(n, k);
 }
 
 export function oneIn(M: number, d: number, n: number, h: number): bigint {
   const ways = comb(n, h) * comb(M - n, d - h);
   return ways === 0n ? 0n : comb(M, d) / ways;
 }
+
+// Exporta tipos para consumidores
+export type { ProbabilityExact };

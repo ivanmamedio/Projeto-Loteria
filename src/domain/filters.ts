@@ -2,6 +2,8 @@
  * F11 — Filtros de equilíbrio de combinações.
  */
 
+import { combCached, gcdNumber } from './combinatorics';
+
 export interface FiltroResultado {
   dezenas: number[];
   soma: number;
@@ -9,14 +11,6 @@ export interface FiltroResultado {
   pares: number;
   impares: number;
   atraso: number;
-}
-
-function combBigInt(n: number, k: number): bigint {
-  if (k < 0 || k > n) return 0n;
-  const kk = Math.min(k, n - k);
-  let r = 1n;
-  for (let i = 1; i <= kk; i++) r = (r * BigInt(n - kk + i)) / BigInt(i);
-  return r;
 }
 
 function minUniverso(N: number): number {
@@ -31,15 +25,41 @@ function evensCount(N: number): number {
   return Math.floor(N / 2);
 }
 
-function hypergeometricCdf(M: number, K: number, n: number, h: number): number {
-  const total = combBigInt(M, n);
-  if (total === 0n) return 0;
+/**
+ * CDF Hipergeométrica exata usando BigInt (sem perda de precisão).
+ * Retorna fração simplificada + valor decimal para compatibilidade.
+ */
+function hypergeometricCdfExact(M: number, K: number, n: number, h: number): 
+  { numerador: bigint; denominador: bigint; valor: number } {
+  const total = combCached(M, n);
+  if (total === 0n) return { numerador: 0n, denominador: 1n, valor: 0 };
+  
   let cum = 0n;
   const hi = Math.min(h, Math.min(K, n));
   for (let i = 0; i <= hi; i++) {
-    cum += combBigInt(K, i) * combBigInt(M - K, n - i);
+    cum += combCached(K, i) * combCached(M - K, n - i);
   }
-  return Number(cum) / Number(total);
+  
+  const g = gcdNumber(Number(cum > 0n ? cum : 1n), Number(total));
+  // Para BigInt, usar gcd BigInt
+  const gBig = gcdBigInt(cum, total);
+  return {
+    numerador: cum / gBig,
+    denominador: total / gBig,
+    valor: Number(cum) / Number(total)
+  };
+}
+
+/** MDC para BigInt (copiado localmente para evitar dependência circular) */
+function gcdBigInt(a: bigint, b: bigint): bigint {
+  let x = a;
+  let y = b;
+  while (y !== 0n) {
+    const t = y;
+    y = x % y;
+    x = t;
+  }
+  return x;
 }
 
 export function filtrosEquilibrio(N: number, k: number) {
@@ -47,16 +67,22 @@ export function filtrosEquilibrio(N: number, k: number) {
   const K = evensCount(N);
   const n = k;
 
+  // Encontrar paresMin: menor h tal que P(X <= h) > 0.1
   let paresMin = 0;
   for (let h = 0; h <= n; h++) {
-    if (hypergeometricCdf(M, K, n, h) > 0.1) {
+    const cdf = hypergeometricCdfExact(M, K, n, h);
+    if (cdf.valor > 0.1) {
       paresMin = h;
       break;
     }
   }
+
+  // Encontrar paresMax: maior h tal que P(X >= h) > 0.1
+  // P(X >= h) = 1 - P(X <= h-1)
   let paresMax = n;
   for (let h = n; h >= 0; h--) {
-    const surv = 1 - hypergeometricCdf(M, K, n, h - 1);
+    const cdf = h === 0 ? { valor: 1 } : hypergeometricCdfExact(M, K, n, h - 1);
+    const surv = 1 - cdf.valor;
     if (surv > 0.1) {
       paresMax = h;
       break;
@@ -69,7 +95,7 @@ export function filtrosEquilibrio(N: number, k: number) {
   const sigmaU2 = (N * N - 1) / 12;
   const variancia = (k * sigmaU2 * (N - k)) / (N - 1 || 1);
   const sigma = Math.sqrt(variancia);
-  const z = 1.2816;
+  const z = 1.2816; // 80% intervalo bilateral
   const somaMin = Math.floor(mediaTeorica - z * sigma);
   const somaMax = Math.ceil(mediaTeorica + z * sigma);
 
