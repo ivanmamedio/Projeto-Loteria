@@ -207,10 +207,11 @@ img { max-width: 100%; height: auto; display: block; }
   .nav-toggle-label {
     display: flex; align-items: center; justify-content: center;
     width: 44px; height: 44px; cursor: pointer; border-radius: var(--radius-md);
+    color: var(--color-text);
   }
   .nav-toggle-label:hover { background: var(--color-primary-light); }
   .nav-toggle-label:focus-visible { outline: 2px solid var(--color-border-focus); outline-offset: 2px; border-radius: var(--radius-md); }
-  .nav-toggle-label svg { width: 24px; height: 24px; color: var(--color-text); }
+  .nav-toggle-label svg { width: 24px; height: 24px; stroke: currentColor; }
 
   .nav-list {
     position: absolute; top: var(--header-height); left: 0; right: 0;
@@ -219,7 +220,7 @@ img { max-width: 100%; height: auto; display: block; }
     padding: var(--space-4); gap: var(--space-1);
     display: none;
   }
-  .nav-toggle:checked ~ .nav-list { display: flex; }
+  .nav-toggle:checked ~ .nav .nav-list { display: flex; }
   .nav-list a { padding: var(--space-3) var(--space-4); text-align: left; }
 }
 
