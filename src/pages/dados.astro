@@ -4,6 +4,71 @@ import Disclaimer from '../components/Disclaimer.astro';
 // Referência: tasks_loteria.md — T0.1, T0.2
 
 import Base from '../layouts/Base.astro';
+
+// Carregar dados dos JSONs no build time
+const MODALIDADES = ['mega-sena', 'lotofacil', 'quina', 'lotomania'] as const;
+
+interface Concurso {
+  concurso: number;
+  data: string;
+  dezenas: number[];
+  acumulado: boolean;
+}
+
+interface DadosModalidade {
+  modalidade: string;
+  concursos: Concurso[];
+  source: string;
+  updatedAt: string;
+}
+
+async function carregarDados() {
+  const basePath = '/home/carlos/Documentos/Projeto Loteria/public/data';
+  const dados = {} as Record<string, DadosModalidade>;
+  
+  for (const mod of MODALIDADES) {
+    try {
+      const fs = await import('node:fs/promises');
+      const path = await import('node:path');
+      const jsonPath = path.join(basePath, `${mod}.json`);
+      const content = await fs.readFile(jsonPath, 'utf8');
+      dados[mod] = JSON.parse(content);
+    } catch {
+      dados[mod] = { modalidade: mod, concursos: [], source: '', updatedAt: '' };
+    }
+  }
+  return dados;
+}
+
+const dados = await carregarDados();
+
+function formatarDataBR(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  if (!y || !m || !d) return iso;
+  return `${d.toString().padStart(2, '0')}/${m.toString().padStart(2, '0')}/${y}`;
+}
+
+function getNomeModalidade(mod: string): string {
+  const nomes: Record<string, string> = {
+    'mega-sena': 'Mega-Sena',
+    'lotofacil': 'Lotofácil',
+    'quina': 'Quina',
+    'lotomania': 'Lotomania',
+  };
+  return nomes[mod] ?? mod;
+}
+
+function getAnoInicio(concursos: Concurso[]): number {
+  if (!concursos.length) return 0;
+  const datas = concursos.map(c => c.data).sort();
+  return new Date(datas[0]).getFullYear();
+}
+
+function getUltimaData(concursos: Concurso[]): string {
+  if (!concursos.length) return '';
+  const datas = concursos.map(c => c.data).sort();
+  return datas[datas.length - 1];
+}
 ---
 
 <Base>
@@ -19,22 +84,21 @@ import Base from '../layouts/Base.astro';
 
   <section class="container">
     <div class="data-cards">
-      <div class="data-card">
-        <h3>Mega-Sena</h3>
-        <p>3.073 concursos · de 1996 a 2026-10-22</p>
-      </div>
-      <div class="data-card">
-        <h3>Lotofácil</h3>
-        <p>3.811 concursos · de 2003 a 2026-10-22</p>
-      </div>
-      <div class="data-card">
-        <h3>Quina</h3>
-        <p>7.149 concursos · de 1994 a 2026-10-22</p>
-      </div>
-      <div class="data-card">
-        <h3>Lotomania</h3>
-        <p>2.990 concursos · de 1999 a 2026-10-21</p>
-      </div>
+      {MODALIDADES.map((mod) => {
+        const d = dados[mod];
+        const total = d.concursos.length;
+        const inicio = getAnoInicio(d.concursos);
+        const ultima = getUltimaData(d.concursos);
+        return (
+          <div class="data-card">
+            <h3>{getNomeModalidade(mod)}</h3>
+            <p>
+              {total.toLocaleString('pt-BR')} concursos · de {inicio} a {formatarDataBR(ultima)}
+            </p>
+            <p class="text-sm text-muted">Atualizado em {formatarDataBR(d.updatedAt.split('T')[0])}</p>
+          </div>
+        );
+      })}
     </div>
 
     <div class="data-notes">
@@ -47,6 +111,12 @@ import Base from '../layouts/Base.astro';
       <p>
         <strong>Atualização manual:</strong> baixar CSV →
         <code>npm run data:import</code> → revisar diff → commit.
+      </p>
+      <p class="text-sm text-muted">
+        Última importação: {(() => {
+          const latest = Math.max(...MODALIDADES.map(m => new Date(dados[m]?.updatedAt || 0).getTime()));
+          return formatarDataBR(new Date(latest).toISOString().split('T')[0]);
+        })()}
       </p>
     </div>
   </section>

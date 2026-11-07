@@ -1,0 +1,162 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base>
+  <section class="page-header">
+    <div class="container">
+      <h1>Validação Estatística</h1>
+      <p>
+        Testes de aleatoriedade e calibração aplicados ao histórico oficial da CAIXA.
+        <strong>Veredito honesto:</strong> detecta ilusões, não padrões.
+      </p>
+    </div>
+  </section>
+
+  <section class="container">
+    <div class="controls-panel">
+      <h3 class="controls-panel-title">Executar Validação</h3>
+      <div class="controls-grid">
+        <div class="form-group">
+          <label for="modalidade-val" class="form-label">Modalidade</label>
+          <select id="modalidade-val" class="form-select">
+            <option value="mega-sena">Mega-Sena</option>
+            <option value="lotofacil">Lotofácil</option>
+            <option value="quina">Quina</option>
+            <option value="lotomania">Lotomania</option>
+          </select>
+        </div>
+      </div>
+      <div class="controls-actions">
+        <button id="btn-validar" type="button" class="btn btn-primary btn-lg" style="flex: 1;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          Executar Validação Completa
+        </button>
+      </div>
+    </div>
+
+    <div id="validacao-loading" class="text-center" style="display: none; padding: var(--space-8);">
+      <div class="spinner" style="width: 40px; height: 40px; border: 3px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+      <p class="text-muted" style="margin-top: var(--space-4);">Executando testes estatísticos... Isso pode levar alguns segundos.</p>
+    </div>
+
+    <div id="validacao-erro" class="alert alert-error" style="display: none;"></div>
+
+    <div id="validacao-resultado" style="display: none;">
+      <div class="card-padded" style="margin-bottom: var(--space-6);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-4);">
+          <h2 id="validacao-modalidade" style="margin: 0;"></h2>
+          <span id="validacao-veredito" class="btn btn-secondary btn-sm" style="font-size: var(--text-base);"></span>
+        </div>
+        <p id="validacao-resumo" class="text-sm" style="white-space: pre-wrap; font-family: var(--font-mono); background: var(--color-bg); padding: var(--space-4); border-radius: var(--radius-md);"></p>
+      </div>
+
+      <div class="grid grid-3" id="validacao-cards" style="margin-bottom: var(--space-8);"></div>
+
+      <details id="validacao-detalhes" class="card-padded">
+        <summary style="cursor: pointer; font-weight: 600;">Ver detalhes técnicos (JSON)</summary>
+        <pre id="validacao-json" style="margin-top: var(--space-4); padding: var(--space-4); background: var(--color-bg); border-radius: var(--radius-md); overflow-x: auto; font-size: var(--text-xs);"></pre>
+      </details>
+    </div>
+  </section>
+
+  <style>
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  </style>
+
+  <script>
+    const btn = document.getElementById('btn-validar') as HTMLButtonElement;
+    const select = document.getElementById('modalidade-val') as HTMLSelectElement;
+    const loading = document.getElementById('validacao-loading');
+    const erro = document.getElementById('validacao-erro');
+    const resultado = document.getElementById('validacao-resultado');
+    const cards = document.getElementById('validacao-cards');
+    const jsonPre = document.getElementById('validacao-json');
+
+    btn.addEventListener('click', async () => {
+      const modalidade = select.value;
+      
+      btn.disabled = true;
+      btn.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="animation: spin 1s linear infinite;">
+          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+          <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1" stroke-linecap="round"/>
+        </svg>
+        Validando...
+      `;
+      loading.style.display = 'block';
+      erro.style.display = 'none';
+      resultado.style.display = 'none';
+
+      try {
+        const baseClient = (import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/';
+        const res = await fetch(`${baseClient}api/validacao?modalidade=${modalidade}`);
+        const data = await res.json();
+
+        loading.style.display = 'none';
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.erro || 'Erro na validação');
+        }
+
+        // Atualizar UI
+        document.getElementById('validacao-modalidade')!.textContent = `Validação: ${modalidade.toUpperCase()}`;
+        const vereditoEl = document.getElementById('validacao-veredito')!;
+        vereditoEl.textContent = data.veredito.toUpperCase();
+        vereditoEl.className = 'btn btn-sm ' + (
+          data.veredito === 'aleatorio' ? 'btn-success' :
+          data.veredito === 'anomalias-leves' ? 'btn-secondary' : 'btn-error'
+        );
+        document.getElementById('validacao-resumo')!.textContent = data.resumo;
+
+        // Cards de resumo
+        cards.innerHTML = '';
+        const metricas = [
+          { label: 'Runs Test', value: `${Object.values(data.detalhes.runsTest).filter((r: any) => r.interpretacao === 'aleatorio').length} / ${Object.keys(data.detalhes.runsTest).length} aleatórios`, class: 'text-muted' },
+          { label: 'Autocorrelação', value: `${Object.values(data.detalhes.autocorrelacao).filter((a: any) => a.interpretacao === 'sem-memoria').length} / ${Object.keys(data.detalhes.autocorrelacao).length} sem memória`, class: 'text-muted' },
+          { label: 'KS Test (atrasos)', value: `${Object.values(data.detalhes.ksTest).filter((k: any) => k.interpretacao === 'compativel').length} / ${Object.keys(data.detalhes.ksTest).length} compatíveis`, class: 'text-muted' },
+          { label: 'Calibração (ECE)', value: data.detalhes.calibracao.ece.toFixed(4), class: data.detalhes.calibracao.interpretacao === 'bem-calibrado' ? 'text-success' : 'text-error' },
+          { label: 'Brier Score', value: data.detalhes.calibracao.brierScore.toFixed(6), class: 'text-muted' },
+          { label: 'Bootstrap Média Atraso', value: `${data.detalhes.bootstrapMediaAtraso.media.toFixed(2)} [${data.detalhes.bootstrapMediaAtraso.ic95[0].toFixed(2)}, ${data.detalhes.bootstrapMediaAtraso.ic95[1].toFixed(2)}]`, class: 'text-muted' },
+        ];
+
+        for (const m of metricas) {
+          const card = document.createElement('div');
+          card.className = 'stat-box';
+          card.innerHTML = `
+            <h4 style="margin: 0 0 var(--space-2); font-size: var(--text-sm); color: var(--color-text-muted);">${m.label}</h4>
+            <div style="font-size: var(--text-xl); font-weight: 700; color: var(--color-text);">${m.value}</div>
+          `;
+          cards.appendChild(card);
+        }
+
+        jsonPre.textContent = JSON.stringify(data.detalhes, null, 2);
+        resultado.style.display = 'block';
+        resultado.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      } catch (err) {
+        loading.style.display = 'none';
+        erro.style.display = 'block';
+        erro.textContent = err instanceof Error ? err.message : 'Erro desconhecido';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          Executar Validação Completa
+        `;
+      }
+    });
+  </script>
+</Base>
