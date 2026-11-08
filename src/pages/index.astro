@@ -827,6 +827,22 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
 
       const originalBtn = isHero ? btnSorteioHero : btn;
       const originalHTML = originalBtn?.innerHTML;
+      
+      // Container de progresso
+      const progressContainer = document.createElement('div');
+      progressContainer.className = 'progress-container';
+      progressContainer.style.display = 'none';
+      progressContainer.innerHTML = `
+        <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>
+        <div class="progress-text"></div>
+        <div class="progress-stats"></div>
+      `;
+      if (!isHero) {
+        targetContainer.parentNode?.insertBefore(progressContainer, targetContainer.nextSibling);
+      } else {
+        targetContainer.parentNode?.insertBefore(progressContainer, targetContainer.nextSibling);
+      }
+
       if (originalBtn) {
         originalBtn.disabled = true;
         originalBtn.innerHTML = `
@@ -841,10 +857,31 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
       try {
         const concursos = await concursosDaModalidade(modalidade);
         if (concursos.length > 0) opcoes.concursos = concursos;
+        
+        // Mostra progresso
+        progressContainer.style.display = 'block';
+        const progressBar = progressContainer.querySelector('.progress-bar') as HTMLElement;
+        const progressText = progressContainer.querySelector('.progress-text') as HTMLElement;
+        const progressStats = progressContainer.querySelector('.progress-stats') as HTMLElement;
+        
         const resultado = generateGames(
           { modalidade: modalidade as ModalidadeId, dezenasMarcadas: marcadas, opcoes },
           quantidade,
+          undefined,
+          0,
+          (progress) => {
+            if (progressBar) progressBar.style.width = `${progress.progress}%`;
+            if (progressBar) progressBar.setAttribute('aria-valuenow', String(progress.progress));
+            if (progressText) progressText.textContent = progress.message;
+            if (progressStats && progress.stats) {
+              progressStats.textContent = `Tentativas: ${progress.stats.tentativas} · Aceitos: ${progress.stats.aceitos} · Jogos: ${progress.stats.jogosGerados}`;
+            }
+          }
         ) as unknown as { games: GameResult[]; meta: { janela: number; taxaAceitacao: number } };
+        
+        // Esconde progresso
+        progressContainer.style.display = 'none';
+        
         const lista = Array.isArray(resultado.games) ? resultado.games : [resultado as unknown as GameResult];
         
         targetContainer.innerHTML = '';
@@ -903,6 +940,9 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
           out.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       } catch (err) {
+        // Esconde progresso em caso de erro
+        progressContainer.style.display = 'none';
+        
         const alertDiv = document.createElement('div');
         alertDiv.className = 'alert alert-error';
         alertDiv.setAttribute('role', 'alert');
@@ -917,6 +957,9 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
         if (!isHero) meta.textContent = '';
 
       } finally {
+        // Limpa container de progresso
+        progressContainer.remove();
+        
         if (originalBtn) {
           originalBtn.disabled = false;
           originalBtn.innerHTML = originalHTML || '';

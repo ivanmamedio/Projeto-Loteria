@@ -158,11 +158,19 @@ function betaFromOpcoes(opcoes: Record<string, unknown> | undefined): number {
   }
   return 1;
 }
+export type ProgressCallback = (progress: {
+  phase: 'weights' | 'candidates' | 'diversifying' | 'fallback' | 'complete';
+  progress: number; // 0-100
+  message: string;
+  stats?: { tentativas: number; aceitos: number; jogosGerados: number };
+}) => void;
+
 export function generateGames(
   request: GameRequest,
   quantidade?: number,
   rngOrSeed: IRandom | number = mulberry32(newSeed()),
   _fallbackDepth = 0,
+  onProgress?: ProgressCallback
 ): Game[] & {
   games: Game[];
   meta: { algorithmVersion: string; seed: number; janela: number; taxaAceitacao: number };
@@ -312,6 +320,9 @@ export function generateGames(
     });
     weights = weights.map((x, i) => x * (pw[i] ?? 1));
   }
+  
+  // Progress: pesos calculados
+  onProgress?.({ phase: 'weights', progress: 10, message: 'Calculando pesos das dezenas...' });
 
   const filtrosAtivos = usarE3;
   const passaFiltros = (dezenas: number[]): boolean => {
@@ -345,6 +356,23 @@ export function generateGames(
   const usados = new Set<string>();
   let tentativas = 0;
   let aceitos = 0;
+  let lastProgressUpdate = 0;
+  
+  const updateProgress = (phase: 'candidates' | 'diversifying', current: number, total: number) => {
+    const progress = Math.min(10 + Math.floor((current / total) * 80), 90);
+    if (progress - lastProgressUpdate >= 5 || current === total) { // Throttle updates
+      lastProgressUpdate = progress;
+      onProgress?.({
+        phase,
+        progress,
+        message: phase === 'candidates' 
+          ? `Gerando candidatos... ${current}/${total} (${aceitos} aceitos)`
+          : `Diversificando... ${current}/${total}`,
+        stats: { tentativas, aceitos, jogosGerados: games.length }
+      });
+    }
+  };
+  
   const gerarCandidato = (): number[] | null => {
     const cand = sampleWeighted(dezenasValidas, weights, tamanho, rngFn);
     tentativas++;
@@ -357,7 +385,10 @@ export function generateGames(
   if (!usarE4) {
     while (games.length < q && tentativas < maxTentativas) {
       const cand = gerarCandidato();
-      if (!cand) continue;
+      if (!cand) {
+        updateProgress('candidates', Math.min(tentativas, maxTentativas), maxTentativas);
+        continue;
+      }
       usados.add(cand.join(','));
       aceitos++;
       const timestamp = new Date().toISOString();
@@ -367,6 +398,7 @@ export function generateGames(
         timestamp,
         modalidade: request.modalidade,
       });
+      updateProgress('candidates', games.length, q);
     }
     // Fallback: se filtros muito restritivos impedem geração, relaxa filtros
     if (games.length < q && (filtrosAtivos || evitaCal) && _fallbackDepth < 2) {
@@ -392,6 +424,7 @@ export function generateGames(
         quantidade,
         rng,
         _fallbackDepth + 1,
+        onProgress
       );
     }
     // Último recurso: gera sem nenhum filtro (E0) - sempre tenta, sem limite de profundidade
@@ -411,6 +444,7 @@ export function generateGames(
         quantidade,
         rng,
         _fallbackDepth + 1,
+        onProgress
       );
     }
   } else {
@@ -422,12 +456,16 @@ export function generateGames(
     while (candidatos.length < totalCandidatos && tentativas < maxTentativasE4) {
       const cand = sampleWeighted(dezenasValidas, weights, tamanho, rngFn);
       tentativas++;
-      if (!passaFiltros(cand)) continue;
+      if (!passaFiltros(cand)) {
+        updateProgress('candidates', Math.min(tentativas, maxTentativasE4), maxTentativasE4);
+        continue;
+      }
       const chave = cand.join(',');
       if (vistos.has(chave)) continue;
       vistos.add(chave);
       candidatos.push(cand);
       aceitos++;
+      updateProgress('candidates', candidatos.length, totalCandidatos);
     }
     // Fallback: se não conseguiu gerar candidatos com E4, tenta sem E4 (apenas E1+E3)
     if (candidatos.length === 0) {
@@ -453,6 +491,7 @@ export function generateGames(
         quantidade,
         rng,
         _fallbackDepth + 1,
+        onProgress
       );
     }
     const selecionados: number[][] = [candidatos[0] as number[]];
@@ -461,6 +500,8 @@ export function generateGames(
       const set = new Set(a);
       return b.filter((x) => set.has(x)).length;
     };
+    // Progress para diversificação
+    updateProgress('diversifying', 1, q);
     while (selecionados.length < q && restantes.length > 0) {
       let melhorIdx = 0;
       let melhorMax = Number.POSITIVE_INFINITY;
@@ -482,6 +523,7 @@ export function generateGames(
       }
       const escolhido = restantes.splice(melhorIdx, 1)[0] as number[];
       selecionados.push(escolhido);
+      updateProgress('diversifying', selecionados.length, q);
     }
     // Fallback final: se não conseguiu diversificar o suficiente, usa os primeiros
     if (selecionados.length < q && _fallbackDepth < 2) {
@@ -507,6 +549,9 @@ export function generateGames(
   if (games.length < q) {
     throw new Error('Não foi possível gerar jogos distintos.');
   }
+
+  // Progress final
+  onProgress?.({ phase: 'complete', progress: 100, message: 'Jogos gerados com sucesso!', stats: { tentativas, aceitos, jogosGerados: games.length } });
 
   const cacheStats = getCacheStats();
 

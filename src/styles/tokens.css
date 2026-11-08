@@ -149,10 +149,10 @@
 }
 
 /* ============================================================
-   DARK MODE (opcional)
+   DARK MODE (opcional) — suporta prefers-color-scheme E data-theme
    ============================================================ */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --color-neutral-950: #e8f0e5;
     --color-neutral-900: #dce8d9;
     --color-neutral-800: #c8d8c4;
@@ -172,6 +172,50 @@
     --color-accent: #ff9f43;
     --color-accent-hover: #ff8c1a;
   }
+}
+
+/* Tema escuro explícito via data-theme="dark" */
+html[data-theme="dark"] {
+  --color-neutral-950: #e8f0e5;
+  --color-neutral-900: #dce8d9;
+  --color-neutral-800: #c8d8c4;
+  --color-neutral-700: #b0c4ac;
+  --color-neutral-600: #8fa88a;
+  --color-neutral-500: #6e8a69;
+  --color-neutral-400: #50694d;
+  --color-neutral-300: #354a33;
+  --color-neutral-200: #243224;
+  --color-neutral-100: #162016;
+  --color-neutral-50: #0f160f;
+  --color-primary-pale: #1a3d1a;
+  --color-success-bg: #1a3d1a;
+  --color-warning-bg: #3d2e00;
+  --color-error-bg: #3d1a1a;
+  --color-info-bg: #1a2d3d;
+  --color-accent: #ff9f43;
+  --color-accent-hover: #ff8c1a;
+}
+
+/* Tema claro explícito via data-theme="light" */
+html[data-theme="light"] {
+  --color-neutral-950: #1e2b1e;
+  --color-neutral-900: #243224;
+  --color-neutral-800: #2f3f2f;
+  --color-neutral-700: #3e523e;
+  --color-neutral-600: #5a6b5a;
+  --color-neutral-500: #7a8f7a;
+  --color-neutral-400: #9fb39f;
+  --color-neutral-300: #d3ddd0;
+  --color-neutral-200: #e3ebe0;
+  --color-neutral-100: #f6f8f4;
+  --color-neutral-50: #fbfcfa;
+  --color-primary-pale: #eaf3e6;
+  --color-success-bg: #e8f5e9;
+  --color-warning-bg: #fde68a;
+  --color-error-bg: #fdeaea;
+  --color-info-bg: #e3f2fd;
+  --color-accent: #e67e22;
+  --color-accent-hover: #d36e1a;
 }
 
 /* ============================================================

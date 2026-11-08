@@ -66,6 +66,24 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
             <li><a href={`${base}#contribuicao`}>Contribua</a></li>
           </ul>
         </nav>
+        
+        <!-- Theme toggle -->
+        <button id="theme-toggle" class="theme-toggle" aria-label="Alternar tema" type="button">
+          <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
       </div>
     </header>
 
@@ -145,6 +163,44 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
     </footer>
 
     <script>
+      // Theme toggle - deve rodar antes do paint para evitar flash
+      (function() {
+        const THEME_KEY = 'jp-tema';
+        const html = document.documentElement;
+        const toggle = document.getElementById('theme-toggle');
+        
+        function applyTheme(theme) {
+          html.setAttribute('data-theme', theme);
+          if (toggle) {
+            toggle.setAttribute('aria-label', theme === 'dark' ? 'Alternar para tema claro' : 'Alternar para tema escuro');
+          }
+        }
+        
+        // Inicializa tema (localStorage > prefers-color-scheme > light)
+        const saved = localStorage.getItem(THEME_KEY);
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const initialTheme = saved || (prefersDark ? 'dark' : 'light');
+        applyTheme(initialTheme);
+        
+        // Listener do botão
+        if (toggle) {
+          toggle.addEventListener('click', () => {
+            const current = html.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem(THEME_KEY, next);
+            applyTheme(next);
+          });
+        }
+        
+        // Sincroniza com mudança do sistema
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+          if (!localStorage.getItem(THEME_KEY)) {
+            applyTheme(e.matches ? 'dark' : 'light');
+          }
+        });
+      })();
+</script>
+<script>
       // Marca link ativo do menu
       const baseNoSlash = (import.meta.env.BASE_URL || '/').replace(/\/$/, '') || '/';
       const path = window.location.pathname.replace(/\/$/, '') || '/';
