@@ -1,7 +1,28 @@
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'
+  # Content Security Policy
+  # Nota: 'unsafe-inline' necessário para scripts inline do Astro (hydration) e estilos
+  # Em produção, considerar nonces/hashes para remover 'unsafe-inline'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+
+  # Security Headers
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+
+  # Cache para assets estáticos
+  /assets/*
+    Cache-Control: public, max-age=31536000, immutable
+
+  /data/*
+    Cache-Control: public, max-age=3600, must-revalidate
+
+  /api/*
+    Cache-Control: no-store, no-cache, must-revalidate
+    Access-Control-Allow-Origin: *
+    Access-Control-Allow-Methods: GET, OPTIONS
+    Access-Control-Allow-Headers: Content-Type

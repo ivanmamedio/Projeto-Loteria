@@ -828,30 +828,54 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
       const originalBtn = isHero ? btnSorteioHero : btn;
       const originalHTML = originalBtn?.innerHTML;
       
-      // Container de progresso
+      // Container de progresso (sem innerHTML - seguro contra XSS)
       const progressContainer = document.createElement('div');
       progressContainer.className = 'progress-container';
       progressContainer.style.display = 'none';
-      progressContainer.innerHTML = `
-        <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>
-        <div class="progress-text"></div>
-        <div class="progress-stats"></div>
-      `;
+      
+      const progressBar = document.createElement('div');
+      progressBar.className = 'progress-bar';
+      progressBar.setAttribute('role', 'progressbar');
+      progressBar.setAttribute('aria-valuenow', '0');
+      progressBar.setAttribute('aria-valuemin', '0');
+      progressBar.setAttribute('aria-valuemax', '100');
+      progressBar.style.width = '0%';
+      
+      const progressText = document.createElement('div');
+      progressText.className = 'progress-text';
+      
+      const progressStats = document.createElement('div');
+      progressStats.className = 'progress-stats';
+      
+      progressContainer.append(progressBar, progressText, progressStats);
+      
       if (!isHero) {
         targetContainer.parentNode?.insertBefore(progressContainer, targetContainer.nextSibling);
       } else {
         targetContainer.parentNode?.insertBefore(progressContainer, targetContainer.nextSibling);
       }
-
+      
       if (originalBtn) {
         originalBtn.disabled = true;
-        originalBtn.innerHTML = `
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="animation: spin 1s linear infinite;">
-            <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
-            <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1" stroke-linecap="round"/>
-          </svg>
-          Gerando…
+        // Botão com createElement (seguro)
+        const spinner = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        spinner.setAttribute('width', '20');
+        spinner.setAttribute('height', '20');
+        spinner.setAttribute('viewBox', '0 0 24 24');
+        spinner.setAttribute('fill', 'none');
+        spinner.setAttribute('stroke', 'currentColor');
+        spinner.setAttribute('stroke-width', '2');
+        spinner.setAttribute('aria-hidden', 'true');
+        spinner.style.animation = 'spin 1s linear infinite';
+        spinner.innerHTML = `
+          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+          <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1" stroke-linecap="round"/>
         `;
+        
+        const btnText = document.createTextNode(' Gerando…');
+        originalBtn.innerHTML = '';
+        originalBtn.append(spinner, btnText);
+        originalBtn.disabled = true;
       }
 
       try {
