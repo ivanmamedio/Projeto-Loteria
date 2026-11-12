@@ -7,14 +7,14 @@
  */
 
 import {
-  combCached,
+  type ProbabilityExact,
   combBigInt,
-  gcd,
+  combCached,
   fractionToDecimal,
-  probabilidadeAcertoExact,
+  gcd,
   hipergeometricaAcumuladaExact,
   hipergeometricaPmfExact,
-  ProbabilityExact,
+  probabilidadeAcertoExact,
 } from './combinatorics';
 
 // F1: n! (fatorial) - mantido para compatibilidade
@@ -71,14 +71,20 @@ export function distribuicaHipergeometrica(N: bigint, K: bigint, n: bigint, k: b
 
 // Nova: versão exata com alta precisão
 export function distribuicaHipergeometricaHighPrecision(
-  N: number, K: number, n: number, k: number
+  N: number,
+  K: number,
+  n: number,
+  k: number,
 ): ProbabilityExact {
   return hipergeometricaAcumuladaExact(N, K, n, k);
 }
 
 // Nova: PMF hipergeométrica exata P(X = k)
 export function hipergeometricaPmfHighPrecision(
-  N: number, K: number, n: number, k: number
+  N: number,
+  K: number,
+  n: number,
+  k: number,
 ): ProbabilityExact {
   return hipergeometricaPmfExact(N, K, n, k);
 }

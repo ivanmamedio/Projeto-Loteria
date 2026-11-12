@@ -137,7 +137,7 @@ export function sampleWeighted(
   }
 
   // Extrair e ordenar por valor da dezena
-  return items.map(x => x.n).sort((a, b) => a - b);
+  return items.map((x) => x.n).sort((a, b) => a - b);
 }
 
 /**

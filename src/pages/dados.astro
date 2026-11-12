@@ -25,7 +25,7 @@ interface DadosModalidade {
 async function carregarDados() {
   const basePath = '/home/carlos/Documentos/Projeto Loteria/public/data';
   const dados = {} as Record<string, DadosModalidade>;
-  
+
   for (const mod of MODALIDADES) {
     try {
       const fs = await import('node:fs/promises');
@@ -51,22 +51,22 @@ function formatarDataBR(iso: string): string {
 function getNomeModalidade(mod: string): string {
   const nomes: Record<string, string> = {
     'mega-sena': 'Mega-Sena',
-    'lotofacil': 'Lotofácil',
-    'quina': 'Quina',
-    'lotomania': 'Lotomania',
+    lotofacil: 'Lotofácil',
+    quina: 'Quina',
+    lotomania: 'Lotomania',
   };
   return nomes[mod] ?? mod;
 }
 
 function getAnoInicio(concursos: Concurso[]): number {
   if (!concursos.length) return 0;
-  const datas = concursos.map(c => c.data).sort();
+  const datas = concursos.map((c) => c.data).sort();
   return new Date(datas[0]).getFullYear();
 }
 
 function getUltimaData(concursos: Concurso[]): string {
   if (!concursos.length) return '';
-  const datas = concursos.map(c => c.data).sort();
+  const datas = concursos.map((c) => c.data).sort();
   return datas[datas.length - 1];
 }
 ---

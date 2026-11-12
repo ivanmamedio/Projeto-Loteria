@@ -2,7 +2,7 @@
 Fórmulas F1–F13 e métodos de sorteio. Toda combinação tem a mesma
         probabilidade — use este conteúdo para organizar e diversificar jogos,
         não para prometer vantagem.
-</p> </div> </section> <section class="container"> <div class="content-grid"> <aside class="side-nav"> <ul> <li><a href="#f1-f3">Probabilidade F1–F3</a></li> <li><a href="#f4-f7">Análise F4–F7 e F13</a></li> <li><a href="#f8-f9">Frequência e atraso F8–F9</a></li> <li><a href="#f10">Amostragem F10</a></li> <li><a href="#f11">Filtros F11</a></li> <li><a href="#f12">Diversificação F12</a></li> <li><a href="#f13">Variância F13</a></li> </ul> </aside> <div class="content"> <section id="f1-f3" class="formula-card"> <h2>F1–F3 — Probabilidade básica</h2> <p>
+</p> </div> </section> <section class="container"> <div class="content-grid"> <aside class="side-nav"> <ul> <li><a href="#f1-f3">Probabilidade F1–F3</a></li> <li><a href="#f4-f7">Análise F4–F7 e F13</a></li> <li><a href="#f8-f9">Frequência e atraso F8–F9</a></li> <li><a href="#f10">Amostragem F10</a></li> <li><a href="#f11">Filtros F11</a></li> <li><a href="#f12">Diversificação F12</a></li> <li><a href="#f13">Variância F13</a></li> <li><a href="#f-fibonacci">Fibonacci</a></li> </ul> </aside> <div class="content"> <section id="f1-f3" class="formula-card"> <h2>F1–F3 — Probabilidade básica</h2> <p>
 F1: número de combinações possíveis — C(n, k) = n! / (k! · (n - k)!)
 </p> <p>
 F2: probabilidade de acerto (ex.: Sena Mega-Sena) — 1 / C(60, 6)
@@ -38,7 +38,40 @@ Gera 3 jogos distintos usando ponderação por frequência/atraso. Exemplo
 </p> </section> <section id="f13" class="formula-card"> <h2>F13 — Variância da soma</h2> <p>
 Variância da soma dos números de uma combinação. Medida de dispersão
             usada para filtrar combinações fora da faixa teórica.
-</p> </section> </div> </div> </section>  </main> <!-- Modal de responsabilidade (primeiro acesso) --> <div id="responsabilidade-modal" class="resp-modal" hidden> <div class="resp-card" role="dialog" aria-modal="true" aria-labelledby="resp-titulo"> <h2 id="resp-titulo">Termo de responsabilidade</h2> <p>
+</p> </section> <section id="f-fibonacci" class="formula-card"> <h2>F-Fibonacci — Análise de distribuição de Fibonacci (educativa)</h2> <h3>Princípio</h3> <p>
+A sequência de Fibonacci (1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89…)
+            é um padrão matemático interessante para análise de distribuição e
+            espaçamento, mas <strong>NÃO confere vantagem estatística</strong> em
+            sorteios justos onde todas as combinações têm mesma probabilidade.
+</p> <h3>F-Fib.1 — Verificação de Fibonacci</h3> <p>
+Um número <code>x</code> pertence à sequência se
+<code>5·x² + 4</code> ou <code>5·x² − 4</code> for quadrado perfeito.
+            Implementado com <code>BigInt</code> para precisão arbitrária.
+</p> <h3>F-Fib.2 — Análise de distribuição no jogo</h3> <p>
+Para cada jogo gerado, o resumo educativo mostra:
+</p> <ul> <li><strong>fibonacciCount</strong>: quantas dezenas são de Fibonacci</li> <li><strong>fibonacciNumbers</strong>: quais são (ex.: 5, 13, 21)</li> <li><strong>maxGap</strong>: maior espaçamento entre Fibonacci consecutivos</li> <li><strong>avgGap</strong>: espaçamento médio</li> <li><strong>ratioToUniverse</strong>: proporção vs. total de Fibonacci no universo</li> </ul> <p>
+Exemplo: <code>2 dezenas de Fibonacci (5, 13)</code> — isto descreve
+            o jogo; <strong>não altera sua probabilidade</strong>.
+</p> <h3>F-Fib.3 — Peso adaptativo no <code>patternWeights</code></h3> <p>
+Adicionado como <strong>9º fator</strong> no espaço log do
+<code>patternWeights</code> (combinação geométrica de 9 fatores).
+            Intensidade configurável igual ao β de E1/E2 (Suave 0.5, Médio 1, Forte 2):
+</p> <pre><code>// Proporção teórica de Fibonacci no universo
+const fibRatioTeorico = fibs.length / universo;
+
+// Proporção observada no histórico recente (últimos 20 concursos)
+const fibRatioHistorico = fibFreq / totalDezenas;
+
+// Intensidade: 0.5 (suave) · 1.0 (médio, padrão) · 2.0 (forte)
+const intensidade = opcoes.fibonacciIntensidade ?? 1.0;
+
+// Bias: se histórico tem MAIS Fibonacci que o esperado → penaliza Fibonacci
+//       se histórico tem MENOS Fibonacci que o esperado → favorece Fibonacci
+//       sem histórico → pesos neutros (1.0)
+const biasBase = 0.15;
+const bias = (fibRatioHistorico > fibRatioTeorico ? -biasBase : biasBase) * intensidade;</code></pre> <p>
+Características:
+</p><ul> <li><strong>Não-invasivo</strong>: combina no espaço log (média geométrica)</li> <li><strong>Intensidade ajustável</strong>: ±7.5% (suave) · ±15% (médio) · ±30% (forte)</li> <li><strong>Auto-equilibrante</strong>: contrabalanceia viés histórico detectado</li> <li><strong>Honesto</strong>: comentário explícito "NÃO altera probabilidade real"</li> </ul>  </section> </div> </div> </section>  </main> <!-- Modal de responsabilidade (primeiro acesso) --> <div id="responsabilidade-modal" class="resp-modal" hidden> <div class="resp-card" role="dialog" aria-modal="true" aria-labelledby="resp-titulo"> <h2 id="resp-titulo">Termo de responsabilidade</h2> <p>
 Este site é independente, gratuito e destinado a pessoas com 18 anos
           ou mais. As combinações são geradas por algoritmos e não garantem
           prêmio nem vantagem estatística. Confirme que leu e aceita os termos

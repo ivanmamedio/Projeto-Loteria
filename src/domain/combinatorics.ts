@@ -123,10 +123,10 @@ export function probabilidadeAcertoExact(exatos: number, total: number): Probabi
 
 /** Distribuição hipergeométrica exata: P(X >= k) */
 export function hipergeometricaAcumuladaExact(
-  N: number,  // população
-  K: number,  // sucessos na população
-  n: number,  // tamanho da amostra
-  k: number   // sucessos mínimos observados
+  N: number, // população
+  K: number, // sucessos na população
+  n: number, // tamanho da amostra
+  k: number, // sucessos mínimos observados
 ): ProbabilityExact {
   if (k <= 0) return { numerador: 1n, denominador: 1n, decimal: '1' };
   const maxAcertos = Math.min(K, n);
@@ -149,7 +149,10 @@ export function hipergeometricaAcumuladaExact(
 
 /** PMF hipergeométrica exata: P(X = k) */
 export function hipergeometricaPmfExact(
-  N: number, K: number, n: number, k: number
+  N: number,
+  K: number,
+  n: number,
+  k: number,
 ): ProbabilityExact {
   if (k < 0 || k > Math.min(K, n)) return { numerador: 0n, denominador: 1n, decimal: '0' };
   const total = combCached(N, n);

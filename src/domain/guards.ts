@@ -11,14 +11,20 @@ export interface ValidacaoResultado {
 }
 
 /** Valida se dezenas estão dentro do universo da modalidade */
-export function validarDezenasUniverso(modalidade: ModalidadeId, dezenas: number[]): ValidacaoResultado {
+export function validarDezenasUniverso(
+  modalidade: ModalidadeId,
+  dezenas: number[],
+): ValidacaoResultado {
   const regras = modalidadePorId(modalidade);
   const min = regras.id === 'lotomania' ? 0 : 1;
   const max = regras.universo;
 
   for (const d of dezenas) {
     if (!Number.isInteger(d) || d < min || d > max) {
-      return { valido: false, erro: `Dezena ${d} fora do universo [${min}, ${max}] para ${regras.nome}` };
+      return {
+        valido: false,
+        erro: `Dezena ${d} fora do universo [${min}, ${max}] para ${regras.nome}`,
+      };
     }
   }
 
@@ -31,9 +37,12 @@ export function validarDezenasUniverso(modalidade: ModalidadeId, dezenas: number
 }
 
 /** Valida estrutura do histórico */
-export function validarHistorico(historico: number[][], modalidade: ModalidadeId): ValidacaoResultado {
+export function validarHistorico(
+  historico: number[][],
+  modalidade: ModalidadeId,
+): ValidacaoResultado {
   if (historico.length === 0) return { valido: true };
-  
+
   const regras = modalidadePorId(modalidade);
   const tamanhoEsperado = regras.dezenasSorteadas;
   const min = regras.id === 'lotomania' ? 0 : 1;
@@ -45,11 +54,17 @@ export function validarHistorico(historico: number[][], modalidade: ModalidadeId
       return { valido: false, erro: `Sorteio ${i} não é um array` };
     }
     if (sorteio.length !== tamanhoEsperado) {
-      return { valido: false, erro: `Sorteio ${i} tem ${sorteio.length} dezenas, esperado ${tamanhoEsperado}` };
+      return {
+        valido: false,
+        erro: `Sorteio ${i} tem ${sorteio.length} dezenas, esperado ${tamanhoEsperado}`,
+      };
     }
     for (const d of sorteio) {
       if (!Number.isInteger(d) || d < min || d > max) {
-        return { valido: false, erro: `Sorteio ${i}: dezena ${d} fora do universo [${min}, ${max}]` };
+        return {
+          valido: false,
+          erro: `Sorteio ${i}: dezena ${d} fora do universo [${min}, ${max}]`,
+        };
       }
     }
     const unicos = new Set(sorteio);
@@ -66,26 +81,42 @@ export function validarParametrosGeracao(
   modalidade: ModalidadeId,
   dezenasMarcadas: number[],
   tamanhoAposta?: number,
-  quantidade?: number
+  quantidade?: number,
 ): ValidacaoResultado {
   const regras = modalidadePorId(modalidade);
 
   if (dezenasMarcadas.length < regras.minDezenas) {
-    return { valido: false, erro: `Mínimo ${regras.minDezenas} dezenas necessárias para ${regras.nome}` };
+    return {
+      valido: false,
+      erro: `Mínimo ${regras.minDezenas} dezenas necessárias para ${regras.nome}`,
+    };
   }
   if (dezenasMarcadas.length > regras.maxDezenas) {
-    return { valido: false, erro: `Máximo ${regras.maxDezenas} dezenas permitidas para ${regras.nome}` };
+    return {
+      valido: false,
+      erro: `Máximo ${regras.maxDezenas} dezenas permitidas para ${regras.nome}`,
+    };
   }
 
   const validacaoDezenas = validarDezenasUniverso(modalidade, dezenasMarcadas);
   if (!validacaoDezenas.valido) return validacaoDezenas;
 
   if (tamanhoAposta !== undefined) {
-    if (!Number.isInteger(tamanhoAposta) || tamanhoAposta < regras.minDezenas || tamanhoAposta > regras.maxDezenas) {
-      return { valido: false, erro: `Tamanho de aposta inválido: ${tamanhoAposta} (válido: ${regras.minDezenas}-${regras.maxDezenas})` };
+    if (
+      !Number.isInteger(tamanhoAposta) ||
+      tamanhoAposta < regras.minDezenas ||
+      tamanhoAposta > regras.maxDezenas
+    ) {
+      return {
+        valido: false,
+        erro: `Tamanho de aposta inválido: ${tamanhoAposta} (válido: ${regras.minDezenas}-${regras.maxDezenas})`,
+      };
     }
     if (tamanhoAposta > dezenasMarcadas.length) {
-      return { valido: false, erro: `Tamanho da aposta (${tamanhoAposta}) maior que dezenas marcadas (${dezenasMarcadas.length})` };
+      return {
+        valido: false,
+        erro: `Tamanho da aposta (${tamanhoAposta}) maior que dezenas marcadas (${dezenasMarcadas.length})`,
+      };
     }
   }
 
@@ -101,8 +132,8 @@ export function validarParametrosGeracao(
 /** Sanitiza array de números (remove NaN, Infinity, duplicatas, ordena) */
 export function sanitizarDezenas(dezenas: unknown[]): number[] {
   return dezenas
-    .map(x => Number(x))
-    .filter(x => Number.isInteger(x) && Number.isFinite(x))
+    .map((x) => Number(x))
+    .filter((x) => Number.isInteger(x) && Number.isFinite(x))
     .filter((v, i, arr) => arr.indexOf(v) === i)
     .sort((a, b) => a - b);
 }
@@ -112,16 +143,17 @@ export function validarJogoGerado(dezenas: number[], modalidade: ModalidadeId): 
   const regras = modalidadePorId(modalidade);
   const min = regras.id === 'lotomania' ? 0 : 1;
   const max = regras.universo;
-  
-  if (dezenas.length !== regras.dezenasSorteadas && dezenas.length < regras.minDezenas) return false;
+
+  if (dezenas.length !== regras.dezenasSorteadas && dezenas.length < regras.minDezenas)
+    return false;
   if (dezenas.length > regras.maxDezenas) return false;
-  
+
   const unicos = new Set(dezenas);
   if (unicos.size !== dezenas.length) return false;
-  
+
   for (const d of dezenas) {
     if (d < min || d > max) return false;
   }
-  
+
   return true;
 }

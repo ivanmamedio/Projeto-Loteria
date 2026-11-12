@@ -9,8 +9,8 @@
 import { generateGames, parseRequest } from './generate';
 import { mulberry32 } from './rng';
 import { modalidadePorId } from './rules';
-import type { ModalidadeId } from './types';
 import { distribuicaoAcertos } from './stats';
+import type { ModalidadeId } from './types';
 
 export interface BacktestResult {
   modalidade: ModalidadeId;
@@ -30,10 +30,10 @@ export interface BacktestResult {
 export function backtestWalkForward(
   historico: number[][],
   modalidadeId: ModalidadeId,
-  janela: number = 100,
-  nTestes: number = 50,
+  janela = 100,
+  nTestes = 50,
   estrategia: string[] = ['E1', 'E3', 'E4'],
-  seed: number = 42,
+  seed = 42,
 ): BacktestResult {
   const modalidade = modalidadePorId(modalidadeId);
   const universo = modalidade.universo;
@@ -109,7 +109,7 @@ export function backtestWalkForward(
   for (let j = 0; j <= k; j++) {
     const obs = acertosObs[j] ?? 0;
     const esp = Math.max(acertosEsp[j] ?? 0, 0.5);
-    chi2 += ((obs - esp) ** 2) / esp;
+    chi2 += (obs - esp) ** 2 / esp;
     graus++;
   }
   graus = Math.max(1, graus - 1);
@@ -138,7 +138,11 @@ export function backtestWalkForward(
 function pValorQuiQuadrado(chi2: number, graus: number): number {
   if (chi2 <= 0) return 1;
   if (graus <= 0) return 0;
-  const h = 1 - (2 / (9 * graus)) + Math.sqrt(2 / (9 * graus)) * Math.pow(chi2 / graus, 1 / 3) - Math.sqrt(2 / (9 * graus));
+  const h =
+    1 -
+    2 / (9 * graus) +
+    Math.sqrt(2 / (9 * graus)) * Math.pow(chi2 / graus, 1 / 3) -
+    Math.sqrt(2 / (9 * graus));
   const phi = (z: number) => 0.5 * (1 + mathErf(z / Math.sqrt(2)));
   return 1 - phi(h);
 }
@@ -153,8 +157,7 @@ function mathErf(x: number): number {
   let term = x;
   for (let n = 0; n < 20; n++) {
     sum += term;
-    term *= -(x * x) * (2 * n + 1) / ((n + 1) * (2 * n + 3));
+    term *= (-(x * x) * (2 * n + 1)) / ((n + 1) * (2 * n + 3));
   }
   return sign * (2 / Math.sqrt(Math.PI)) * sum;
 }
-

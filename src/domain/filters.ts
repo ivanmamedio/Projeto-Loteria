@@ -29,24 +29,28 @@ function evensCount(N: number): number {
  * CDF Hipergeométrica exata usando BigInt (sem perda de precisão).
  * Retorna fração simplificada + valor decimal para compatibilidade.
  */
-function hypergeometricCdfExact(M: number, K: number, n: number, h: number): 
-  { numerador: bigint; denominador: bigint; valor: number } {
+function hypergeometricCdfExact(
+  M: number,
+  K: number,
+  n: number,
+  h: number,
+): { numerador: bigint; denominador: bigint; valor: number } {
   const total = combCached(M, n);
   if (total === 0n) return { numerador: 0n, denominador: 1n, valor: 0 };
-  
+
   let cum = 0n;
   const hi = Math.min(h, Math.min(K, n));
   for (let i = 0; i <= hi; i++) {
     cum += combCached(K, i) * combCached(M - K, n - i);
   }
-  
+
   const g = gcdNumber(Number(cum > 0n ? cum : 1n), Number(total));
   // Para BigInt, usar gcd BigInt
   const gBig = gcdBigInt(cum, total);
   return {
     numerador: cum / gBig,
     denominador: total / gBig,
-    valor: Number(cum) / Number(total)
+    valor: Number(cum) / Number(total),
   };
 }
 
