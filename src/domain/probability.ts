@@ -10,7 +10,6 @@ import {
   type ProbabilityExact,
   combBigInt,
   combCached,
-  fractionToDecimal,
   gcd,
   hipergeometricaAcumuladaExact,
   hipergeometricaPmfExact,

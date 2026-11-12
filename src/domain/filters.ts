@@ -2,7 +2,7 @@
  * F11 — Filtros de equilíbrio de combinações.
  */
 
-import { combCached, gcdNumber } from './combinatorics';
+import { combCached } from './combinatorics';
 
 export interface FiltroResultado {
   dezenas: number[];
@@ -44,7 +44,6 @@ function hypergeometricCdfExact(
     cum += combCached(K, i) * combCached(M - K, n - i);
   }
 
-  const g = gcdNumber(Number(cum > 0n ? cum : 1n), Number(total));
   // Para BigInt, usar gcd BigInt
   const gBig = gcdBigInt(cum, total);
   return {

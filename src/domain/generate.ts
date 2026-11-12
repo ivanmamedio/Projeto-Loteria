@@ -2,7 +2,7 @@
  * Fachada de geração de jogos.
  */
 
-import { clearCombinatoricsCache, getCacheStats } from './combinatorics';
+import { getCacheStats } from './combinatorics';
 import { evitaPadraoCalendario, filtrosEquilibrio, verificaFiltros } from './filters';
 import { patternFilter, patternWeights } from './patterns';
 import { type IRandom, mulberry32, newSeed } from './rng';

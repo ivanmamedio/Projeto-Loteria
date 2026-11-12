@@ -28,15 +28,12 @@ export interface RunsTestResult {
  * H0: aparições são independentes (aleatórias).
  * H1: há clustering (runs < esperado) ou alternância excessiva (runs > esperado).
  */
-export function runsTest(historico: number[][], dezena: number, universo: number): RunsTestResult {
-  const min = universo === 100 ? 0 : 1;
-  const offset = min;
-
+export function runsTest(historico: number[][], dezena: number): RunsTestResult {
   // Converter histórico em sequência binária: 1 = saiu, 0 = não saiu
   const sequencia = historico.map((sorteio) => (sorteio.includes(dezena) ? 1 : 0));
 
   const n = sequencia.length;
-  const n1 = sequencia.reduce((a, b) => a + b, 0); // sucessos
+  const n1 = sequencia.reduce((a: number, b: number) => a + b, 0); // sucessos
   const n0 = n - n1; // falhas
 
   if (n1 === 0 || n0 === 0) {
@@ -89,17 +86,17 @@ export interface AutocorrelationResult {
 export function autocorrelacaoAtrasos(
   historico: number[][],
   dezena: number,
-  universo: number,
   maxLag = 10,
 ): AutocorrelationResult {
-  const min = universo === 100 ? 0 : 1;
 
   // Extrair série de gaps (atrasos entre aparições consecutivas)
   const gaps: number[] = [];
   let ultimaAparicao = -1;
 
   for (let i = 0; i < historico.length; i++) {
-    if (historico[i].includes(dezena)) {
+    const sorteio = historico[i];
+    if (!sorteio) continue;
+    if (sorteio.includes(dezena)) {
       if (ultimaAparicao >= 0) {
         gaps.push(i - ultimaAparicao - 1);
       }
@@ -126,7 +123,10 @@ export function autocorrelacaoAtrasos(
   for (let lag = 1; lag <= maxLag; lag++) {
     let cov = 0;
     for (let i = 0; i < gaps.length - lag; i++) {
-      cov += (gaps[i] - media) * (gaps[i + lag] - media);
+      const gi = gaps[i];
+      const gj = gaps[i + lag];
+      if (gi === undefined || gj === undefined) continue;
+      cov += (gi - media) * (gj - media);
     }
     const corr = cov / ((gaps.length - lag) * variancia);
     acf.push(corr);
@@ -183,6 +183,7 @@ export function ksTest(amostra: number[], cdfTeorica: (x: number) => number): KS
 
   for (let i = 0; i < n; i++) {
     const x = sorted[i];
+    if (x === undefined) continue;
     const ecdf = (i + 1) / n; // P(X <= x) empírica
     const tcdf = cdfTeorica(x); // P(X <= x) teórica
     const diff = Math.abs(ecdf - tcdf);
@@ -239,7 +240,13 @@ export function bootstrapCI(
   const bootstraps: number[] = [];
 
   for (let b = 0; b < B; b++) {
-    const amostra = Array.from({ length: n }, () => dados[Math.floor(rng() * n)]);
+    const idx = Math.floor(rng() * n);
+    const valor = dados[idx];
+    if (valor === undefined) continue;
+    const amostra = Array.from({ length: n }, () => {
+      const idx2 = Math.floor(rng() * n);
+      return dados[idx2] ?? 0;
+    });
     bootstraps.push(estatistica(amostra));
   }
 
@@ -250,13 +257,18 @@ export function bootstrapCI(
   const bias = mediaBoot - mediaOriginal;
   const se = Math.sqrt(bootstraps.reduce((a, x) => a + (x - mediaBoot) ** 2, 0) / (B - 1));
 
+  const idx95Low = Math.floor(0.025 * B);
+  const idx95High = Math.ceil(0.975 * B);
+  const idx99Low = Math.floor(0.005 * B);
+  const idx99High = Math.ceil(0.995 * B);
+  
   const ic95: [number, number] = [
-    bootstraps[Math.floor(0.025 * B)],
-    bootstraps[Math.ceil(0.975 * B)],
+    bootstraps[idx95Low] ?? 0,
+    bootstraps[idx95High] ?? 0,
   ];
   const ic99: [number, number] = [
-    bootstraps[Math.floor(0.005 * B)],
-    bootstraps[Math.ceil(0.995 * B)],
+    bootstraps[idx99Low] ?? 0,
+    bootstraps[idx99High] ?? 0,
   ];
 
   return { media: mediaOriginal, ic95, ic99, bias, se };
@@ -305,6 +317,7 @@ export function calibrationTest(
   for (let b = 0; b < bins; b++) {
     const low = binEdges[b];
     const high = binEdges[b + 1];
+    if (low === undefined || high === undefined) continue;
 
     const indices = predicoes
       .map((p, i) => ({ p, o: observacoes[i], i }))
@@ -316,8 +329,8 @@ export function calibrationTest(
       continue;
     }
 
-    const probMedia = indices.reduce((a, { i }) => a + predicoes[i], 0) / indices.length;
-    const freqObservada = indices.reduce((a, { o }) => a + o, 0) / indices.length;
+    const probMedia = indices.reduce((a, { i }) => a + (predicoes[i] ?? 0), 0) / indices.length;
+    const freqObservada = indices.reduce((a, { o }) => a + (o ?? 0), 0) / indices.length;
     const erro = Math.abs(probMedia - freqObservada);
 
     resultados.push({
@@ -330,7 +343,7 @@ export function calibrationTest(
 
     // Brier Score contribuição
     for (const { o, i } of indices) {
-      brierScore += (predicoes[i] - o) ** 2;
+      brierScore += ((predicoes[i] ?? 0) - (o ?? 0)) ** 2;
     }
 
     ece += (indices.length / n) * erro;
@@ -384,7 +397,6 @@ export async function sensitivityAnalysis(
 
   for (const valor of valores) {
     const req = { ...baseRequest, opcoes: { ...baseRequest.opcoes, [parametro]: valor } };
-    const somaAcertos = 0;
     let somaTaxa = 0;
     let somaJogos = 0;
 
@@ -393,7 +405,7 @@ export async function sensitivityAnalysis(
       somaJogos += resultado.games?.length ?? 0;
       somaTaxa += resultado.meta?.taxaAceitacao ?? 0;
       // Simular acerto vs sorteio aleatório
-      const jogo = resultado.games?.[0]?.dezenas ?? [];
+      // const jogo = resultado.games?.[0]?.dezenas ?? [];
       // (em produção, comparar com sorteio real)
     }
 
@@ -406,10 +418,10 @@ export async function sensitivityAnalysis(
   }
 
   // Elasticidade: %Δmétrica / %Δparâmetro (usando taxa de aceitação)
-  const x1 = valores[0];
-  const x2 = valores[valores.length - 1];
-  const y1 = metricas[0].taxaAceitacao;
-  const y2 = metricas[metricas.length - 1].taxaAceitacao;
+  const x1 = valores[0] ?? 0;
+  const x2 = valores[valores.length - 1] ?? 0;
+  const y1 = metricas[0]?.taxaAceitacao ?? 0;
+  const y2 = metricas[metricas.length - 1]?.taxaAceitacao ?? 0;
   const elasticidade = x1 !== 0 && y1 !== 0 ? (y2 - y1) / y1 / ((x2 - x1) / x1) : 0;
 
   let interpretacao: SensitivityResult['interpretacao'] = 'estavel';
@@ -490,14 +502,16 @@ export function gerarRelatorioValidacao(
   const cdfGeometrica = (x: number) => 1 - (1 - p) ** (x + 1);
 
   for (const d of amostraDezenas) {
-    runsTestResults[d] = runsTest(historico, d, universo);
-    autocorrelacao[d] = autocorrelacaoAtrasos(historico, d, universo);
+    runsTestResults[d] = runsTest(historico, d);
+    autocorrelacao[d] = autocorrelacaoAtrasos(historico, d);
 
     // Extrair gaps desta dezena
     const gaps: number[] = [];
     let ultima = -1;
     for (let i = 0; i < historico.length; i++) {
-      if (historico[i].includes(d)) {
+      const sorteio = historico[i];
+      if (!sorteio) continue;
+      if (sorteio.includes(d)) {
         if (ultima >= 0) gaps.push(i - ultima - 1);
         ultima = i;
       }
@@ -513,7 +527,7 @@ export function gerarRelatorioValidacao(
   const observacoes: number[] = [];
   for (let i = 50; i < historico.length; i++) {
     const sorteio = historico[i];
-    const histAte = historico.slice(Math.max(0, i - 100), i);
+    if (!sorteio) continue;
     // Probabilidade uniforme como baseline
     for (const d of dezenas) {
       predicoes.push(k / universo);
@@ -527,7 +541,9 @@ export function gerarRelatorioValidacao(
   for (const d of dezenas) {
     let ultima = -1;
     for (let i = 0; i < historico.length; i++) {
-      if (historico[i].includes(d)) {
+      const sorteio = historico[i];
+      if (!sorteio) continue;
+      if (sorteio.includes(d)) {
         if (ultima >= 0) todosAtrasos.push(i - ultima - 1);
         ultima = i;
       }

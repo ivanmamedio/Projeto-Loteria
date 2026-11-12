@@ -3,13 +3,14 @@ import { modalidadePorId } from '../../domain/rules';
 import { distribuicaoAcertos } from '../../domain/stats';
 
 const MODALIDADES = ['mega-sena', 'lotofacil', 'quina', 'lotomania'] as const;
+type ModalidadeId = (typeof MODALIDADES)[number];
 
 export const GET: APIRoute = async ({ url }) => {
   const modalidade = url.searchParams.get('modalidade');
   const n = Number.parseInt(url.searchParams.get('n') || '0');
   const k = Number.parseInt(url.searchParams.get('k') || '0');
 
-  if (!modalidade || !MODALIDADES.includes(modalidade)) {
+  if (!modalidade || !MODALIDADES.includes(modalidade as ModalidadeId)) {
     return new Response(JSON.stringify({ erro: 'Parâmetro "modalidade" obrigatório' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },

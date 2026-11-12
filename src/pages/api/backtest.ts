@@ -7,7 +7,7 @@ const MODALIDADES = ['mega-sena', 'lotofacil', 'quina', 'lotomania'] as const;
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
-    const { modalidade, estrategia, janela = 100, nTestes = 50, filtros = true } = body;
+    const { modalidade, estrategia, janela = 100, nTestes = 50 } = body;
 
     if (!modalidade || !MODALIDADES.includes(modalidade)) {
       return new Response(

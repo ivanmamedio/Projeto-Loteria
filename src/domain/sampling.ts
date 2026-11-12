@@ -111,26 +111,30 @@ export function sampleWeighted(
   const items: Array<{ n: number; key: number }> = [];
 
   for (let i = 0; i < n; i++) {
-    const w = weights[i] ?? 1;
-    if (w <= 0) continue; // Peso inválido = probabilidade zero
+    const peso = weights[i] ?? 1;
+    if (peso <= 0) continue; // Peso inválido = probabilidade zero
+    const dezena = pool[i];
+    if (dezena === undefined) continue;
     const u = safeRng(rng);
-    const key = -Math.log(u) / w; // Distribuição exponencial com rate = w
+    const key = -Math.log(u) / peso; // Distribuição exponencial com rate = w
 
     if (items.length < k) {
-      items.push({ n: pool[i], key });
+      items.push({ n: dezena, key });
       if (items.length === k) items.sort((a, b) => a.key - b.key); // min-heap: menor key no índice 0
-    } else if (key > items[0].key) {
-      items[0] = { n: pool[i], key };
+    } else if (items.length > 0 && key > items[0]!.key) {
+      items[0] = { n: dezena, key };
       // Sift down para manter propriedade de min-heap
       let idx = 0;
       while (true) {
         const left = 2 * idx + 1;
         const right = 2 * idx + 2;
         let smallest = idx;
-        if (left < k && items[left].key < items[smallest].key) smallest = left;
-        if (right < k && items[right].key < items[smallest].key) smallest = right;
+        if (left < k && items[left] && items[left].key < items[smallest]!.key) smallest = left;
+        if (right < k && items[right] && items[right].key < items[smallest]!.key) smallest = right;
         if (smallest === idx) break;
-        [items[idx], items[smallest]] = [items[smallest], items[idx]];
+        const smallestItem = items[smallest]!;
+        const idxItem = items[idx]!;
+        [items[idx], items[smallest]] = [smallestItem, idxItem];
         idx = smallest;
       }
     }

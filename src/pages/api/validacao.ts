@@ -3,11 +3,12 @@ import { gerarRelatorioValidacao } from '../../domain/validation';
 import { loadData } from '../../ui/load-data';
 
 const MODALIDADES = ['mega-sena', 'lotofacil', 'quina', 'lotomania'] as const;
+type ModalidadeId = (typeof MODALIDADES)[number];
 
 export const GET: APIRoute = async ({ url }) => {
   const modalidade = url.searchParams.get('modalidade');
 
-  if (!modalidade || !MODALIDADES.includes(modalidade)) {
+  if (!modalidade || !MODALIDADES.includes(modalidade as ModalidadeId)) {
     return new Response(
       JSON.stringify({
         erro: 'Parâmetro "modalidade" obrigatório. Valores: mega-sena, lotofacil, quina, lotomania',
