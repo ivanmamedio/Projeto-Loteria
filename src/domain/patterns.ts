@@ -6,10 +6,18 @@ export interface PatternContext {
   universo: number;
   dezenasValidas: number[];
   k: number;
+  /** Intensidade do bias Fibonacci (0.5=suave, 1=médio, 2=forte). Default: 1 */
+  fibonacciIntensidade?: number;
 }
 
-function zeros(n: number): number[] { return new Array(n).fill(0); }
-function minUniv(universo: number): number { return universo === 100 ? 0 : 1; }
+import { fibonacciFromOne } from './fibonacci';
+
+function zeros(n: number): number[] {
+  return new Array(n).fill(0);
+}
+function minUniv(universo: number): number {
+  return universo === 100 ? 0 : 1;
+}
 
 export function coocorrenciaMatriz(historico: number[][], universo: number): number[][] {
   const min = minUniv(universo);
@@ -58,11 +66,15 @@ export function pmiMatriz(historico: number[][], universo: number): number[][] {
   const eps = 1e-12;
   for (let i = 0; i < M; i++) {
     for (let j = 0; j < M; j++) {
-      if (i === j) { const r = mat[i]; if (r) r[j] = 0; continue; }
+      if (i === j) {
+        const r = mat[i];
+        if (r) r[j] = 0;
+        continue;
+      }
       const conjRow = conj[i];
       const pij = ((conjRow ? conjRow[j] : 0) ?? 0) / (N + eps);
-      const pi = ((marg[i] ?? 0)) / (N + eps) + eps;
-      const pj = ((marg[j] ?? 0)) / (N + eps) + eps;
+      const pi = (marg[i] ?? 0) / (N + eps) + eps;
+      const pj = (marg[j] ?? 0) / (N + eps) + eps;
       const pmi = Math.log((pij + eps) / (pi * pj + eps));
       const matRow = mat[i];
       if (matRow) matRow[j] = Math.max(0, pmi);
@@ -91,7 +103,7 @@ function normalizeWeights(weights: number[]): number[] {
   if (n === 0) return [];
   const sum = weights.reduce((a, b) => a + b, 0);
   if (sum === 0) return weights.map(() => 1);
-  return weights.map(w => w * n / sum);
+  return weights.map((w) => (w * n) / sum);
 }
 
 export function coocorrenciaPesos(ctx: PatternContext): number[] {
@@ -200,7 +212,8 @@ export function markovPesos(ctx: PatternContext): number[] {
 export function gapsDesvio(dezenas: number[]): number {
   const sorted = [...dezenas].sort((a, b) => a - b);
   const gaps: number[] = [];
-  for (let i = 1; i < sorted.length; i++) gaps.push((sorted[i] as number) - (sorted[i - 1] as number));
+  for (let i = 1; i < sorted.length; i++)
+    gaps.push((sorted[i] as number) - (sorted[i - 1] as number));
   if (gaps.length < 2) return 0;
   const media = gaps.reduce((a, b) => a + b, 0) / gaps.length;
   const variancia = gaps.reduce((a, g) => a + (g - media) ** 2, 0) / gaps.length;
@@ -288,7 +301,11 @@ export function quantumWalkPesos(ctx: PatternContext): number[] {
   }
 
   // Debug: log se não unitário (apenas em dev)
-  if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production' && Math.abs(totalProb - 1) > 1e-6) {
+  if (
+    typeof process !== 'undefined' &&
+    process.env.NODE_ENV !== 'production' &&
+    Math.abs(totalProb - 1) > 1e-6
+  ) {
     console.warn(`[quantumWalk] Norma não unitária: ${totalProb}`);
   }
 
@@ -344,6 +361,56 @@ export function ramseyPesos(ctx: PatternContext): number[] {
 }
 
 /**
+ * Pesos baseados na presença/ausência de números de Fibonacci.
+ * Ideia: combinações com proporção "natural" de números de Fibonacci
+ * tendem a ter espaçamento mais equilibrado (análise de gaps / RMT).
+ * NÃO altera probabilidade real — apenas diversifica o formato dos jogos.
+ *
+ * Se o histórico recente tem MAIS números de Fibonacci que o esperado teórico,
+ * damos leve peso extra para números NÃO-Fibonacci (equilibrar), e vice-versa.
+ *
+ * Intensidade configurável (igual ao beta de E1/E2):
+ * - Suave (0.5): bias ±7.5%
+ * - Médio (1.0): bias ±15% (default)
+ * - Forte (2.0): bias ±30%
+ */
+export function fibonacciPesos(ctx: PatternContext): number[] {
+  const { dezenasValidas, universo, historico, fibonacciIntensidade = 1 } = ctx;
+  const fibs = fibonacciFromOne(50).filter((f) => f <= universo);
+  const fibSet = new Set(fibs);
+
+  // Proporção teórica de Fibonacci no universo
+  const fibRatioTeorico = fibs.length / universo;
+
+  // Proporção observada no histórico recente (últimos 20 concursos)
+  const recente = historico.slice(-20);
+  let fibFreq = 0;
+  let totalDezenas = 0;
+  for (const sorteio of recente) {
+    for (const d of sorteio) {
+      totalDezenas++;
+      if (fibSet.has(d)) fibFreq++;
+    }
+  }
+
+  // Sem histórico suficiente -> pesos neutros
+  if (totalDezenas === 0) {
+    return dezenasValidas.map(() => 1);
+  }
+
+  const fibRatioHistorico = fibFreq / totalDezenas;
+
+  // Bias base ±15% escalado pela intensidade
+  const biasBase = 0.15;
+  const bias = (fibRatioHistorico > fibRatioTeorico ? -biasBase : biasBase) * fibonacciIntensidade;
+
+  return dezenasValidas.map((d) => {
+    const isFib = fibSet.has(d);
+    return isFib ? 1 + bias : 1 - bias;
+  });
+}
+
+/**
  * Combina múltiplos fatores de peso no espaço log (soma de logs = log do produto).
  * Evita overflow/underflow numérico de multiplicações sucessivas.
  * Retorna pesos normalizados para média 1.
@@ -351,7 +418,7 @@ export function ramseyPesos(ctx: PatternContext): number[] {
 export function patternWeights(ctx: PatternContext): number[] {
   const { dezenasValidas } = ctx;
   const n = dezenasValidas.length;
-  
+
   // Calcular todos os fatores
   const cooc = coocorrenciaPesos(ctx);
   const slide = slidingWindowPesos(ctx);
@@ -360,35 +427,36 @@ export function patternWeights(ctx: PatternContext): number[] {
   const qw = quantumWalkPesos(ctx);
   const geom = geometriaPesos(ctx);
   const ram = ramseyPesos(ctx);
+  const fib = fibonacciPesos(ctx);
   const interf = interferenciaPesos(slide, ener);
-  
-  const fatores = [cooc, slide, ener, mkv, qw, geom, ram, interf];
+
+  const fatores = [cooc, slide, ener, mkv, qw, geom, ram, fib, interf];
   const numFatores = fatores.length;
-  
+
   // Espaço log: soma de logs = log do produto
   const logWeights = new Array(n).fill(0);
   const EPS = 1e-12;
-  
+
   for (const f of fatores) {
     for (let i = 0; i < n; i++) {
       const val = Math.max(f[i] ?? 1, EPS);
       logWeights[i] += Math.log(val);
     }
   }
-  
+
   // Média geométrica no espaço log = média aritmética dos logs
   for (let i = 0; i < n; i++) {
     logWeights[i] /= numFatores;
   }
-  
+
   // Converter de volta com estabilidade numérica (subtrair max antes de exp)
   const maxLog = Math.max(...logWeights);
-  const weights = logWeights.map(lw => Math.exp(lw - maxLog));
-  
+  const weights = logWeights.map((lw) => Math.exp(lw - maxLog));
+
   // Normalizar para média 1
   const sum = weights.reduce((a, b) => a + b, 0);
   if (sum === 0) return dezenasValidas.map(() => 1);
-  return weights.map(w => w * n / sum);
+  return weights.map((w) => (w * n) / sum);
 }
 
 export function lempelZivComplexity(seq: number[]): number {
@@ -402,26 +470,40 @@ export function lempelZivComplexity(seq: number[]): number {
   let c = 1;
   let k = 1;
   while (true) {
-    if (i + k > n) { c++; break; }
+    if (i + k > n) {
+      c++;
+      break;
+    }
     const sub = s.slice(i, i + k);
     const prev = s.slice(0, i + k - 1);
     if (prev.indexOf(sub) !== -1) {
       k++;
-      if (k > n - i) { c++; break; }
+      if (k > n - i) {
+        c++;
+        break;
+      }
     } else {
       c++;
       i += k;
       if (i >= n) break;
       k = 1;
     }
-    if (i + k > n && k === 1) { c++; break; }
+    if (i + k > n && k === 1) {
+      c++;
+      break;
+    }
   }
   return c / n;
 }
 
-export function patternFilter(dezenas: number[], universo: number, historico?: number[][]): boolean {
+export function patternFilter(
+  dezenas: number[],
+  universo: number,
+  historico?: number[][],
+): boolean {
   const sd = gapsDesvio(dezenas);
-  const mediaGap = dezenas.length > 1 ? (Math.max(...dezenas) - Math.min(...dezenas)) / (dezenas.length - 1) : 1;
+  const mediaGap =
+    dezenas.length > 1 ? (Math.max(...dezenas) - Math.min(...dezenas)) / (dezenas.length - 1) : 1;
   if (sd > mediaGap * 3) return false;
   const H = entropiaCombinacao(dezenas, universo);
   const maxH = Math.log2(Math.max(2, Math.ceil(universo / 10)));

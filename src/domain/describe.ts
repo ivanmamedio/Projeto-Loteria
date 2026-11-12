@@ -3,6 +3,7 @@
  * Referência: tasks_loteria.md — T4.6 (describe.ts)
  */
 
+import { analyzeFibonacciDistribution } from './fibonacci';
 import type { ModalidadeId } from './rules';
 import { modalidadePorId } from './rules';
 
@@ -45,7 +46,36 @@ export function descreverJogo(
   const combinacoes = calcularCombinacoes(modalidade.universo, modalidade.dezenasSorteadas);
   const probabilidade = `1 em ${combinacoes.toLocaleString('pt-BR')}`;
 
-  const resumo = `Combinação de ${jogo.dezenas.length} dezenas entre ${modalidade.universo} possíveis. Probabilidade de acertar todas: ${probabilidade}. Jogo educativo, sem promessa de premiação.`;
+  // Análise de Fibonacci (educativa, não altera probabilidade)
+  const fibAnalysis = analyzeFibonacciDistribution(jogo.dezenas, modalidade.universo);
+  const fibInfo =
+    fibAnalysis.fibonacciCount > 0
+      ? `${fibAnalysis.fibonacciCount} dezenas de Fibonacci (${fibAnalysis.fibonacciNumbers.join(', ')})`
+      : 'Nenhuma dezena de Fibonacci';
+
+  // Pares/ímpares
+  const pares = jogo.dezenas.filter((d) => d % 2 === 0).length;
+  const impares = jogo.dezenas.length - pares;
+
+  // Soma
+  const soma = jogo.dezenas.reduce((a, b) => a + b, 0);
+
+  // Maior sequência consecutiva
+  const sorted = [...jogo.dezenas].sort((a, b) => a - b);
+  let maxSeq = 1;
+  let currentSeq = 1;
+  for (let i = 1; i < sorted.length; i++) {
+    const current = sorted[i];
+    const prev = sorted[i - 1];
+    if ((current ?? 0) === (prev ?? 0) + 1) {
+      currentSeq++;
+      maxSeq = Math.max(maxSeq, currentSeq);
+    } else {
+      currentSeq = 1;
+    }
+  }
+
+  const resumo = `Jogo com ${jogo.dezenas.length} dezenas (${pares} pares, ${impares} ímpares) · Soma: ${soma} · Maior sequência: ${maxSeq} · ${fibInfo} · Probabilidade de acertar todas: ${probabilidade}. Isto descreve o jogo; não altera sua probabilidade.`;
 
   return {
     jogo: {

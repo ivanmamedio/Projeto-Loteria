@@ -2,7 +2,9 @@
  * Fachada de geração de jogos.
  */
 
+import { clearCombinatoricsCache, getCacheStats } from './combinatorics';
 import { evitaPadraoCalendario, filtrosEquilibrio, verificaFiltros } from './filters';
+import { patternFilter, patternWeights } from './patterns';
 import { type IRandom, mulberry32, newSeed } from './rng';
 import { modalidadePorId } from './rules';
 import { sampleWeighted } from './sampling';
@@ -10,9 +12,7 @@ import { atrasoAcumulado, frequenciaDezenas, ultimosN } from './stats';
 import type { Game, GameRequest } from './types';
 import type { ModalidadeId } from './types';
 import { ALGORITHM_VERSION } from './version';
-import { patternWeights, patternFilter } from './patterns';
 import { atrasoWeights, frequencyWeights } from './weights';
-import { getCacheStats, clearCombinatoricsCache } from './combinatorics';
 
 export type { Game, GameRequest };
 
@@ -158,6 +158,20 @@ function betaFromOpcoes(opcoes: Record<string, unknown> | undefined): number {
   }
   return 1;
 }
+
+function fibonacciIntensidadeFromOpcoes(opcoes: Record<string, unknown> | undefined): number {
+  // Usa a mesma lógica do beta, mas pode ser sobrescrita por 'fibonacciIntensidade' específico
+  const intensidade = opt(opcoes, 'fibonacciIntensidade', 'fibIntensity');
+  if (typeof intensidade === 'number' && Number.isFinite(intensidade) && intensidade > 0) {
+    return intensidade;
+  }
+  if (typeof intensidade === 'string') {
+    const n = Number(intensidade);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  // Fallback para a intensidade geral (beta)
+  return betaFromOpcoes(opcoes);
+}
 export type ProgressCallback = (progress: {
   phase: 'weights' | 'candidates' | 'diversifying' | 'fallback' | 'complete';
   progress: number; // 0-100
@@ -170,7 +184,7 @@ export function generateGames(
   quantidade?: number,
   rngOrSeed: IRandom | number = mulberry32(newSeed()),
   _fallbackDepth = 0,
-  onProgress?: ProgressCallback
+  onProgress?: ProgressCallback,
 ): Game[] & {
   games: Game[];
   meta: { algorithmVersion: string; seed: number; janela: number; taxaAceitacao: number };
@@ -312,15 +326,17 @@ export function generateGames(
   // Análise de padrões (teorias_analise_padroes.md) aplicada no back:
   // influencia os pesos de forma transparente quando há histórico disponível.
   if (windowed.length > 0) {
+    const fibIntensidade = fibonacciIntensidadeFromOpcoes(opcoes);
     const pw = patternWeights({
       historico: windowed,
       universo: modalidade.universo,
       dezenasValidas,
       k: tamanho,
+      fibonacciIntensidade: fibIntensidade,
     });
     weights = weights.map((x, i) => x * (pw[i] ?? 1));
   }
-  
+
   // Progress: pesos calculados
   onProgress?.({ phase: 'weights', progress: 10, message: 'Calculando pesos das dezenas...' });
 
@@ -357,22 +373,24 @@ export function generateGames(
   let tentativas = 0;
   let aceitos = 0;
   let lastProgressUpdate = 0;
-  
+
   const updateProgress = (phase: 'candidates' | 'diversifying', current: number, total: number) => {
     const progress = Math.min(10 + Math.floor((current / total) * 80), 90);
-    if (progress - lastProgressUpdate >= 5 || current === total) { // Throttle updates
+    if (progress - lastProgressUpdate >= 5 || current === total) {
+      // Throttle updates
       lastProgressUpdate = progress;
       onProgress?.({
         phase,
         progress,
-        message: phase === 'candidates' 
-          ? `Gerando candidatos... ${current}/${total} (${aceitos} aceitos)`
-          : `Diversificando... ${current}/${total}`,
-        stats: { tentativas, aceitos, jogosGerados: games.length }
+        message:
+          phase === 'candidates'
+            ? `Gerando candidatos... ${current}/${total} (${aceitos} aceitos)`
+            : `Diversificando... ${current}/${total}`,
+        stats: { tentativas, aceitos, jogosGerados: games.length },
       });
     }
   };
-  
+
   const gerarCandidato = (): number[] | null => {
     const cand = sampleWeighted(dezenasValidas, weights, tamanho, rngFn);
     tentativas++;
@@ -424,7 +442,7 @@ export function generateGames(
         quantidade,
         rng,
         _fallbackDepth + 1,
-        onProgress
+        onProgress,
       );
     }
     // Último recurso: gera sem nenhum filtro (E0) - sempre tenta, sem limite de profundidade
@@ -444,7 +462,7 @@ export function generateGames(
         quantidade,
         rng,
         _fallbackDepth + 1,
-        onProgress
+        onProgress,
       );
     }
   } else {
@@ -491,7 +509,7 @@ export function generateGames(
         quantidade,
         rng,
         _fallbackDepth + 1,
-        onProgress
+        onProgress,
       );
     }
     const selecionados: number[][] = [candidatos[0] as number[]];
@@ -551,7 +569,12 @@ export function generateGames(
   }
 
   // Progress final
-  onProgress?.({ phase: 'complete', progress: 100, message: 'Jogos gerados com sucesso!', stats: { tentativas, aceitos, jogosGerados: games.length } });
+  onProgress?.({
+    phase: 'complete',
+    progress: 100,
+    message: 'Jogos gerados com sucesso!',
+    stats: { tentativas, aceitos, jogosGerados: games.length },
+  });
 
   const cacheStats = getCacheStats();
 
