@@ -476,13 +476,12 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
     import { loadData } from '../ui/load-data';
     import { addHistory, clearHistory, loadHistory } from '../ui/history';
     import { pad2 } from '../ui/format';
+    import { carregarStatsHero, formatarDataBR } from '../ui/stats-hero';
 
     type GameResult = {
       dezenas: number[];
       meta: { janela: number; taxaAceitacao: number };
     };
-
-    const MODALIDADES_VALIDAS = ['mega-sena', 'lotofacil', 'quina', 'lotomania'] as const;
 
     // Elementos do hero
     const heroResult = document.getElementById('hero-result') as HTMLElement;
@@ -604,8 +603,9 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
     }
 
     async function concursosDaModalidade(mod: string): Promise<number[][]> {
-      const baseClient = (import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/';
-      const res = await loadData<{ concursos: { dezenas: number[] }[] }>(`${baseClient}data/${mod}.json`);
+      const isGitHubPages = window.location.hostname.includes('github.io');
+      const basePath = isGitHubPages ? '/Projeto-Loteria/' : '/';
+      const res = await loadData<{ concursos: { dezenas: number[] }[] }>(`${basePath}data/${mod}.json`);
       if (!res.ok || !res.data) return [];
       return (res.data.concursos || []).map((c) => c.dezenas);
     }
@@ -1047,35 +1047,40 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
     // Lead form removido: coleta de email sem integração funcional (ver correcoes.md §6).
     // Dados disponíveis em /dados.
 
-    // Carregar contagem de concursos para hero stats
-    async function carregarStatsHero() {
+    // Carregar contagem de concursos para hero stats (inline)
+    (async () => {
       try {
         let total = 0;
         let latestDate: Date | null = null;
+        // Detectar caminho correto dos dados (GitHub Pages usa /Projeto-Loteria/, local usa /)
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        const basePath = isGitHubPages ? '/Projeto-Loteria/' : '/';
         for (const mod of MODALIDADES_VALIDAS) {
-          const baseClient = (import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/';
-      const res = await loadData<{ concursos: { dezenas: number[]; data?: string }[] }>(`${baseClient}data/${mod}.json`);
-          if (res.ok && res.data?.concursos) {
-            total += res.data.concursos.length;
-            // Encontrar data mais recente
-            for (const c of res.data.concursos) {
-              if (c.data) {
-                const d = new Date(c.data);
-                if (!latestDate || d > latestDate) latestDate = d;
+          try {
+            const res = await loadData<{ concursos: { dezenas: number[]; data?: string }[] }>(`${basePath}data/${mod}.json`);
+            if (res.ok && res.data?.concursos) {
+              total += res.data.concursos.length;
+              for (const c of res.data.concursos) {
+                if (c.data) {
+                  const d = new Date(c.data);
+                  if (!latestDate || d > latestDate) latestDate = d;
+                }
               }
             }
+          } catch {
+            // Silenciosamente ignora erros
           }
         }
         const el = document.getElementById('stat-concursos');
         if (el) el.textContent = total.toLocaleString('pt-BR');
-        
         const elDate = document.getElementById('stat-atualizado');
         if (elDate && latestDate) {
           elDate.textContent = latestDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
         }
-      } catch {}
-    }
-    carregarStatsHero();
+      } catch {
+        // Silenciosamente ignora erros
+      }
+    })();
 
     // Inicializar modalidade ativa baseada na URL ou padrão
     const urlModalidade = params.get('modalidade');

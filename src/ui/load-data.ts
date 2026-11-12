@@ -17,6 +17,7 @@ export async function loadData<T = unknown>(url: string): Promise<LoadResult<T>>
       return { ok: false, error: `HTTP ${res.status}` };
     }
     const json = (await res.json()) as { schemaVersion?: number } & T;
+    // Backward compatibility: if schemaVersion is missing, assume v1
     if (json.schemaVersion !== undefined && json.schemaVersion !== SCHEMA_VERSION) {
       return { ok: false, error: 'Versão de schema incompatível.' };
     }

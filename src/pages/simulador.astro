@@ -313,7 +313,9 @@ const janelaPadrao = 100;
 
   // Helper: carregar histórico real
   async function carregarHistorico(mod: string): Promise<number[][]> {
-    const res = await fetch(`/Projeto-Loteria/data/${mod}.json`);
+    const isGitHubPages = window.location.hostname.includes('github.io');
+    const basePath = isGitHubPages ? '/Projeto-Loteria/' : '/';
+    const res = await fetch(`${basePath}data/${mod}.json`);
     if (!res.ok) return [];
     const data = await res.json();
     return (data.concursos || []).map((c: any) => c.dezenas);
