@@ -39949,8 +39949,151 @@
         58
       ],
       "acumulado": true
+    },
+    {
+      "concurso": 3074,
+      "data": "2026-10-24",
+      "dezenas": [
+        2,
+        3,
+        20,
+        25,
+        39,
+        57
+      ],
+      "acumulado": true
+    },
+    {
+      "concurso": 3075,
+      "data": "2026-10-26",
+      "dezenas": [
+        7,
+        10,
+        14,
+        27,
+        36,
+        55
+      ],
+      "acumulado": true
+    },
+    {
+      "concurso": 3076,
+      "data": "2026-10-27",
+      "dezenas": [
+        6,
+        30,
+        32,
+        38,
+        49,
+        57
+      ],
+      "acumulado": true
+    },
+    {
+      "concurso": 3077,
+      "data": "2026-10-28",
+      "dezenas": [
+        2,
+        14,
+        18,
+        31,
+        35,
+        40
+      ],
+      "acumulado": false
+    },
+    {
+      "concurso": 3078,
+      "data": "2026-10-29",
+      "dezenas": [
+        5,
+        7,
+        12,
+        29,
+        34,
+        36
+      ],
+      "acumulado": true
+    },
+    {
+      "concurso": 3079,
+      "data": "2026-10-30",
+      "dezenas": [
+        5,
+        9,
+        16,
+        40,
+        41,
+        59
+      ],
+      "acumulado": true
+    },
+    {
+      "concurso": 3080,
+      "data": "2026-11-01",
+      "dezenas": [
+        13,
+        17,
+        28,
+        29,
+        39,
+        58
+      ],
+      "acumulado": true
+    },
+    {
+      "concurso": 3081,
+      "data": "2026-11-04",
+      "dezenas": [
+        10,
+        17,
+        42,
+        43,
+        57,
+        59
+      ],
+      "acumulado": true
+    },
+    {
+      "concurso": 3082,
+      "data": "2026-11-06",
+      "dezenas": [
+        4,
+        16,
+        23,
+        24,
+        38,
+        44
+      ],
+      "acumulado": true
+    },
+    {
+      "concurso": 3083,
+      "data": "2026-11-08",
+      "dezenas": [
+        22,
+        25,
+        29,
+        37,
+        46,
+        54
+      ],
+      "acumulado": false
+    },
+    {
+      "concurso": 3084,
+      "data": "2026-11-10",
+      "dezenas": [
+        6,
+        14,
+        22,
+        30,
+        31,
+        37
+      ],
+      "acumulado": false
     }
   ],
   "source": "LotoAgora (derivado da CAIXA)",
-  "updatedAt": "2026-11-07T14:42:03.239Z"
+  "updatedAt": "2026-11-12T01:51:24.678Z"
 }
