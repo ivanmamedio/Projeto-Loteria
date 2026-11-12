@@ -21,7 +21,7 @@ export const GET: APIRoute = async ({ url }) => {
 
   try {
     // Carregar histórico do JSON público
-    const baseClient = (import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/';
+    const baseClient = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
     const res = await loadData<{ concursos: { dezenas: number[]; data?: string }[] }>(
       `${baseClient}data/${modalidade}.json`,
     );

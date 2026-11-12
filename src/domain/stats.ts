@@ -60,11 +60,11 @@ function logGamma(z: number): number {
   if (z < 0.5) {
     return Math.log(Math.PI / Math.sin(Math.PI * z)) - logGamma(1 - z);
   }
-  z -= 1;
+  const zz = z - 1;
   let x = p[0];
-  for (let i = 1; i < p.length; i++) x += p[i] / (z + i);
-  const t = z + 7.5;
-  return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+  for (let i = 1; i < p.length; i++) x += p[i] / (zz + i);
+  const t = zz + 7.5;
+  return 0.5 * Math.log(2 * Math.PI) + (zz + 0.5) * Math.log(t) - t + Math.log(x);
 }
 
 /**

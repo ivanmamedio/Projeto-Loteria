@@ -8,7 +8,7 @@
  */
 
 import { modalidadePorId } from './rules';
-import type { ModalidadeId } from './types';
+import type { GameRequest, ModalidadeId } from './types';
 
 /* ============================================================
    1. RUNS TEST (Wald-Wolfowitz) — Não-aleatoriedade sequencial
@@ -369,10 +369,14 @@ export interface SensitivityResult {
  * Se pequena mudança no parâmetro muda muito o resultado -> instável.
  */
 export async function sensitivityAnalysis(
-  baseRequest: any,
+  baseRequest: GameRequest,
   parametro: string,
   valores: number[],
-  gerarJogos: (req: any, q: number, seed: number) => any,
+  gerarJogos: (
+    req: GameRequest,
+    q: number,
+    seed: number,
+  ) => { games: readonly { dezenas: readonly number[] }[]; meta: { taxaAceitacao: number } },
   nTestes = 5,
   seedBase = 123,
 ): Promise<SensitivityResult> {
@@ -402,10 +406,10 @@ export async function sensitivityAnalysis(
   }
 
   // Elasticidade: %Δmétrica / %Δparâmetro (usando taxa de aceitação)
-  const x1 = valores[0],
-    x2 = valores[valores.length - 1];
-  const y1 = metricas[0].taxaAceitacao,
-    y2 = metricas[metricas.length - 1].taxaAceitacao;
+  const x1 = valores[0];
+  const x2 = valores[valores.length - 1];
+  const y1 = metricas[0].taxaAceitacao;
+  const y2 = metricas[metricas.length - 1].taxaAceitacao;
   const elasticidade = x1 !== 0 && y1 !== 0 ? (y2 - y1) / y1 / ((x2 - x1) / x1) : 0;
 
   let interpretacao: SensitivityResult['interpretacao'] = 'estavel';
@@ -483,7 +487,7 @@ export function gerarRelatorioValidacao(
 
   // CDF teórica de atrasos: Geométrica(p = k/universo)
   const p = k / universo;
-  const cdfGeometrica = (x: number) => 1 - Math.pow(1 - p, x + 1);
+  const cdfGeometrica = (x: number) => 1 - (1 - p) ** (x + 1);
 
   for (const d of amostraDezenas) {
     runsTestResults[d] = runsTest(historico, d, universo);

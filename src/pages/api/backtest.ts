@@ -19,14 +19,14 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     if (!estrategia) {
-      return new Response(
-        JSON.stringify({ erro: 'Parâmetro "estrategia" obrigatório' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } },
-      );
+      return new Response(JSON.stringify({ erro: 'Parâmetro "estrategia" obrigatório' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     // Carregar histórico do JSON público
-    const baseClient = (import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/';
+    const baseClient = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
     const res = await loadData<{ concursos: { dezenas: number[]; data?: string }[] }>(
       `${baseClient}data/${modalidade}.json`,
     );
@@ -75,7 +75,7 @@ export const POST: APIRoute = async ({ request }) => {
           Object.entries(resultado.acertosObservados).reduce((soma, [k, v]) => {
             const diff = Number(k) - resultado.mediaAcertosObservada;
             return soma + diff * diff * v;
-          }, 0) / (resultado.nTestes - 1 || 1)
+          }, 0) / (resultado.nTestes - 1 || 1),
         ),
         acertosObservados: resultado.acertosObservados,
         acertosEsperados: resultado.acertosEsperados,

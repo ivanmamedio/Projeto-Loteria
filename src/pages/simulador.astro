@@ -6,16 +6,9 @@
 import Disclaimer from '../components/Disclaimer.astro';
 import Base from '../layouts/Base.astro';
 
-import {
-  MODALIDADES,
-  type ModalidadeId,
-  modalidadePorId,
-} from '../domain/rules';
+import { MODALIDADES, type ModalidadeId, modalidadePorId } from '../domain/rules';
 
-import {
-  distribuicaoAcertos,
-  varianciaAcertos,
-} from '../domain/stats';
+import { distribuicaoAcertos, varianciaAcertos } from '../domain/stats';
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -44,17 +37,31 @@ const desvioTeorico = Math.sqrt(varianciaTeorica);
 
 // Carregar histórico real
 const dataPath = join(process.cwd(), 'public', 'data', `${regras.id}.json`);
-const raw = JSON.parse(readFileSync(dataPath, 'utf8')) as { concursos: { dezenas: number[]; data?: string }[] };
+const raw = JSON.parse(readFileSync(dataPath, 'utf8')) as {
+  concursos: { dezenas: number[]; data?: string }[];
+};
 const historico = raw.concursos.map((c) => c.dezenas);
 
 // Estratégias a comparar
 const estrategias = [
   { id: 'E0', nome: 'E0 — Aleatório uniforme', desc: 'Baseline: todas as dezenas com peso 1' },
-  { id: 'E1', nome: 'E1 — Mais frequentes', desc: 'Peso proporcional à frequência histórica (β=1)' },
+  {
+    id: 'E1',
+    nome: 'E1 — Mais frequentes',
+    desc: 'Peso proporcional à frequência histórica (β=1)',
+  },
   { id: 'E2', nome: 'E2 — Mais atrasadas', desc: 'Peso proporcional ao atraso histórico (β=1)' },
-  { id: 'E3', nome: 'E3 — Filtros de equilíbrio', desc: 'Aceita apenas jogos dentro das faixas teóricas' },
+  {
+    id: 'E3',
+    nome: 'E3 — Filtros de equilíbrio',
+    desc: 'Aceita apenas jogos dentro das faixas teóricas',
+  },
   { id: 'E4', nome: 'E4 — Diversificar lote', desc: 'Minimiza sobreposição entre jogos do lote' },
-  { id: 'combinado', nome: 'E1+E3+E4 — Combinado', desc: 'Frequência + equilíbrio + diversificação' },
+  {
+    id: 'combinado',
+    nome: 'E1+E3+E4 — Combinado',
+    desc: 'Frequência + equilíbrio + diversificação',
+  },
 ];
 
 // Cores para cada estratégia

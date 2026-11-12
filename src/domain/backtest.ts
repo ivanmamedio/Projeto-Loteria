@@ -141,7 +141,7 @@ function pValorQuiQuadrado(chi2: number, graus: number): number {
   const h =
     1 -
     2 / (9 * graus) +
-    Math.sqrt(2 / (9 * graus)) * Math.pow(chi2 / graus, 1 / 3) -
+    Math.sqrt(2 / (9 * graus)) * (chi2 / graus) ** (1 / 3) -
     Math.sqrt(2 / (9 * graus));
   const phi = (z: number) => 0.5 * (1 + mathErf(z / Math.sqrt(2)));
   return 1 - phi(h);
@@ -152,12 +152,12 @@ function pValorQuiQuadrado(chi2: number, graus: number): number {
  */
 function mathErf(x: number): number {
   const sign = x < 0 ? -1 : 1;
-  x = Math.abs(x);
+  const ax = Math.abs(x);
   let sum = 0;
-  let term = x;
+  let term = ax;
   for (let n = 0; n < 20; n++) {
     sum += term;
-    term *= (-(x * x) * (2 * n + 1)) / ((n + 1) * (2 * n + 3));
+    term *= (-(ax * ax) * (2 * n + 1)) / ((n + 1) * (2 * n + 3));
   }
   return sign * (2 / Math.sqrt(Math.PI)) * sum;
 }

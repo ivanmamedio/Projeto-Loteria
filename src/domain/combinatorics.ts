@@ -16,7 +16,8 @@ export function clearCombinatoricsCache(): void {
 export function fatorialCached(n: number): bigint {
   if (n < 0) return 0n;
   if (n === 0) return 1n;
-  if (factorialCache.has(n)) return factorialCache.get(n)!;
+  const cached = factorialCache.get(n);
+  if (cached) return cached;
 
   let r = 1n;
   for (let i = 2n; i <= n; i++) r *= i;
@@ -31,7 +32,8 @@ export function combCached(n: number, k: number): bigint {
 
   const kk = Math.min(k, n - k);
   const key = `${n},${kk}`;
-  if (combCache.has(key)) return combCache.get(key)!;
+  const cached = combCache.get(key);
+  if (cached) return cached;
 
   let r = 1n;
   for (let i = 1; i <= kk; i++) {
@@ -73,12 +75,14 @@ export function gcd(a: bigint, b: bigint): bigint {
 
 /** MDC para number (usado em filtros) */
 export function gcdNumber(a: number, b: number): number {
-  while (b !== 0) {
-    const t = b;
-    b = a % b;
-    a = t;
+  let aa = a;
+  let bb = b;
+  while (bb !== 0) {
+    const t = bb;
+    bb = aa % bb;
+    aa = t;
   }
-  return a;
+  return aa;
 }
 
 /** Simplifica fração BigInt */
@@ -98,7 +102,7 @@ export interface ProbabilityExact {
 /** Converte fração BigInt para decimal com precisão arbitrária */
 export function fractionToDecimal(num: bigint, den: bigint, precision = 50): string {
   if (den === 0n) return 'NaN';
-  if (num === 0n) return '0.' + '0'.repeat(precision);
+  if (num === 0n) return `0.${'0'.repeat(precision)}`;
   if (num >= den) {
     const intPart = num / den;
     const rem = num % den;
@@ -107,7 +111,7 @@ export function fractionToDecimal(num: bigint, den: bigint, precision = 50): str
   }
   const scale = 10n ** BigInt(precision);
   const result = (num * scale) / den;
-  return '0.' + result.toString().padStart(precision, '0');
+  return `0.${result.toString().padStart(precision, '0')}`;
 }
 
 /** Probabilidade de acerto exato: 1 / C(total, exatos) */
