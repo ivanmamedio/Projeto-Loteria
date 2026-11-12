@@ -103,7 +103,7 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
         <!-- Hero stats -->
         <div class="hero-stats">
           <div class="stat-item">
-            <div class="stat-value" id="stat-concursos">—</div>
+            <div class="stat-value" id="stat-concursos">Carregando…</div>
             <div class="stat-label">Concursos analisados</div>
           </div>
           <div class="stat-item">
@@ -111,12 +111,12 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
             <div class="stat-label">Modalidades</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">100%</div>
-            <div class="stat-label">Gratuito</div>
+            <div class="stat-value" id="stat-atualizado">Atualizado após cada sorteio</div>
+            <div class="stat-label">Dados</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value" id="stat-atualizado">—</div>
-            <div class="stat-label">Última atualização</div>
+            <div class="stat-value" id="stat-responsavel">18+</div>
+            <div class="stat-label">Jogo responsável</div>
           </div>
         </div>
       </div>
@@ -369,7 +369,7 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
           <ul class="method-details">
             <li>Uso: Ver dezenas "quentes" históricas</li>
             <li>Viés: Frequência passada</li>
-            <li>Limitação: Não prevê futuras</li>
+            <li>Limitação: Não prevê futuros sorteios</li>
           </ul>
           <a href={`${base}metodologia#e1`} class="method-link">Ver fórmula e exemplos <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
         </article>
@@ -382,7 +382,7 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
           <p class="method-description">Prioriza dezenas que não saem há mais tempo. Baseada no conceito descritivo de "atraso".</p>
           <ul class="method-details">
             <li>Uso: Ver dezenas "frias" históricas</li>
-            <li>Viés: Atraso passada</li>
+            <li>Viés: Atraso passado</li>
             <li>Limitação: Falácia do jogador</li>
           </ul>
           <a href={`${base}metodologia#e2`} class="method-link">Ver fórmula e exemplos <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
@@ -398,6 +398,7 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
             <li>Uso: Jogos balanceados</li>
             <li>Viés: Distribuição histórica</li>
             <li>Taxa aceitação: Variável</li>
+            <li>Benefício real: Evita dias 1–31 (calendário) → reduz chance de dividir prêmio</li>
           </ul>
           <a href={`${base}metodologia#e3`} class="method-link">Ver fórmula e exemplos <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
         </article>

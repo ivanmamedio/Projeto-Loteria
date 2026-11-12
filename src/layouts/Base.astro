@@ -9,21 +9,21 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Jogo na Hora — Gerador gratuito de combinações de loteria com estratégias baseadas em dados oficiais da Caixa. Sem promessas falsas, 100% transparente." />
+    <meta name="description" content="Jogo na Hora — Gerador gratuito de combinações de loteria com estratégias descritivas baseadas em dados oficiais da Caixa. Sem promessas falsas, 100% transparente." />
     <meta name="theme-color" content="#007A33" />
     
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Jogo na Hora" />
     <meta property="og:title" content="Jogo na Hora — Gerador de combinações de loteria" />
-    <meta property="og:description" content="Gere jogos da Mega-Sena, Lotofácil, Quina e Lotomania com 4 estratégias baseadas em dados reais. Histórico local, exportação CSV, sem cadastro." />
+    <meta property="og:description" content="Gere jogos da Mega-Sena, Lotofácil, Quina e Lotomania com 4 estratégias descritivas baseadas em dados oficiais. Histórico local, exportação CSV, sem cadastro." />
     <meta property="og:image" content={`${base}og-image.svg`} />
     <meta property="og:url" content="https://ivanmamedio.github.io/Projeto-Loteria/" />
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Jogo na Hora — Gerador de combinações de loteria" />
-    <meta name="twitter:description" content="Gere jogos com estratégias baseadas em dados reais da Caixa. Gratuito, transparente, sem tracking." />
+    <meta name="twitter:description" content="Gere jogos com estratégias descritivas baseadas em dados oficiais da Caixa. Gratuito, transparente, sem tracking." />
     <meta name="twitter:image" content={`${base}og-image.svg`} />
     
     <!-- Preconnect para fonts (system fonts não precisam, mas mantemos para og:image) -->
@@ -142,6 +142,12 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
           <a href={`${base}sobre`}>Sobre o projeto</a>
           <a href={`${base}privacidade`}>Privacidade</a>
           <a href={`${base}termos`}>Termos de uso</a>
+        </nav>
+
+        <nav class="footer-links" aria-label="Jogo Responsável">
+          <h3 class="footer-heading">Jogo Responsável</h3>
+          <a href="https://jogadoresanonimos.org.br/" target="_blank" rel="noopener noreferrer">Jogadores Anônimos</a>
+          <a href="https://www.cvv.org.br/" target="_blank" rel="noopener noreferrer">CVV — 188</a>
         </nav>
 
         <nav class="footer-links" aria-label="Comunidade">
