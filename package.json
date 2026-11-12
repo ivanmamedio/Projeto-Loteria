@@ -17,7 +17,8 @@
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "data:import": "node etl/import.ts",
-    "data:check": "node etl/check.ts"
+    "data:check": "node etl/check.ts",
+    "data:download": "node etl/download-csvs.js"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.0.0",
