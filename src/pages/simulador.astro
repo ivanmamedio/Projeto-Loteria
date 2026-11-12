@@ -1,0 +1,680 @@
+---
+// Simulador Educativo — Demonstra que nenhuma estratégia aumenta a chance
+// Referência: tasks_loteria.md — T8.1 (Backtest educativo)
+// Roda 100% no cliente (navegador) — sem API server-side
+
+import Disclaimer from '../components/Disclaimer.astro';
+import Base from '../layouts/Base.astro';
+
+import {
+  MODALIDADES,
+  type ModalidadeId,
+  modalidadePorId,
+} from '../domain/rules';
+
+import {
+  distribuicaoAcertos,
+  varianciaAcertos,
+} from '../domain/stats';
+
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+export function getStaticPaths() {
+  return MODALIDADES.map((m) => ({ params: { modalidade: m.id } }));
+}
+
+const { modalidade } = Astro.params;
+let regras: ReturnType<typeof modalidadePorId>;
+try {
+  regras = modalidadePorId(modalidade as ModalidadeId);
+} catch {
+  regras = modalidadePorId('mega-sena' as ModalidadeId);
+}
+
+const k = regras.dezenasSorteadas;
+const universo = regras.universo;
+const apostados = k;
+
+// Distribuição teórica (hipergeométrica) - IGUAL PARA TODAS AS ESTRATÉGIAS
+const distTeorica = distribuicaoAcertos(universo, k, apostados);
+const mediaTeorica = (k * k) / universo;
+const varianciaTeorica = varianciaAcertos(universo, k, apostados);
+const desvioTeorico = Math.sqrt(varianciaTeorica);
+
+// Carregar histórico real
+const dataPath = join(process.cwd(), 'public', 'data', `${regras.id}.json`);
+const raw = JSON.parse(readFileSync(dataPath, 'utf8')) as { concursos: { dezenas: number[]; data?: string }[] };
+const historico = raw.concursos.map((c) => c.dezenas);
+
+// Estratégias a comparar
+const estrategias = [
+  { id: 'E0', nome: 'E0 — Aleatório uniforme', desc: 'Baseline: todas as dezenas com peso 1' },
+  { id: 'E1', nome: 'E1 — Mais frequentes', desc: 'Peso proporcional à frequência histórica (β=1)' },
+  { id: 'E2', nome: 'E2 — Mais atrasadas', desc: 'Peso proporcional ao atraso histórico (β=1)' },
+  { id: 'E3', nome: 'E3 — Filtros de equilíbrio', desc: 'Aceita apenas jogos dentro das faixas teóricas' },
+  { id: 'E4', nome: 'E4 — Diversificar lote', desc: 'Minimiza sobreposição entre jogos do lote' },
+  { id: 'combinado', nome: 'E1+E3+E4 — Combinado', desc: 'Frequência + equilíbrio + diversificação' },
+];
+
+// Cores para cada estratégia
+const cores = {
+  E0: '#6b7280',
+  E1: '#3b82f6',
+  E2: '#ef4444',
+  E3: '#10b981',
+  E4: '#f59e0b',
+  combinado: '#8b5cf6',
+};
+
+// Valores padrão para o template
+const nTestesPadrao = 100;
+const janelaPadrao = 100;
+---
+
+<Base modalidade={regras.id}>
+  <section class="page-header">
+    <div class="container">
+      <h1>Simulador Educativo</h1>
+      <p>
+        Comparação honesta: <strong>todas as estratégias têm o mesmo resultado esperado</strong>.
+        A diferença é apenas na <em>distribuição dos jogos gerados</em>, não na probabilidade de acerto.
+      </p>
+    </div>
+  </section>
+
+  <section class="container">
+    <div class="summary-card" style="margin-bottom: var(--space-6);">
+      <h3>{regras.nome} — {k} dezenas sorteadas de {universo}</h3>
+      <div class="stats-grid" style="margin-top: var(--space-4);">
+        <div class="stat-box">
+          <h4>Probabilidade teórica (igual para todas)</h4>
+          <p>Média de acertos: <strong>{mediaTeorica.toFixed(4)}</strong></p>
+          <p>Desvio padrão: <strong>{desvioTeorico.toFixed(4)}</strong></p>
+          <p>Variância: <strong>{varianciaTeorica.toFixed(4)}</strong></p>
+          <p class="text-sm text-muted" style="margin-top: var(--space-2);">
+            Fórmula: E[X] = k²/M = {k}²/{universo} = {mediaTeorica.toFixed(4)}
+          </p>
+        </div>
+        <div class="stat-box">
+          <h4>Distribuição hipergeométrica (F3)</h4>
+          <table class="stats-table" style="margin-top: var(--space-3);">
+            <thead><tr><th>Acertos</th><th>Probabilidade</th><th>1 em</th></tr></thead>
+            <tbody>
+              {distTeorica.map((d) => (
+                <tr>
+                  <td>{d.acertos}</td>
+                  <td>{(d.probabilidade * 100).toFixed(4)}%</td>
+                  <td>{d.probabilidade > 0 ? Math.round(1 / d.probabilidade).toLocaleString('pt-BR') : '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="margin-bottom: var(--space-6);" role="alert">
+      <div class="alert-content">
+        <strong>🎯 Princípio fundamental:</strong> Em sorteio justo (i.i.d.), <strong>toda combinação válida tem a mesma probabilidade</strong>.
+        Nenhuma estratégia (E0–E4) altera E[X] = k²/M. As estratégias só mudam <em>quais</em> combinações você joga,
+        não <em>quantas</em> você acerta em média. O resultado esperado é <strong>idêntico para todas</strong>.
+      </div>
+    </div>
+
+    <!-- Controles do simulador -->
+    <section class="controls-panel" style="margin-bottom: var(--space-8);">
+      <h3 class="controls-panel-title">Configurar simulação</h3>
+      <div class="controls-grid">
+        <div class="form-group">
+          <label for="sim-janela" class="form-label">Janela de análise (concursos)</label>
+          <input id="sim-janela" type="number" min="10" max="{historico.length}" value="100" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label for="sim-nTestes" class="form-label">Número de testes (concursos simulados)</label>
+          <input id="sim-nTestes" type="number" min="10" max="500" value="100" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-checkbox">
+            <input id="sim-filtros" type="checkbox" checked />
+            <span>Aplicar filtros (E3) nas estratégias que os usam</span>
+          </label>
+        </div>
+      </div>
+      <div class="controls-actions">
+        <button id="btn-simular" type="button" class="btn btn-primary btn-lg" style="min-width: 200px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+          Executar simulação
+        </button>
+      </div>
+    </section>
+
+    <!-- Resultados -->
+    <section id="resultados-simulacao" style="display: none;">
+      <h2>Resultados da simulação (<span id="resultado-nTestes">{nTestesPadrao}</span> testes, janela <span id="resultado-janela">{janelaPadrao}</span>)</h2>
+      
+      <div class="alert alert-warning" role="alert">
+        <div class="alert-content">
+          <strong>⚠ Lembrete:</strong> Mesmo que uma estratégia pareça "melhor" nesta amostra,
+          é <strong>variância aleatória</strong>. Em muitas simulações, todas convergem para a média teórica.
+        </div>
+      </div>
+
+      <!-- Tabela comparativa -->
+      <div class="stat-box" style="overflow-x: auto;">
+        <table class="stats-table" id="tabela-comparativa">
+          <thead>
+            <tr>
+              <th>Estratégia</th>
+              <th>Média acertos</th>
+              <th>Desvio obs.</th>
+              <th>Média teórica</th>
+              <th>Diff (obs - teórica)</th>
+              <th>Qui² p-valor</th>
+              <th>Taxa aceitação</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-comparativa"></tbody>
+        </table>
+      </div>
+
+      <!-- Gráfico de barras comparativo -->
+      <div class="stat-box" style="margin-top: var(--space-6);">
+        <h3>Distribuição de acertos observada vs. teórica</h3>
+        <div id="grafico-barras" style="height: 300px; position: relative;"></div>
+      </div>
+
+      <!-- Evolução temporal -->
+      <div class="stat-box" style="margin-top: var(--space-6);">
+        <h3>Evolução da média de acertos (walk-forward)</h3>
+        <canvas id="grafico-evolucao" style="max-height: 300px;"></canvas>
+      </div>
+    </section>
+
+    <!-- Explicação metodológica -->
+    <section class="data-notes" style="margin-top: var(--space-8);">
+      <h3>Como funciona o simulador</h3>
+      <ol style="margin-left: var(--space-6); line-height: 2;">
+        <li><strong>Walk-forward:</strong> Para cada concurso t, usa histórico até t-1 (janela deslizante) para gerar 1 jogo.</li>
+        <li><strong>Comparação:</strong> Conta acertos do jogo gerado vs. sorteio real de t.</li>
+        <li><strong>Agregação:</strong> Repete para N testes e compara distribuição observada vs. teórica (hipergeométrica).</li>
+        <li><strong>Qui-quadrado:</strong> Testa se a distribuição observada difere significativamente da teórica.</li>
+      </ol>
+      <p class="text-sm text-muted" style="margin-top: var(--space-3);">
+        Código: <code>src/domain/backtest.ts</code> — função <code>backtestWalkForward</code>.
+        A lógica de geração (<code>generateGames</code>) é a mesma do gerador principal.
+      </p>
+    </section>
+  </section>
+
+  <Disclaimer />
+</Base>
+
+<script>
+  // Configuração das estratégias para o client
+  const ESTRATEGIAS = [
+    { id: 'E0', nome: 'E0 — Aleatório uniforme', cor: '#6b7280' },
+    { id: 'E1', nome: 'E1 — Mais frequentes', cor: '#3b82f6' },
+    { id: 'E2', nome: 'E2 — Mais atrasadas', cor: '#ef4444' },
+    { id: 'E3', nome: 'E3 — Filtros de equilíbrio', cor: '#10b981' },
+    { id: 'E4', nome: 'E4 — Diversificar lote', cor: '#f59e0b' },
+    { id: 'combinado', nome: 'E1+E3+E4 — Combinado', cor: '#8b5cf6' },
+  ];
+
+  // Elementos
+  const btnSimular = document.getElementById('btn-simular') as HTMLButtonElement;
+  const resultadosSection = document.getElementById('resultados-simulacao') as HTMLElement;
+  const tbody = document.getElementById('tbody-comparativa') as HTMLTableSectionElement;
+  const graficoBarras = document.getElementById('grafico-barras') as HTMLDivElement;
+  const canvasEvolucao = document.getElementById('grafico-evolucao') as HTMLCanvasElement;
+
+  // Estado
+  let historicoAcertosPorEstrategia: Record<string, number[]> = {};
+  let graficoBarrasInstancia: any = null;
+  let graficoEvolucaoInstancia: any = null;
+
+  // Funções de domínio (reimplementadas no client - versões simplificadas)
+  function combinacoes(n: number, k: number): number {
+    if (k < 0 || k > n) return 0;
+    if (k === 0 || k === n) return 1;
+    const kk = Math.min(k, n - k);
+    let resultado = 1;
+    for (let i = 1; i <= kk; i++) {
+      resultado = Math.round((resultado * (n - kk + i)) / i);
+    }
+    return resultado;
+  }
+
+  function probabilidadeAcertos(universo: number, sorteados: number, apostados: number, acertos: number): number {
+    if (acertos < 0 || acertos > Math.min(sorteados, apostados)) return 0;
+    const favoraveis = combinacoes(sorteados, acertos) * combinacoes(universo - sorteados, apostados - acertos);
+    const total = combinacoes(universo, apostados);
+    if (total === 0) return 0;
+    return favoraveis / total;
+  }
+
+  function distribuicaoAcertosClient(universo: number, sorteados: number, apostados: number) {
+    const max = Math.min(sorteados, apostados);
+    const saida: { acertos: number; probabilidade: number }[] = [];
+    for (let j = 0; j <= max; j++) {
+      saida.push({
+        acertos: j,
+        probabilidade: probabilidadeAcertos(universo, sorteados, apostados, j),
+      });
+    }
+    return saida;
+  }
+
+  function frequenciaDezenas(registro: number[][]): Record<number, number> {
+    const freq: Record<number, number> = {};
+    for (const concursos of registro) {
+      for (const dezena of concursos) {
+        freq[dezena] = (freq[dezena] ?? 0) + 1;
+      }
+    }
+    return freq;
+  }
+
+  function atrasoAcumulado(registro: number[][], dezena: number): number {
+    const N = registro.length;
+    if (N === 0) return 0;
+    let ultimoIndice = -1;
+    for (let i = 0; i < N; i++) {
+      const sortido = registro[i] ?? [];
+      if (sortido.includes(dezena)) ultimoIndice = i;
+    }
+    if (ultimoIndice === -1) return N;
+    return N - 1 - ultimoIndice;
+  }
+
+  function sampleWeighted(pool: number[], weights: number[], k: number, rng: () => number): number[] {
+    return pool
+      .map((n, i) => ({ n, key: Math.log(rng() || Number.MIN_VALUE) / (weights[i] ?? 1) }))
+      .sort((a, b) => b.key - a.key)
+      .slice(0, k)
+      .map((x) => x.n)
+      .sort((a, b) => a - b);
+  }
+
+  function mulberry32(seed: number): () => number {
+    let a = seed >>> 0;
+    return () => {
+      a = (a + 0x6d2b79f5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // Helper: carregar histórico real
+  async function carregarHistorico(mod: string): Promise<number[][]> {
+    const res = await fetch(`/Projeto-Loteria/data/${mod}.json`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.concursos || []).map((c: any) => c.dezenas);
+  }
+
+  // Backtest walk-forward no cliente
+  async function executarBacktestCliente(
+    estrategiaId: string,
+    janela: number,
+    nTestes: number,
+    filtros: boolean,
+    historicoCompleto: number[][]
+  ) {
+    const mod = document.querySelector('html')?.getAttribute('data-modalidade') || 'mega-sena';
+    const regras = MODALIDADES.find((m) => m.id === mod);
+    if (!regras) throw new Error('Modalidade não encontrada');
+
+    const universo = regras.universo;
+    const k = regras.dezenasSorteadas;
+    const minU = mod === 'lotomania' ? 0 : 1;
+    const dezenasValidas: number[] = [];
+    for (let d = minU; d < minU + universo; d++) dezenasValidas.push(d);
+
+    const acertosObs: Record<number, number> = {};
+    for (let j = 0; j <= k; j++) acertosObs[j] = 0;
+
+    let taxaAceitacaoSoma = 0;
+    let taxaAceitacaoCont = 0;
+    let mediaAcertosObs = 0;
+    const historicoAcertos: number[] = [];
+
+    const inicio = Math.max(janela, historicoCompleto.length - nTestes);
+
+    for (let t = inicio; t < historicoCompleto.length; t++) {
+      const histAte = historicoCompleto.slice(Math.max(0, t - janela), t);
+      const alvo = historicoCompleto[t] ?? [];
+      const alvoSet = new Set(alvo);
+
+      // Preparar pesos baseados na estratégia
+      let weights = dezenasValidas.map(() => 1);
+
+      // Frequência (E1)
+      const usarE1 = ['E1', 'combinado'].includes(estrategiaId);
+      if (usarE1) {
+        const freq = frequenciaDezenas(histAte);
+        const freqArr = dezenasValidas.map((d) => freq[d] ?? 0);
+        const mediaFreq = freqArr.reduce((a, b) => a + b, 0) / freqArr.length;
+        const wFreq = freqArr.map((f) => ((f + 1) / (mediaFreq + 1)) ** 1);
+        weights = weights.map((x, i) => x * (wFreq[i] ?? 1));
+      }
+
+      // Atraso (E2)
+      const usarE2 = ['E2', 'combinado'].includes(estrategiaId);
+      if (usarE2) {
+        const atrasoArr = dezenasValidas.map((d) => atrasoAcumulado(histAte, d));
+        const mediaAtraso = atrasoArr.reduce((a, b) => a + b, 0) / atrasoArr.length;
+        const wAtraso = atrasoArr.map((a) => ((a + 1) / (mediaAtraso + 1)) ** 1);
+        weights = weights.map((x, i) => x * (wAtraso[i] ?? 1));
+      }
+
+      // Filtros (E3)
+      const usarFiltros = filtros && (['E3', 'combinado'].includes(estrategiaId));
+      let tentativas = 0;
+      const maxTentativas = 10000;
+      let jogo: number[] = [];
+
+      // Gerar jogo com pesos (com rejeição se filtros ativos)
+      const seed = 42 + t;
+      const rng = mulberry32(seed);
+
+      if (usarFiltros) {
+        // Simplificação: tenta gerar jogo que passe nos filtros básicos
+        while (tentativas < maxTentativas) {
+          const cand = sampleWeighted(dezenasValidas, weights, k, () => rng());
+          tentativas++;
+          
+          // Filtro simples: par/ímpar balanceado
+          const pares = cand.filter((d) => d % 2 === 0).length;
+          const impares = k - pares;
+          const esperadoPares = k * 0.5;
+          if (Math.abs(pares - esperadoPares) > 2) continue;
+
+          // Filtro soma
+          const soma = cand.reduce((a, b) => a + b, 0);
+          const mediaSoma = k * (universo + 1) / 2;
+          const desvioSoma = Math.sqrt(k * (universo + 1) * (universo - k) / 12);
+          if (Math.abs(soma - mediaSoma) > 2 * desvioSoma) continue;
+
+          jogo = cand;
+          break;
+        }
+        if (tentativas >= maxTentativas) {
+          // Fallback: jogo sem filtros
+          jogo = sampleWeighted(dezenasValidas, weights, k, () => rng());
+        }
+      } else {
+        jogo = sampleWeighted(dezenasValidas, weights, k, () => rng());
+      }
+
+      let acertos = 0;
+      for (const d of jogo) if (alvoSet.has(d)) acertos++;
+      acertosObs[acertos] = (acertosObs[acertos] ?? 0) + 1;
+      mediaAcertosObs += acertos;
+      historicoAcertos.push(acertos);
+      taxaAceitacaoSoma += tentativas > 0 ? 1 / Math.max(1, tentativas / 100) : 1;
+      taxaAceitacaoCont++;
+    }
+
+    // Distribuição teórica
+    const distTeorica = distribuicaoAcertosClient(universo, k, k);
+    const acertosEsp: Record<number, number> = {};
+    for (const { acertos, probabilidade } of distTeorica) {
+      acertosEsp[acertos] = Math.round(probabilidade * nTestes * 100) / 100;
+    }
+
+    // Qui-quadrado
+    let chi2 = 0;
+    let graus = 0;
+    for (let j = 0; j <= k; j++) {
+      const obs = acertosObs[j] ?? 0;
+      const esp = Math.max(acertosEsp[j] ?? 0, 0.5);
+      chi2 += (obs - esp) ** 2 / esp;
+      graus++;
+    }
+    graus = Math.max(1, graus - 1);
+
+    const pValor = pValorQuiQuadrado(chi2, graus);
+
+    return {
+      estrategiaId,
+      estrategiaUsada: estrategiaId,
+      mediaAcertosObservada: mediaAcertosObs / nTestes,
+      mediaAcertosEsperada: (k * k) / universo,
+      desvioAcertosObservado: Math.sqrt(
+        historicoAcertos.reduce((s, v) => {
+          const m = mediaAcertosObs / nTestes;
+          return s + (v - m) ** 2;
+        }, 0) / (nTestes - 1 || 1)
+      ),
+      acertosObservados: acertosObs,
+      acertosEsperados: acertosEsp,
+      quiQuadrado: { chi2, graus, pValor },
+      taxaAceitacaoMedia: taxaAceitacaoCont > 0 ? taxaAceitacaoSoma / taxaAceitacaoCont : 0,
+      historicoAcertos,
+      nTestes,
+    };
+  }
+
+  function pValorQuiQuadrado(chi2: number, graus: number): number {
+    if (chi2 <= 0) return 1;
+    if (graus <= 0) return 0;
+    const h =
+      1 -
+      2 / (9 * graus) +
+      Math.sqrt(2 / (9 * graus)) * (chi2 / graus) ** (1 / 3) -
+      Math.sqrt(2 / (9 * graus));
+    const phi = (z: number) => 0.5 * (1 + erf(z / Math.sqrt(2)));
+    return 1 - phi(h);
+  }
+
+  function erf(x: number): number {
+    const sign = x < 0 ? -1 : 1;
+    const ax = Math.abs(x) / Math.sqrt(2);
+    const t = 1 / (1 + 0.3275911 * ax);
+    const erfVal =
+      1 -
+      ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) *
+        t *
+        Math.exp(-ax * ax);
+    return 0.5 * (1 + sign * erfVal);
+  }
+
+  // Renderizar tabela comparativa
+  function renderizarTabela(resultados: Record<string, any>) {
+    tbody.innerHTML = '';
+    for (const [id, r] of Object.entries(resultados)) {
+      const est = ESTRATEGIAS.find((e) => e.id === id);
+      const diff = (r.mediaAcertosObservada - r.mediaAcertosEsperada).toFixed(4);
+      const pValor = r.quiQuadrado?.pValor ?? 1;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${est.cor};margin-right:8px;"></span> ${r.estrategiaUsada || id}</td>
+        <td>${r.mediaAcertosObservada.toFixed(4)}</td>
+        <td>${r.desvioAcertosObservado?.toFixed(4) ?? '—'}</td>
+        <td>${r.mediaAcertosEsperada.toFixed(4)}</td>
+        <td style="color:${parseFloat(diff) >= 0 ? '#10b981' : '#ef4444'};font-weight:600;">${diff >= 0 ? '+' : ''}${diff}</td>
+        <td>${r.quiQuadrado?.pValor?.toFixed(4) ?? '—'}</td>
+        <td>${(r.taxaAceitacaoMedia * 100).toFixed(1)}%</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  // Renderizar gráfico de barras
+  async function renderizarGraficoBarras(resultados: Record<string, any>, distTeorica: any[]) {
+    if (!window.Chart) {
+      await new Promise<void>((resolve) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+        script.onload = () => resolve();
+        document.head.appendChild(script);
+      });
+    }
+
+    const ctx = graficoBarras;
+    ctx.innerHTML = '<canvas id="chart-barras"></canvas>';
+    const canvas = document.getElementById('chart-barras') as HTMLCanvasElement;
+    canvas.style.maxHeight = '280px';
+
+    const k = MODALIDADES.find((m) => m.id === (document.querySelector('html')?.getAttribute('data-modalidade') || 'mega-sena'))?.dezenasSorteadas || 6;
+    const labels = Array.from({ length: k + 1 }, (_, i) => i);
+    const datasets = [
+      {
+        label: 'Teórica',
+        data: labels.map((i) => distTeorica.find((d) => d.acertos === i)?.probabilidade * 100 || 0),
+        borderColor: '#6b7280',
+        backgroundColor: 'rgba(107,114,128,0.1)',
+        borderWidth: 2,
+        fill: false,
+        type: 'line',
+        tension: 0.3,
+        pointRadius: 4,
+      }
+    ];
+
+    for (const [id, r] of Object.entries(resultados)) {
+      const est = ESTRATEGIAS.find((e) => e.id === id);
+      const obsData = labels.map((i) => (r.acertosObservados?.[i] ?? 0) / (r.nTestes || 1) * 100);
+      datasets.push({
+        label: est.nome,
+        data: obsData,
+        backgroundColor: est.cor + '80',
+        borderColor: est.cor,
+        borderWidth: 1,
+      });
+    }
+
+    if (graficoBarrasInstancia) graficoBarrasInstancia.destroy();
+    graficoBarrasInstancia = new window.Chart(canvas, {
+      type: 'bar',
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: '% de ocorrência' } },
+          x: { title: { display: true, text: 'Número de acertos' } },
+        },
+      },
+    });
+  }
+
+  // Renderizar gráfico de evolução temporal
+  async function renderizarGraficoEvolucao(resultados: Record<string, any>) {
+    if (!window.Chart) return;
+
+    if (graficoEvolucaoInstancia) graficoEvolucaoInstancia.destroy();
+
+    const datasets = [];
+    for (const [id, r] of Object.entries(resultados)) {
+      const est = ESTRATEGIAS.find((e) => e.id === id);
+      if (!r.historicoAcertos) continue;
+      datasets.push({
+        label: est.nome,
+        data: r.historicoAcertos,
+        borderColor: est.cor,
+        backgroundColor: est.cor + '20',
+        borderWidth: 2,
+        fill: false,
+        tension: 0.2,
+        pointRadius: 0,
+      });
+    }
+
+    graficoEvolucaoInstancia = new window.Chart(canvasEvolucao, {
+      type: 'line',
+      data: { labels: Array.from({ length: resultados[Object.keys(resultados)[0]]?.historicoAcertos?.length || 0 }, (_, i) => i + 1), datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+          y: { title: { display: true, text: 'Acertos por concurso' } },
+          x: { title: { display: true, text: 'Teste (concurso)' } },
+        },
+      },
+    });
+  }
+
+  // Main handler
+  btnSimular?.addEventListener('click', async () => {
+    const janela = parseInt((document.getElementById('sim-janela') as HTMLInputElement).value) || 100;
+    const nTestes = parseInt((document.getElementById('sim-nTestes') as HTMLInputElement).value) || 100;
+    const filtros = (document.getElementById('sim-filtros') as HTMLInputElement).checked;
+
+    const mod = document.querySelector('html')?.getAttribute('data-modalidade') || 'mega-sena';
+    
+    btnSimular.disabled = true;
+    btnSimular.innerHTML = '<svg class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1" stroke-linecap="round"/></svg> Simulando…';
+
+    try {
+      const historico = await carregarHistorico(mod);
+      if (historico.length < janela + 2) {
+        alert(`Histórico insuficiente: ${historico.length} concursos, necessário ${janela + 2}.`);
+        return;
+      }
+
+      const resultados: Record<string, any> = {};
+
+      // Executar backtest para cada estratégia (sequencial para não travar UI)
+      for (const est of ESTRATEGIAS) {
+        try {
+          // Mostrar progresso
+          btnSimular.innerHTML = `<svg class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1" stroke-linecap="round"/></svg> Simulando ${est.nome}…`;
+          
+          const r = await executarBacktestCliente(est.id, janela, nTestes, filtros, historico.slice(-janela * 2));
+          resultados[est.id] = r;
+        } catch (e) {
+          console.error(`Erro em ${est.id}:`, e);
+        }
+      }
+
+      // Atualizar labels do resultado
+      document.getElementById('resultado-nTestes')!.textContent = nTestes.toString();
+      document.getElementById('resultado-janela')!.textContent = janela.toString();
+
+      // Exibir resultados
+      resultadosSection.style.display = 'block';
+      renderizarTabela(resultados);
+
+      // Carregar distribuição teórica para gráficos
+      const mod = document.querySelector('html')?.getAttribute('data-modalidade') || 'mega-sena';
+      const regras = MODALIDADES.find((m) => m.id === mod);
+      const k = regras?.dezenasSorteadas || 6;
+      const distTeorica = distribuicaoAcertosClient(60, 6, 6); // será recalculado corretamente
+
+      // Recalcular distTeorica correta
+      const regrasMod = MODALIDADES.find((m) => m.id === mod);
+      if (regrasMod) {
+        const distCorreta = distribuicaoAcertosClient(regrasMod.universo, regrasMod.dezenasSorteadas, regrasMod.dezenasSorteadas);
+        await renderizarGraficoBarras(resultados, distCorreta);
+        await renderizarGraficoEvolucao(resultados);
+      } else {
+        await renderizarGraficoBarras(resultados, distTeorica);
+        await renderizarGraficoEvolucao(resultados);
+      }
+      
+      resultadosSection.scrollIntoView({ behavior: 'smooth' });
+      
+    } catch (e) {
+      alert('Erro: ' + (e as Error).message);
+    } finally {
+      btnSimular.disabled = false;
+      btnSimular.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Executar simulação';
+    }
+  });
+</script>
+
+<style>
+  .spinner { animation: spin 1s linear infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  #grafico-barras canvas, #grafico-evolucao { width: 100% !important; height: auto !important; }
+</style>

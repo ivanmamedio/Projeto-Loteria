@@ -2,10 +2,11 @@
 // Layout base do site — Jogo na Hora
 import '../styles/global.css';
 const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
+const modalidade = Astro.props.modalidade || 'mega-sena';
 ---
 
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-modalidade={modalidade}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

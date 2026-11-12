@@ -21,7 +21,7 @@ try {
 const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
 ---
 
-<Base>
+<Base modalidade={modalidade}>
   <!-- HERO -->
   <section class="hero" aria-labelledby="hero-title">
     <div class="container">
@@ -315,7 +315,7 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           </div>
           <h3>Performance</h3>
-          <p>Astro + CSS puro = carregamento instantâneo. Funciona offline (PWA básico). Core Web Vitals otimizados.</p>
+          <p>Astro + CSS puro = carregamento instantâneo. Core Web Vitals otimizados. PWA planejado para próxima versão.</p>
         </div>
 
         <div class="trust-item">
