@@ -370,6 +370,7 @@ export function generateGames(
   const evitaCal = flag('evitaCalendario') || flag('evitaPadraoCalendario') || flag('calendario');
   const calibrar = flag('calibrar') || flag('calibration');
   const janelaAdaptativa = flag('janelaAdaptativa') || flag('adaptiveWindow');
+  const usarBMA = flag('bma') || flag('bayesianModelAveraging') || flag('useBMA');
   const janelaReq = (() => {
     const v = opt(opcoes, 'janela', 'window', 'N', 'janelaConcursos');
     if (typeof v === 'number' && Number.isFinite(v) && v > 0) return Math.floor(v);
@@ -436,13 +437,16 @@ export function generateGames(
   // influencia os pesos de forma transparente quando há histórico disponível.
   if (windowed.length > 0) {
     const fibIntensidade = fibonacciIntensidadeFromOpcoes(opcoes);
-    const pw = patternWeights({
-      historico: windowed,
-      universo: modalidade.universo,
-      dezenasValidas,
-      k: tamanho,
-      fibonacciIntensidade: fibIntensidade,
-    });
+    const pw = patternWeights(
+      {
+        historico: windowed,
+        universo: modalidade.universo,
+        dezenasValidas,
+        k: tamanho,
+        fibonacciIntensidade: fibIntensidade,
+      },
+      usarBMA,
+    );
     weights = weights.map((x, i) => x * (pw[i] ?? 1));
   }
 

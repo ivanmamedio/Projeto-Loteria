@@ -414,9 +414,13 @@ export function fibonacciPesos(ctx: PatternContext): number[] {
  * Combina múltiplos fatores de peso no espaço log (soma de logs = log do produto).
  * Evita overflow/underflow numérico de multiplicações sucessivas.
  * Retorna pesos normalizados para média 1.
+ *
+ * @param ctx - Contexto com histórico, universo, dezenas válidas, k
+ * @param useBMA - Se true, usa Bayesian Model Averaging para aprender pesos dos fatores
+ * @returns Pesos combinados normalizados
  */
-export function patternWeights(ctx: PatternContext): number[] {
-  const { dezenasValidas } = ctx;
+export function patternWeights(ctx: PatternContext, useBMA = false): number[] {
+  const { dezenasValidas, historico } = ctx;
   const n = dezenasValidas.length;
 
   // Calcular todos os fatores
@@ -433,20 +437,24 @@ export function patternWeights(ctx: PatternContext): number[] {
   const fatores = [cooc, slide, ener, mkv, qw, geom, ram, fib, interf];
   const numFatores = fatores.length;
 
-  // Espaço log: soma de logs = log do produto
+  // BMA: aprende pesos dos fatores via cross-validation no histórico
+  let pesosFatores: number[] = new Array(numFatores).fill(1 / numFatores);
+
+  if (useBMA && historico && historico.length > 30) {
+    pesosFatores = aprenderPesosBMA(ctx, fatores);
+  }
+
+  // Espaço log: soma ponderada de logs = log do produto ponderado
   const logWeights = new Array(n).fill(0);
   const EPS = 1e-12;
 
-  for (const f of fatores) {
+  for (let j = 0; j < numFatores; j++) {
+    const fator = fatores[j];
+    const pesoFator = pesosFatores[j];
     for (let i = 0; i < n; i++) {
-      const val = Math.max(f[i] ?? 1, EPS);
-      logWeights[i] += Math.log(val);
+      const val = Math.max(fator[i] ?? 1, EPS);
+      logWeights[i] += pesoFator * Math.log(val);
     }
-  }
-
-  // Média geométrica no espaço log = média aritmética dos logs
-  for (let i = 0; i < n; i++) {
-    logWeights[i] /= numFatores;
   }
 
   // Converter de volta com estabilidade numérica (subtrair max antes de exp)
@@ -457,6 +465,83 @@ export function patternWeights(ctx: PatternContext): number[] {
   const sum = weights.reduce((a, b) => a + b, 0);
   if (sum === 0) return dezenasValidas.map(() => 1);
   return weights.map((w) => (w * n) / sum);
+}
+
+/**
+ * Aprende pesos ótimos para cada fator via Bayesian Model Averaging simplificado.
+ * Usa rolling window cross-validation: cada fator é um "expert",
+ * e o peso é proporcional à log-likelihood out-of-sample.
+ */
+function aprenderPesosBMA(ctx: PatternContext, fatores: number[][]): number[] {
+  const { historico, dezenasValidas, universo } = ctx;
+  const numFatores = fatores.length;
+  const totalConcursos = historico.length;
+
+  if (totalConcursos < 30) return new Array(numFatores).fill(1 / numFatores);
+
+  // Usar últimos 20% como teste (mínimo 10, máximo 30)
+  const nTeste = Math.min(30, Math.max(10, Math.floor(totalConcursos * 0.2)));
+  const inicioTeste = totalConcursos - nTeste;
+
+  // Log-likelihood acumulado para cada fator
+  const logLikelihoods = new Array(numFatores).fill(0);
+  const nPredicoes = new Array(numFatores).fill(0);
+
+  // Rolling window: para cada concurso de teste, avaliar cada fator
+  for (let t = inicioTeste; t < totalConcursos; t++) {
+    const concursoAtual = historico[t];
+    const historicoTreino = historico.slice(0, t);
+
+    if (historicoTreino.length < 10) continue;
+
+    // Para cada fator, calcular log-likelihood das dezenas do concurso atual
+    for (let j = 0; j < numFatores; j++) {
+      const fator = fatores[j];
+
+      let ll = 0;
+      for (const dezena of concursoAtual) {
+        const idx = dezenasValidas.indexOf(dezena);
+        if (idx >= 0) {
+          const peso = Math.max(fator[idx] ?? 1, 1e-10);
+          // Normalizar: peso médio = 1, então prob ~ peso / n
+          const prob = Math.max(1e-10, peso / dezenasValidas.length);
+          ll += Math.log(prob);
+        }
+      }
+
+      // Adicionar algumas dezenas não sorteadas (amostragem)
+      const todasDezenas = Array.from({ length: universo }, (_, i) =>
+        universo === 100 ? i : i + 1,
+      );
+      const naoSorteadas = todasDezenas.filter((d) => !concursoAtual.includes(d));
+      const amostraNegativos = naoSorteadas.slice(0, Math.min(10, naoSorteadas.length));
+      for (const dezena of amostraNegativos) {
+        const idx = dezenasValidas.indexOf(dezena);
+        if (idx >= 0) {
+          const peso = Math.max(fator[idx] ?? 1, 1e-10);
+          const probNao = Math.max(1e-10, 1 - peso / dezenasValidas.length);
+          ll += Math.log(probNao);
+        }
+      }
+
+      logLikelihoods[j] += ll;
+      nPredicoes[j]++;
+    }
+  }
+
+  // Calcular média de log-likelihood por fator
+  const mediaLL = logLikelihoods.map((ll, j) =>
+    nPredicoes[j] > 0 ? ll / nPredicoes[j] : Number.NEGATIVE_INFINITY,
+  );
+
+  // Softmax para obter pesos (BMA weight ∝ exp(LL))
+  const maxLL = Math.max(...mediaLL);
+  const expLL = mediaLL.map((ll) => Math.exp(ll - maxLL));
+  const sumExp = expLL.reduce((a, b) => a + b, 0);
+
+  if (sumExp === 0) return new Array(numFatores).fill(1 / numFatores);
+
+  return expLL.map((v) => v / sumExp);
 }
 
 export function lempelZivComplexity(seq: number[]): number {
