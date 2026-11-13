@@ -1,0 +1,198 @@
+name: Atualizar Dados das Loterias
+
+on:
+  schedule:
+    # Executa às 22h BRT (01h UTC) nos dias de sorteio: terça, quarta, quinta, sábado
+    # BRT = UTC-3, então 22h BRT = 01h UTC no dia seguinte
+    - cron: '0 1 * * 2,3,4,6'  # Terça, Quarta, Quinta, Sábado às 01h UTC
+  workflow_dispatch:  # Permite execução manual
+    inputs:
+      force:
+        description: 'Forçar atualização mesmo se não houver novos dados'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write  # Necessário para commit e push
+  issues: write    # Necessário para criar issue em caso de falha
+
+jobs:
+  update-data:
+    name: Baixar, validar e publicar dados
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # Necessário para comparar diffs
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Baixar CSVs atualizados
+        id: download
+        run: |
+          echo "📥 Baixando CSVs do LotoAgora..."
+          if npm run data:download; then
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Verificar se houve mudanças nos CSVs
+        id: check-changes
+        if: steps.download.outputs.success == 'true'
+        run: |
+          echo "🔍 Verificando mudanças nos arquivos CSV..."
+          if git diff --quiet data/raw/; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "Nenhuma mudança detectada nos CSVs."
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Mudanças detectadas nos CSVs:"
+            git diff --stat data/raw/
+          fi
+
+      - name: Processar ETL (CSV → JSON)
+        id: import
+        if: steps.check-changes.outputs.changed == 'true' || github.event.inputs.force == 'true'
+        run: |
+          echo "⚙️ Processando ETL..."
+          npm run data:import
+
+      - name: Validar dados JSON
+        id: validate
+        if: steps.check-changes.outputs.changed == 'true' || github.event.inputs.force == 'true'
+        run: |
+          echo "✅ Validando dados..."
+          npm run data:check
+
+      - name: Verificar mudanças nos JSONs
+        id: check-json-changes
+        if: steps.check-changes.outputs.changed == 'true' || github.event.inputs.force == 'true'
+        run: |
+          echo "🔍 Verificando mudanças nos arquivos JSON..."
+          if git diff --quiet public/data/; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "Nenhuma mudança nos JSONs (dados já atualizados)."
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Mudanças detectadas nos JSONs:"
+            git diff --stat public/data/
+          fi
+
+      - name: Commit e push das atualizações
+        if: steps.check-json-changes.outputs.changed == 'true'
+        run: |
+          echo "📦 Commitando atualizações..."
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Adicionar arquivos modificados
+          git add data/raw/ public/data/
+          
+          # Criar mensagem de commit informativa
+          LATEST_DATE=$(grep -o '"updatedAt": "[^"]*"' public/data/*.json | head -1 | cut -d'"' -f4)
+          TOTAL_CONCURSOS=$(jq -s 'map(.concursos | length) | add' public/data/*.json)
+          
+          git commit -m "chore(data): atualização automática dos dados das loterias
+
+- Data da importação: ${LATEST_DATE}
+- Total de concursos: ${TOTAL_CONCURSOS}
+- Fonte: LotoAgora (API CAIXA)
+- Trigger: ${github.event_name == 'schedule' && 'agendamento diário' || 'execução manual'}
+          "
+          
+          git push origin HEAD:${{ github.ref_name }}
+          echo "✅ Deploy automático iniciado (GitHub Pages)"
+
+      - name: Resumo de sucesso
+        if: steps.check-json-changes.outputs.changed == 'true'
+        run: |
+          echo "## ✅ Dados atualizados com sucesso" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Modalidade | Concursos | Último concurso |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|-----------|-----------------|" >> $GITHUB_STEP_SUMMARY
+          for mod in mega-sena lotofacil quina lotomania; do
+            total=$(jq ".concursos | length" public/data/${mod}.json)
+            last=$(jq -r ".concursos[-1] | \"Concurso \\(.concurso) - \\(.data)\"" public/data/${mod}.json)
+            echo "| ${mod} | ${total} | ${last} |" >> $GITHUB_STEP_SUMMARY
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 [Ver site publicado](https://ivanmamedio.github.io/Projeto-Loteria/dados)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notificar sem mudanças
+        if: steps.check-changes.outputs.changed == 'false' && github.event.inputs.force != 'true'
+        run: |
+          echo "## ℹ️ Nenhuma atualização necessária" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Os dados já estão atualizados. Próxima verificação agendada para o próximo dia de sorteio." >> $GITHUB_STEP_SUMMARY
+
+      - name: Criar issue em caso de falha no download
+        if: steps.download.outputs.success == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['data-update-failure']
+            });
+            
+            const existing = issues.find(i => i.title.includes('Falha na atualização automática'));
+            if (!existing) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '🚨 Falha na atualização automática de dados - ' + new Date().toISOString().split('T')[0],
+                body: `A execução agendada do workflow **update-data** falhou ao baixar os CSVs do LotoAgora.\n\n**Detalhes:**\n- Workflow: ${context.workflow}\n- Run: ${context.runId}\n- Data: ${new Date().toISOString()}\n\n**Ação necessária:**\n1. Verifique os logs do workflow para detalhes do erro\n2. Teste manual: \`npm run data:download\`\n3. Se o LotoAgora estiver indisponível, considere usar a API oficial da CAIXA como fallback\n\n/label data-update-failure`,
+                labels: ['bug', 'data-update-failure', 'automated']
+              });
+            }
+
+      - name: Criar issue em caso de falha na validação
+        if: steps.validate.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['data-validation-failure']
+            });
+            
+            const existing = issues.find(i => i.title.includes('Falha na validação'));
+            if (!existing) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '🚨 Falha na validação dos dados - ' + new Date().toISOString().split('T')[0],
+                body: `A validação dos dados JSON falhou após a importação.\n\n**Detalhes:**\n- Workflow: ${context.workflow}\n- Run: ${context.runId}\n- Data: ${new Date().toISOString()}\n\n**Ação necessária:**\n1. Verifique os logs do step "Validar dados JSON"\n2. Execute localmente: \`npm run data:check\`\n3. Verifique se os CSVs baixados estão íntegros\n\n/label data-validation-failure`,
+                labels: ['bug', 'data-validation-failure', 'automated']
+              });
+            }
+
+      - name: Criar issue em caso de falha no commit/push
+        if: failure() && steps.check-json-changes.outputs.changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Falha no commit/push automático - ' + new Date().toISOString().split('T')[0],
+              body: `Houve mudanças nos dados mas o commit/push falhou.\n\n**Detalhes:**\n- Workflow: ${context.workflow}\n- Run: ${context.runId}\n- Data: ${new Date().toISOString()}\n\n**Ação necessária:**\n1. Verifique os logs do step "Commit e push das atualizações"\n2. Faça commit manual: \`git add data/raw/ public/data/ && git commit -m "chore: update data" && git push\`\n\n/label automated`,
+              labels: ['bug', 'automated']
+            })

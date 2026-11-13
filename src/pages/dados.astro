@@ -1,8 +1,5 @@
 ---
 import Disclaimer from '../components/Disclaimer.astro';
-// Página "Dados" — origem e atualização dos dados
-// Referência: tasks_loteria.md — T0.1, T0.2
-
 import Base from '../layouts/Base.astro';
 
 // Carregar dados dos JSONs no build time
@@ -44,7 +41,7 @@ const dados = await carregarDados();
 
 function formatarDataBR(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number);
-  if (!y || !m || !d) return iso;
+  if (!y || !m || !d) return '—';
   return `${d.toString().padStart(2, '0')}/${m.toString().padStart(2, '0')}/${y}`;
 }
 
@@ -65,10 +62,51 @@ function getAnoInicio(concursos: Concurso[]): number {
 }
 
 function getUltimaData(concursos: Concurso[]): string {
-  if (!concursos.length) return '';
+  if (!concursos.length) return '—';
   const datas = concursos.map((c) => c.data).sort();
   return datas[datas.length - 1];
 }
+
+function getUltimosConcursos(concursos: Concurso[], qtd: number = 10): Concurso[] {
+  return [...concursos].sort((a, b) => b.concurso - a.concurso).slice(0, qtd);
+}
+
+function formatarTamanho(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+async function getTamanhoArquivo(mod: string): Promise<{ csv: string; json: string }> {
+  const fs = await import('node:fs/promises');
+  const path = await import('node:path');
+  const basePath = '/home/carlos/Documentos/Projeto Loteria/public/data';
+  let csvSize = 0, jsonSize = 0;
+  
+  try {
+    const csvPath = path.join(basePath, '..', 'data', 'raw', `${mod}.csv`);
+    const stats = await fs.stat(csvPath);
+    csvSize = stats.size;
+  } catch {}
+  
+  try {
+    const jsonPath = path.join(basePath, `${mod}.json`);
+    const stats = await fs.stat(jsonPath);
+    jsonSize = stats.size;
+  } catch {}
+  
+  return { csv: formatarTamanho(csvSize), json: formatarTamanho(jsonSize) };
+}
+
+const tamanhos = {} as Record<string, { csv: string; json: string }>;
+for (const mod of MODALIDADES) {
+  tamanhos[mod] = await getTamanhoArquivo(mod);
+}
+
+const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
+const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
 ---
 
 <Base modalidade="mega-sena">
@@ -89,6 +127,7 @@ function getUltimaData(concursos: Concurso[]): string {
         const total = d.concursos.length;
         const inicio = getAnoInicio(d.concursos);
         const ultima = getUltimaData(d.concursos);
+        const t = tamanhos[mod];
         return (
           <div class="data-card">
             <h3>{getNomeModalidade(mod)}</h3>
@@ -96,6 +135,26 @@ function getUltimaData(concursos: Concurso[]): string {
               {total.toLocaleString('pt-BR')} concursos · de {inicio} a {formatarDataBR(ultima)}
             </p>
             <p class="text-sm text-muted">Atualizado em {formatarDataBR(d.updatedAt.split('T')[0])}</p>
+            <div class="data-downloads">
+              <a 
+                href={`${base}data/raw/${mod}.csv`} 
+                class="btn btn-secondary btn-sm"
+                download
+                aria-label="Baixar CSV da {getNomeModalidade(mod)} ({t.csv})"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                CSV ({t.csv})
+              </a>
+              <a 
+                href={`${base}data/${mod}.json`} 
+                class="btn btn-secondary btn-sm"
+                download
+                aria-label="Baixar JSON da {getNomeModalidade(mod)} ({t.json})"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                JSON ({t.json})
+              </a>
+            </div>
           </div>
         );
       })}
@@ -104,9 +163,12 @@ function getUltimaData(concursos: Concurso[]): string {
     <div class="data-notes">
       <h3>Fonte e licença</h3>
       <p>
-        Dados provenientes de LotoAgora (derivado da API oficial da CAIXA).
-        Licença permite uso para análise e publicação com identificação da
-        fonte.
+        Dados provenientes de <a href="https://lotoagora.com.br/downloads/" target="_blank" rel="noopener noreferrer">LotoAgora</a> 
+        (derivado da API oficial da CAIXA).
+        Licença permite uso para análise e publicação com identificação da fonte.
+      </p>
+      <p>
+        API oficial CAIXA: <a href="https://servicebus3.caixa.gov.br/portaldeloterias/api/" target="_blank" rel="noopener noreferrer">servicebus3.caixa.gov.br/portaldeloterias/api/</a>
       </p>
       <p>
         <strong>Atualização manual:</strong> baixar CSV →
@@ -121,5 +183,303 @@ function getUltimaData(concursos: Concurso[]): string {
     </div>
   </section>
 
+  <!-- Tabelas de últimos concursos por modalidade -->
+  <section class="container" style="margin-top: var(--space-12);">
+    <h2>Últimos concursos por modalidade</h2>
+    <p class="text-muted">Clique no cabeçalho para ordenar. Mostrando os 10 mais recentes.</p>
+    
+    {MODALIDADES.map((mod) => {
+      const d = dados[mod];
+      const ultimos = getUltimosConcursos(d.concursos, 10);
+      return (
+        <div class="modalidade-table-wrap" style="margin-bottom: var(--space-8);">
+          <h3>{getNomeModalidade(mod)}</h3>
+          <div class="table-container">
+            <table class="data-table" aria-label="Últimos 10 concursos da {getNomeModalidade(mod)}">
+              <thead>
+                <tr>
+                  <th scope="col">Concurso</th>
+                  <th scope="col">Data</th>
+                  <th scope="col">Dezenas</th>
+                  <th scope="col">Acumulado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ultimos.map((c) => (
+                  <tr>
+                    <td>{c.concurso.toLocaleString('pt-BR')}</td>
+                    <td>{formatarDataBR(c.data)}</td>
+                    <td>
+                      <div class="dezenas-cell">
+                        {c.dezenas.map((dez) => (
+                          <span class="dezena-mini" key={dez}>{dez.toString().padStart(2, '0')}</span>
+                        ))}
+                      </div>
+                    </td>
+                    <td>
+                      {c.acumulado ? (
+                        <span class="badge badge-acumulado">Sim</span>
+                      ) : (
+                        <span class="badge badge-nao-acumulado">Não</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p class="text-sm text-muted" style="margin-top: var(--space-2);">
+            <a href={`${base}estatisticas/${mod}`}>Ver estatísticas completas</a> · 
+            <a href={`${base}data/${mod}.json`} download>Baixar JSON completo</a> ·
+            <a href={`${base}data/raw/${mod}.csv`} download>Baixar CSV completo</a>
+          </p>
+        </div>
+      );
+    })}
+  </section>
+
+  <!-- Dicionário de dados -->
+  <section class="container" style="margin-top: var(--space-12);">
+    <h2>Dicionário de dados</h2>
+    <p class="text-muted">Descrição de cada campo dos arquivos JSON e CSV.</p>
+    
+    <div class="table-container">
+      <table class="data-table" aria-label="Dicionário de dados">
+        <thead>
+          <tr>
+            <th scope="col">Campo</th>
+            <th scope="col">Tipo</th>
+            <th scope="col">Descrição</th>
+            <th scope="col">Exemplo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>concurso</code></td>
+            <td>integer</td>
+            <td>Número sequencial do concurso</td>
+            <td>3084</td>
+          </tr>
+          <tr>
+            <td><code>data</code></td>
+            <td>string (ISO 8601)</td>
+            <td>Data do sorteio no formato YYYY-MM-DD</td>
+            <td>2026-11-10</td>
+          </tr>
+          <tr>
+            <td><code>dezenas</code></td>
+            <td>array[integer]</td>
+            <td>Dezenas sorteadas, ordenadas crescentemente. Quantidade varia por modalidade: Mega-Sena (6), Lotofácil (15), Quina (5), Lotomania (20)</td>
+            <td>[6, 14, 22, 30, 31, 37]</td>
+          </tr>
+          <tr>
+            <td><code>acumulado</code></td>
+            <td>boolean</td>
+            <td>Indica se o prêmio principal acumulou para o próximo concurso</td>
+            <td>false</td>
+          </tr>
+          <tr>
+            <td><code>modalidade</code> (metadado)</td>
+            <td>string</td>
+            <td>Identificador da loteria: "mega-sena", "lotofacil", "quina", "lotomania"</td>
+            <td>"mega-sena"</td>
+          </tr>
+          <tr>
+            <td><code>source</code> (metadado)</td>
+            <td>string</td>
+            <td>Fonte dos dados (intermediário da API CAIXA)</td>
+            <td>"LotoAgora (derivado da CAIXA)"</td>
+          </tr>
+          <tr>
+            <td><code>updatedAt</code> (metadado)</td>
+            <td>string (ISO 8601)</td>
+            <td>Data/hora da última importação/processamento dos dados</td>
+            <td>"2026-11-12T01:51:24.678Z"</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Informações técnicas -->
+  <section class="container" style="margin-top: var(--space-12);">
+    <h2>Informações técnicas</h2>
+    
+    <div class="grid grid-2" style="margin-top: var(--space-6);">
+      <div class="card">
+        <h3>Universo de dezenas por modalidade</h3>
+        <ul style="line-height: 2;">
+          <li><strong>Mega-Sena:</strong> 1 a 60 (6 dezenas sorteadas)</li>
+          <li><strong>Lotofácil:</strong> 1 a 25 (15 dezenas sorteadas)</li>
+          <li><strong>Quina:</strong> 1 a 80 (5 dezenas sorteadas)</li>
+          <li><strong>Lotomania:</strong> 0 a 99 (20 dezenas sorteadas, 50 fixas no volante)</li>
+        </ul>
+      </div>
+      
+      <div class="card">
+        <h3>Probabilidades (aposta simples)</h3>
+        <ul style="line-height: 2;">
+          <li><strong>Mega-Sena:</strong> 1 em 50.063.860</li>
+          <li><strong>Lotofácil:</strong> 1 em 3.268.760</li>
+          <li><strong>Quina:</strong> 1 em 24.040.016</li>
+          <li><strong>Lotomania:</strong> 1 em 11.372.635 (20 acertos)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Atualização automatizada -->
+  <section class="container" style="margin-top: var(--space-12);">
+    <h2>Atualização automatizada</h2>
+    <p>
+      Este projeto possui <strong>GitHub Actions agendado</strong> que roda diariamente nos dias de sorteio 
+      (terças, quartas, quintas, sábados às 22h BRT) para baixar, validar e publicar os dados automaticamente.
+    </p>
+    <div class="card" style="margin-top: var(--space-4);">
+      <h4>Como funciona a automação</h4>
+      <ol style="margin-left: var(--space-4); line-height: 2;">
+        <li>Workflow <code>.github/workflows/update-data.yml</code> dispara via cron</li>
+        <li>Baixa CSVs do LotoAgora com validação (cabeçalho, delimitador, linhas mínimas)</li>
+        <li>Processa CSV → JSON via <code>npm run data:import</code></li>
+        <li>Valida integridade via <code>npm run data:check</code> (ordem, duplicatas, lacunas, F13)</li>
+        <li>Se tudo OK: commita arquivos atualizados e faz push → GitHub Pages republica</li>
+        <li>Se falha: abre issue automática para revisão manual</li>
+      </ol>
+    </div>
+    <p class="text-sm text-muted" style="margin-top: var(--space-4);">
+      Última execução do workflow: <a href="https://github.com/ivanmamedio/Projeto-Loteria/actions/workflows/update-data.yml" target="_blank" rel="noopener noreferrer">Ver no GitHub Actions</a>
+    </p>
+  </section>
+
   <Disclaimer />
 </Base>
+
+<style>
+  .data-downloads {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+    flex-wrap: wrap;
+  }
+  
+  .data-downloads .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: 0.8rem;
+  }
+  
+  .modalidade-table-wrap h3 {
+    margin-bottom: var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  .table-container {
+    overflow-x: auto;
+    margin-bottom: var(--space-4);
+  }
+  
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: var(--space-2) var(--space-3);
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  .data-table th {
+    background: var(--color-bg);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  
+  .data-table tr:hover td {
+    background: var(--color-bg);
+  }
+  
+  .dezenas-cell {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+  
+  .dezena-mini {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 4px;
+    background: var(--color-primary);
+    color: white;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  
+  .badge-acumulado {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  
+  .badge-nao-acumulado {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  
+  .grid {
+    display: grid;
+    gap: var(--space-6);
+  }
+  
+  .grid-2 {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+  
+  .card {
+    padding: var(--space-6);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+  
+  .card h3,
+  .card h4 {
+    margin-bottom: var(--space-3);
+  }
+  
+  .card ul {
+    margin-left: var(--space-4);
+  }
+  
+  .card code {
+    background: var(--color-border);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85em;
+  }
+  
+  @media (max-width: 640px) {
+    .data-downloads {
+      flex-direction: column;
+    }
+    .data-downloads .btn {
+      justify-content: center;
+    }
+  }
+</style>

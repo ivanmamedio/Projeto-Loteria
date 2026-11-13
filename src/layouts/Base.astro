@@ -18,14 +18,19 @@ const modalidade = Astro.props.modalidade || 'mega-sena';
     <meta property="og:site_name" content="Jogo na Hora" />
     <meta property="og:title" content="Jogo na Hora — Gerador de combinações de loteria" />
     <meta property="og:description" content="Gere jogos da Mega-Sena, Lotofácil, Quina e Lotomania com 4 estratégias descritivas baseadas em dados oficiais. Histórico local, exportação CSV, sem cadastro." />
-    <meta property="og:image" content={`${base}og-image.svg`} />
+    <meta property="og:image" content="https://ivanmamedio.github.io/Projeto-Loteria/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:url" content="https://ivanmamedio.github.io/Projeto-Loteria/" />
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Jogo na Hora — Gerador de combinações de loteria" />
     <meta name="twitter:description" content="Gere jogos com estratégias descritivas baseadas em dados oficiais da Caixa. Gratuito, transparente, sem tracking." />
-    <meta name="twitter:image" content={`${base}og-image.svg`} />
+    <meta name="twitter:image" content="https://ivanmamedio.github.io/Projeto-Loteria/og-image.png" />
+    <meta name="twitter:image:width" content="1200" />
+    <meta name="twitter:image:height" content="630" />
     
     <!-- Preconnect para fonts (system fonts não precisam, mas mantemos para og:image) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -62,8 +67,6 @@ const modalidade = Astro.props.modalidade || 'mega-sena';
             <li><a href={`${base}estatisticas`}>Estatísticas</a></li>
             <li><a href={`${base}dados`}>Dados</a></li>
             <li><a href={`${base}sobre`}>Sobre</a></li>
-            <li><a href={`${base}privacidade`}>Privacidade</a></li>
-            <li><a href={`${base}termos`}>Termos</a></li>
             <li><a href={`${base}#contribuicao`}>Contribua</a></li>
           </ul>
         </nav>
@@ -155,7 +158,7 @@ const modalidade = Astro.props.modalidade || 'mega-sena';
           <h3 class="footer-heading">Comunidade</h3>
           <a href="https://github.com/ivanmamedio/Projeto-Loteria/issues" target="_blank" rel="noopener noreferrer">Reportar problema</a>
           <a href="https://github.com/ivanmamedio/Projeto-Loteria/discussions" target="_blank" rel="noopener noreferrer">Sugerir melhoria</a>
-          <a href="#contribuicao">Contribuir (PIX)</a>
+          <a href="#contribuicao">Contribuir (PIX voluntário)</a>
         </nav>
 
         <div class="footer-bottom">
