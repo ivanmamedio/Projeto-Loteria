@@ -375,8 +375,8 @@ export function fibonacciPesos(ctx: PatternContext): number[] {
   const fibs = fibonacciFromOne(50).filter((f) => f <= universo);
   const fibSet = new Set(fibs);
 
-  // Proporção teórica de Fibonacci no universo
-  const fibRatioTeorico = fibs.length / universo;
+  // Proporção teórica de Fibonacci no universo (valores distintos)
+  const fibRatioTeorico = fibSet.size / universo;
 
   // Proporção observada no histórico recente (últimos 20 concursos)
   const recente = historico.slice(-20);

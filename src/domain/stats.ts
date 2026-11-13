@@ -285,12 +285,19 @@ export function desvioAcertos(universo: number, sorteados: number, apostados: nu
 }
 
 export function mediaSomaTeorica(universo: number, sorteados: number): number {
-  return (sorteados * (universo + 1)) / 2;
+  // Para universo 1..N (Mega-Sena, Lotofácil, Quina): média = (1 + universo) / 2
+  // Para universo 0..N-1 (Lotomania): média = (0 + universo - 1) / 2 = (universo - 1) / 2
+  const mediaDezena = universo === 100 ? (universo - 1) / 2 : (universo + 1) / 2;
+  return sorteados * mediaDezena;
 }
 
 export function varianciaSomaTeorica(universo: number, sorteados: number): number {
   if (universo <= sorteados) return 0;
-  return (sorteados * (universo + 1) * (universo - sorteados)) / 12;
+  // Variância de soma de k sorteios sem reposição de 1..N ou 0..N-1:
+  // Var = k * (N² - 1)/12 * (N - k)/(N - 1)
+  return (
+    (sorteados * (universo * universo - 1) * (universo - sorteados)) / (12 * (universo - 1 || 1))
+  );
 }
 
 export function desvioSomaTeorica(universo: number, sorteados: number): number {
@@ -299,7 +306,9 @@ export function desvioSomaTeorica(universo: number, sorteados: number): number {
 
 export function gapMedioTeorico(universo: number, sorteados: number): number {
   if (sorteados <= 0) return universo;
-  return (universo + 1) / (sorteados + 1);
+  // Para universo 1..N: (N+1)/(k+1); Para 0..N-1 (Lotomania): N/(k+1)
+  const numerador = universo === 100 ? universo : universo + 1;
+  return numerador / (sorteados + 1);
 }
 
 export function paridadeEsperada(

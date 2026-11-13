@@ -41,10 +41,10 @@ export function frequenciaPonderada(dezenas: number[], beta = 1.0): Record<numbe
 
 /**
  * F9: Atraso ponderado.
- * Quanto maior o atraso, maior o peso da dezena.
+ * Quanto maior o atraso, MENOR o peso da dezena (função decrescente).
  *
- * • p_i = 1 / (1 + atraso_i / λ)      (hiperbólica)
- * • ou  p_i = β^(atraso_i)           (exponencial, β < 1)
+ * • p_i = 1 / (1 + atraso_i / λ)      (hiperbólica, decrescente)
+ * • ou  p_i = β^(atraso_i)           (exponencial decrescente, β < 1)
  */
 export function atrasoPonderado(
   atrasos: Record<number, number>,
