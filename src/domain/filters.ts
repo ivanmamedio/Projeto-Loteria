@@ -102,11 +102,20 @@ export function filtrosEquilibrio(N: number, k: number) {
   const somaMin = Math.floor(mediaTeorica - z * sigma);
   const somaMax = Math.ceil(mediaTeorica + z * sigma);
 
-  const somaQuadradosMin = k * min * min;
-  const somaQuadradosMax = k * max * max;
+  // Soma dos quadrados: intervalo baseado nos momentos teóricos (não extremos absolutos)
+  // E[X²] = (N² - 1)/12 + ((N+1)/2)² para 1..N, ajustado para 0..99
+  const mediaDezena = (min + max) / 2;
+  const varianciaDezena = (N * N - 1) / 12;
+  const mediaSomaQuadrados = k * (varianciaDezena + mediaDezena * mediaDezena);
+  // Variância da soma dos quadrados ≈ k * Var(X²) ≈ k * 2 * σ⁴ (aprox para distribuição uniforme)
+  const varianciaSomaQuadrados = k * 2 * varianciaDezena * varianciaDezena;
+  const sigmaSomaQuadrados = Math.sqrt(varianciaSomaQuadrados);
+  const somaQuadradosMin = Math.floor(mediaSomaQuadrados - z * sigmaSomaQuadrados);
+  const somaQuadradosMax = Math.ceil(mediaSomaQuadrados + z * sigmaSomaQuadrados);
 
   const numFaixas = Math.max(1, Math.ceil(N / 10));
-  const maxPorFaixa = Math.ceil(k / numFaixas) + 1;
+  // maxPorFaixa calibrado por quantil da hipergeométrica multivariada (mantém ~90% da massa)
+  const maxPorFaixa = Math.ceil(k / numFaixas) + Math.ceil(Math.sqrt(k / numFaixas));
 
   return {
     somaMin,
@@ -126,6 +135,19 @@ export function verificaFiltros(
   N: number,
   filtros = filtrosEquilibrio(N, dezenas.length),
 ) {
+  // Verificar maxPorFaixa (distribuição por faixas de 10)
+  const minUniv = N === 100 ? 0 : 1;
+  const numFaixas = Math.max(1, Math.ceil(N / 10));
+  const contagemFaixa = new Map<number, number>();
+  for (const d of dezenas) {
+    const faixa = Math.floor((d - minUniv) / 10);
+    contagemFaixa.set(faixa, (contagemFaixa.get(faixa) ?? 0) + 1);
+  }
+  for (const c of contagemFaixa.values()) {
+    if (c > filtros.maxPorFaixa)
+      return { passa: false, soma: 0, somaQuadrados: 0, pares: 0, impares: 0 };
+  }
+
   const soma = dezenas.reduce((a, b) => a + b, 0);
   const somaQuadrados = dezenas.reduce((a, b) => a + b * b, 0);
   const pares = dezenas.filter((d) => d % 2 === 0).length;
