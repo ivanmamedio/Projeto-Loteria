@@ -88,7 +88,6 @@ export function autocorrelacaoAtrasos(
   dezena: number,
   maxLag = 10,
 ): AutocorrelationResult {
-
   // Extrair série de gaps (atrasos entre aparições consecutivas)
   const gaps: number[] = [];
   let ultimaAparicao = -1;
@@ -261,15 +260,9 @@ export function bootstrapCI(
   const idx95High = Math.ceil(0.975 * B);
   const idx99Low = Math.floor(0.005 * B);
   const idx99High = Math.ceil(0.995 * B);
-  
-  const ic95: [number, number] = [
-    bootstraps[idx95Low] ?? 0,
-    bootstraps[idx95High] ?? 0,
-  ];
-  const ic99: [number, number] = [
-    bootstraps[idx99Low] ?? 0,
-    bootstraps[idx99High] ?? 0,
-  ];
+
+  const ic95: [number, number] = [bootstraps[idx95Low] ?? 0, bootstraps[idx95High] ?? 0];
+  const ic99: [number, number] = [bootstraps[idx99Low] ?? 0, bootstraps[idx99High] ?? 0];
 
   return { media: mediaOriginal, ic95, ic99, bias, se };
 }
