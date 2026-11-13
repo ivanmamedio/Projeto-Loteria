@@ -472,7 +472,6 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
   </section>
 
   <script>
-    import { generateGames } from '../domain/generate';
     import { sampleNoReplace } from '../domain/sampling';
     import { modalidadePorId, dezenasDoUniverso, type ModalidadeId, MODALIDADES_VALIDAS } from '../domain/rules';
     import { mulberry32, newSeed } from '../domain/rng';
@@ -484,6 +483,80 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
     type GameResult = {
       dezenas: number[];
       meta: { janela: number; taxaAceitacao: number };
+    };
+
+    type GameMeta = {
+      algorithmVersion: string;
+      seed: number;
+      janela: number;
+      taxaAceitacao: number;
+      estrategiasAtivas: string[];
+      tamanhoAposta: number;
+      dezenasMarcadas: number;
+      universo: number;
+      tentativas: number;
+      jogosGerados: number;
+      cacheHits: number;
+      cacheSize: number;
+      fallbackDepth: number;
+      calibracao?: {
+        brierScore: number;
+        ece: number;
+        interpretacao: string;
+        bins: number;
+        amostras: number;
+      };
+      janelaOtima?: number;
+    };
+
+    // Web Worker para geração
+    const worker = new Worker(new URL('../workers/generate.worker.ts', import.meta.url), { type: 'module' });
+    let workerResolve: ((value: { games: GameResult[]; meta: GameMeta }) => void) | null = null;
+    let workerReject: ((reason: Error) => void) | null = null;
+
+    worker.onmessage = (e: MessageEvent) => {
+      const data = e.data;
+      if (data.type === 'progress' && currentProgressCallback) {
+        currentProgressCallback(data.progress);
+      } else if (data.type === 'result' && workerResolve) {
+        workerResolve({ games: data.games, meta: data.meta });
+        workerResolve = null;
+        workerReject = null;
+      } else if (data.type === 'error' && workerReject) {
+        workerReject(new Error(data.message));
+        workerResolve = null;
+        workerReject = null;
+      }
+    };
+
+    let currentProgressCallback: ((progress: ProgressData) => void) | null = null;
+
+    function generateWithWorker(
+      payload: WorkerPayload,
+      onProgress?: (progress: ProgressData) => void
+    ): Promise<{ games: GameResult[]; meta: GameMeta }> {
+      return new Promise((resolve, reject) => {
+        workerResolve = resolve;
+        workerReject = reject;
+        currentProgressCallback = onProgress || null;
+        worker.postMessage({ type: 'generate', payload });
+      });
+    }
+
+    type ProgressData = {
+      phase: 'weights' | 'candidates' | 'diversifying' | 'fallback' | 'complete';
+      progress: number;
+      message: string;
+      stats?: { tentativas: number; aceitos: number; jogosGerados: number };
+    };
+
+    type WorkerPayload = {
+      modalidade: ModalidadeId;
+      dezenasMarcadas: number[];
+      opcoes: Record<string, unknown>;
+      quantidade: number;
+      concursos?: number[][];
+      seed: number;
     };
 
     // Elementos do hero
@@ -892,11 +965,9 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
         const progressText = progressContainer.querySelector('.progress-text') as HTMLElement;
         const progressStats = progressContainer.querySelector('.progress-stats') as HTMLElement;
         
-        const resultado = generateGames(
-          { modalidade: modalidade as ModalidadeId, dezenasMarcadas: marcadas, opcoes },
-          quantidade,
-          undefined,
-          0,
+        const seed = newSeed();
+        const resultado = await generateWithWorker(
+          { modalidade: modalidade as ModalidadeId, dezenasMarcadas: marcadas, opcoes, quantidade, concursos: concursos.length > 0 ? concursos : undefined, seed },
           (progress) => {
             if (progressBar) progressBar.style.width = `${progress.progress}%`;
             if (progressBar) progressBar.setAttribute('aria-valuenow', String(progress.progress));
@@ -905,7 +976,7 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
               progressStats.textContent = `Tentativas: ${progress.stats.tentativas} · Aceitos: ${progress.stats.aceitos} · Jogos: ${progress.stats.jogosGerados}`;
             }
           }
-        ) as unknown as { games: GameResult[]; meta: { janela: number; taxaAceitacao: number } };
+        );
         
         // Esconde progresso
         progressContainer.style.display = 'none';
