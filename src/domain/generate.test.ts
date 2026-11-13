@@ -42,13 +42,12 @@ describe('generate', () => {
         janela: 100,
       },
     });
-    const games = generateGames(request, 1, mulberry32(42)); // Reduzido para 1 jogo para testar mais rápido
+    const games = generateGames(request, 1, mulberry32(42));
     expect(games).toHaveLength(1);
     for (const game of games) {
       expect(game.dezenas).toHaveLength(6);
       expect(new Set(game.dezenas).size).toBe(6);
     }
-    // Verifica que meta existe
     expect(games.meta).toBeDefined();
     expect(games.meta.algorithmVersion).toBeDefined();
     expect(typeof games.meta.taxaAceitacao).toBe('number');
@@ -66,11 +65,34 @@ describe('generate', () => {
         janela: 100,
       },
     });
-    const games = generateGames(request, 1, mulberry32(123)); // Reduzido para 1 jogo
+    const games = generateGames(request, 1, mulberry32(123));
     expect(games).toHaveLength(1);
     for (const game of games) {
       expect(game.dezenas).toHaveLength(15);
       expect(new Set(game.dezenas).size).toBe(15);
     }
+  });
+
+  it('SA pool invariant: pool size mantido durante diversificação', () => {
+    // Teste do invariante do pool no Simulated Annealing (B10)
+    const request = parseRequest({
+      modalidade: 'mega-sena',
+      dezenasMarcadas: Array.from({ length: 60 }, (_, i) => i + 1),
+      opcoes: {
+        estrategia: ['E1', 'E4'],
+        filtros: false,
+        diversificar: true,
+        evitaCalendario: false,
+        sa: true,
+        janela: 100,
+      },
+    });
+
+    const q = 8;
+    const games = generateGames(request, q, mulberry32(999));
+
+    expect(games).toHaveLength(q);
+    expect(games.meta.jogosGerados).toBe(q);
+    expect(games.meta.estrategiasAtivas).toContain('E4 (diversificação)');
   });
 });

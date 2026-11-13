@@ -98,9 +98,23 @@ export function comb(n: number, k: number): bigint {
   return combCached(n, k);
 }
 
+/**
+ * Calcula "1 em X" com arredondamento ao inteiro mais próximo (BigInt).
+ * Fórmula: round(ways / total) = floor((2 * total * ways + ways) / (2 * ways))
+ * Equivalente a: round(total / ways) = floor((2 * total + ways) / (2 * ways))
+ *
+ * @param M Universo total (ex: 60 para Mega-Sena)
+ * @param d Tamanho da aposta (ex: 6 para Mega-Sena)
+ * @param n Números sorteados (ex: 6 para Mega-Sena)
+ * @param h Acertos desejados (ex: 4 para Quadra)
+ * @returns Denominador arredondado "1 em X"
+ */
 export function oneIn(M: number, d: number, n: number, h: number): bigint {
   const ways = comb(n, h) * comb(M - n, d - h);
-  return ways === 0n ? 0n : comb(M, d) / ways;
+  const total = comb(M, d);
+  if (ways === 0n) return 0n;
+  // Arredondamento ao mais próximo: floor((2*total + ways) / (2*ways))
+  return (2n * total + ways) / (2n * ways);
 }
 
 // Exporta tipos para consumidores

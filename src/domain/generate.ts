@@ -363,11 +363,13 @@ function simulatedAnnealingDiversificacao(
 
     // Critério de aceitação de Metropolis
     if (delta < 0 || rng() < Math.exp(-delta / temperatura)) {
+      // Guardar o índice que será REMOVIDO antes de sobrescrever
+      const idxRemovido = estadoAtual[idxRemover];
       estadoAtual = novoEstado;
       energiaAtual = novaEnergia;
 
-      // Atualizar disponiveis
-      disponiveis.add(estadoAtual[idxRemover]);
+      // Atualizar disponiveis: remover o que foi adicionado, adicionar o que foi removido
+      disponiveis.add(idxRemovido);
       disponiveis.delete(idxAdicionar);
 
       if (novaEnergia < melhorEnergia) {
