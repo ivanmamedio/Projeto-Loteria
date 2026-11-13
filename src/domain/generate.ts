@@ -556,7 +556,8 @@ export function generateGames(
 
   // Análise de padrões (teorias_analise_padroes.md) aplicada no back:
   // influencia os pesos de forma transparente quando há histórico disponível.
-  if (windowed.length > 0) {
+  // SÓ se NÃO for E0 (uniforme) - E0 deve permanecer uniforme mesmo com histórico
+  if (windowed.length > 0 && !usarE0) {
     const fibIntensidade = fibonacciIntensidadeFromOpcoes(opcoes);
     const pw = patternWeights(
       {
@@ -576,6 +577,10 @@ export function generateGames(
 
   const filtrosAtivos = usarE3;
   const passaFiltros = (dezenas: number[]): boolean => {
+    // Calendário é avaliado independentemente de E3 (exceto Lotofácil e Lotomania onde universo ≤ 31)
+    const universo = modalidade.universo;
+    if (evitaCal && universo > 31 && !evitaPadraoCalendario(dezenas)) return false;
+
     if (!filtrosAtivos) return true;
     const filtros = filtrosEquilibrio(modalidade.universo, dezenas.length);
     const res = verificaFiltros(dezenas, modalidade.universo, filtros);
@@ -591,7 +596,6 @@ export function generateGames(
     for (const c of contagemFaixa.values()) {
       if (c > maxPorFaixa) return false;
     }
-    if (evitaCal && !evitaPadraoCalendario(dezenas)) return false;
     // Filtros de padrões (gaps/entropia) aplicados no back quando filtros ativos
     if (filtrosAtivos && !patternFilter(dezenas, modalidade.universo, windowed)) return false;
     return true;

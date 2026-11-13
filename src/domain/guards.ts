@@ -17,7 +17,7 @@ export function validarDezenasUniverso(
 ): ValidacaoResultado {
   const regras = modalidadePorId(modalidade);
   const min = regras.id === 'lotomania' ? 0 : 1;
-  const max = regras.universo;
+  const max = maxUniverso(modalidade);
 
   for (const d of dezenas) {
     if (!Number.isInteger(d) || d < min || d > max) {
@@ -46,7 +46,7 @@ export function validarHistorico(
   const regras = modalidadePorId(modalidade);
   const tamanhoEsperado = regras.dezenasSorteadas;
   const min = regras.id === 'lotomania' ? 0 : 1;
-  const max = regras.universo;
+  const max = maxUniverso(modalidade);
 
   for (let i = 0; i < historico.length; i++) {
     const sorteio = historico[i];
@@ -142,7 +142,7 @@ export function sanitizarDezenas(dezenas: unknown[]): number[] {
 export function validarJogoGerado(dezenas: number[], modalidade: ModalidadeId): boolean {
   const regras = modalidadePorId(modalidade);
   const min = regras.id === 'lotomania' ? 0 : 1;
-  const max = regras.universo;
+  const max = maxUniverso(modalidade);
 
   if (dezenas.length !== regras.dezenasSorteadas && dezenas.length < regras.minDezenas)
     return false;

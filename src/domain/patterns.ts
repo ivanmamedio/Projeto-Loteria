@@ -356,10 +356,6 @@ export function geometriaPesos(ctx: PatternContext): number[] {
   return normalizeWeights(pesos);
 }
 
-export function ramseyPesos(ctx: PatternContext): number[] {
-  return coocorrenciaPesos(ctx);
-}
-
 /**
  * Pesos baseados na presença/ausência de números de Fibonacci.
  * Ideia: combinações com proporção "natural" de números de Fibonacci
@@ -430,11 +426,10 @@ export function patternWeights(ctx: PatternContext, useBMA = false): number[] {
   const mkv = markovPesos(ctx);
   const qw = quantumWalkPesos(ctx);
   const geom = geometriaPesos(ctx);
-  const ram = ramseyPesos(ctx);
   const fib = fibonacciPesos(ctx);
   const interf = interferenciaPesos(slide, ener);
 
-  const fatores = [cooc, slide, ener, mkv, qw, geom, ram, fib, interf];
+  const fatores = [cooc, slide, ener, mkv, qw, geom, fib, interf];
   const numFatores = fatores.length;
 
   // BMA: aprende pesos dos fatores via cross-validation no histórico

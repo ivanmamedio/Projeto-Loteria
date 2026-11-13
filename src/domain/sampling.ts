@@ -106,8 +106,9 @@ export function sampleWeighted(
   if (k >= n) return [...pool].sort((a, b) => a - b);
   if (k <= 0) return [];
 
-  // Min-heap simples para top-k (manter menores keys no topo, substituir se maior)
-  // Usamos array ordenado descendo por key (maior key = maior prioridade)
+  // Min-heap simples para top-k (manter MENORES keys no topo, substituir se maior)
+  // Efraimidis-Spirakis: key_i = -ln(U_i) / w_i
+  // MAIOR peso -> MENOR key -> deve ser MANTIDO (top-k menores keys)
   const items: Array<{ n: number; key: number }> = [];
 
   for (let i = 0; i < n; i++) {
@@ -121,7 +122,7 @@ export function sampleWeighted(
     if (items.length < k) {
       items.push({ n: dezena, key });
       if (items.length === k) items.sort((a, b) => a.key - b.key); // min-heap: menor key no índice 0
-    } else if (items.length > 0 && key > (items[0]?.key ?? Number.NEGATIVE_INFINITY)) {
+    } else if (items.length > 0 && key < (items[0]?.key ?? Number.POSITIVE_INFINITY)) {
       items[0] = { n: dezena, key };
       // Sift down para manter propriedade de min-heap
       let idx = 0;
@@ -171,7 +172,7 @@ export function sampleWeightedSort(
       n,
       key: -Math.log(safeRng(rng)) / ((weights[i] ?? 1) || 1),
     }))
-    .sort((a, b) => b.key - a.key)
+    .sort((a, b) => a.key - b.key)
     .slice(0, k)
     .map((x) => x.n)
     .sort((a, b) => a - b);

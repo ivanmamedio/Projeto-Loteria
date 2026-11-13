@@ -133,9 +133,10 @@ export function minUniverso(id: ModalidadeId): number {
   return id === 'lotomania' ? 0 : 1;
 }
 
-/** Retorna o valor máximo do universo de dezenas para uma modalidade. */
 export function maxUniverso(id: ModalidadeId): number {
   const regras = modalidadePorId(id);
+  // Lotomania: universo é 100 números (0-99), max é 99
+  if (id === 'lotomania') return 99;
   return regras.universo;
 }
 

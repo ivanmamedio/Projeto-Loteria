@@ -125,16 +125,19 @@ function lowerGamma(s: number, x: number): number {
 }
 
 /**
- * p-valor exato do qui-quadrado: P(χ² > x) = 1 - γ(k/2, x/2) / Γ(k/2)
- * Substitui Wilson-Hilferty (aproximação) por cálculo exato via incomplete gamma
+ * p-valor exato do qui-quadrado: P(χ² > x) = Q(k/2, x/2) = Γ(k/2, x/2) / Γ(k/2)
+ * Gama incompleta superior regularizada.
+ * Substitui Wilson-Hilferty (aproximação) por cálculo exato via incomplete gamma.
  */
 export function pValorChiQuadradoExato(chi2: number, graus: number): number {
   if (chi2 <= 0) return 1;
   if (graus <= 0) return 0;
   const s = graus / 2;
   const x = chi2 / 2;
-  const cdf = lowerGamma(s, x) / Math.exp(logGamma(s));
-  return Math.max(0, Math.min(1, 1 - cdf));
+  // lowerGamma retorna γ(s,x)/Γ(s) (gama inferior regularizada P)
+  // p-valor = Q(s,x) = 1 - P(s,x) = Γ(s,x)/Γ(s)
+  const p = lowerGamma(s, x);
+  return Math.max(0, Math.min(1, 1 - p));
 }
 
 // F7: Qui-quadrado ajustado (chi2) de uniformidade das dezenas

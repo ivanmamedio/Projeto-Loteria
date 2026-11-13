@@ -39,11 +39,13 @@ export interface DescricaoJogo {
 export function descreverJogo(
   jogo: { dezenas: number[]; id: string; timestamp: string },
   modalidadeId: ModalidadeId,
+  tamanhoAposta?: number, // tamanho da aposta (ex: 6, 7, 8... para Mega-Sena)
 ): DescricaoJogo {
   const modalidade = modalidadePorId(modalidadeId);
 
-  // Calcular probabilidade da Sena (maior premiação)
-  const combinacoes = calcularCombinacoes(modalidade.universo, modalidade.dezenasSorteadas);
+  // Calcular probabilidade baseada no tamanho da aposta (número de dezenas marcadas)
+  const k = tamanhoAposta ?? jogo.dezenas.length ?? modalidade.dezenasSorteadas;
+  const combinacoes = calcularCombinacoes(modalidade.universo, k);
   const probabilidade = `1 em ${combinacoes.toLocaleString('pt-BR')}`;
 
   // Análise de Fibonacci (educativa, não altera probabilidade)
