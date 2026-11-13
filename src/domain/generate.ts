@@ -272,6 +272,126 @@ function encontrarJanelaOtima(
   return melhorJanela;
 }
 
+/**
+ * Simulated Annealing para otimização de diversificação (E4).
+ * Maximiza a distância mínima de Hamming entre jogos selecionados.
+ *
+ * @param candidatos - Pool de jogos candidatos
+ * @param q - Número de jogos a selecionar
+ * @param rng - PRNG
+ * @param onProgress - Callback de progresso
+ * @returns Array de q jogos otimamente diversificados
+ */
+function simulatedAnnealingDiversificacao(
+  candidatos: number[][],
+  q: number,
+  rng: () => number,
+  onProgress?: (phase: 'diversifying', progress: number, message: string) => void,
+): number[] {
+  if (candidatos.length <= q) return candidatos;
+  if (q <= 0) return [];
+
+  const n = candidatos.length;
+  const overlap = (a: number[], b: number[]) => {
+    const set = new Set(a);
+    return b.filter((x) => set.has(x)).length;
+  };
+
+  // Função objetivo: minimizar o overlap máximo (maximin distance)
+  const energia = (selecionados: number[][]): number => {
+    let maxOverlap = 0;
+    let somaOverlap = 0;
+    for (let i = 0; i < selecionados.length; i++) {
+      for (let j = i + 1; j < selecionados.length; j++) {
+        const ov = overlap(selecionados[i], selecionados[j]);
+        if (ov > maxOverlap) maxOverlap = ov;
+        somaOverlap += ov;
+      }
+    }
+    // Lexicográfico: primeiro maxOverlap, depois somaOverlap
+    return maxOverlap * 1000 + somaOverlap;
+  };
+
+  // Estado inicial: greedy (primeiro + mais distantes)
+  const selecionados: number[] = [0]; // índice do primeiro candidato
+  const disponiveis = new Set(Array.from({ length: n }, (_, i) => i));
+  disponiveis.delete(0);
+
+  // Adicionar q-1 jogos via greedy como ponto de partida
+  while (selecionados.length < q && disponiveis.size > 0) {
+    let melhorIdx = -1;
+    let melhorEnergia = Number.POSITIVE_INFINITY;
+    for (const idx of disponiveis) {
+      const teste = [...selecionados, idx].map((i) => candidatos[i]);
+      const e = energia(teste);
+      if (e < melhorEnergia) {
+        melhorEnergia = e;
+        melhorIdx = idx;
+      }
+    }
+    if (melhorIdx >= 0) {
+      selecionados.push(melhorIdx);
+      disponiveis.delete(melhorIdx);
+    } else break;
+  }
+
+  let estadoAtual = [...selecionados];
+  let energiaAtual = energia(estadoAtual.map((i) => candidatos[i]));
+  let melhorEstado = [...estadoAtual];
+  let melhorEnergia = energiaAtual;
+
+  // Parâmetros do Simulated Annealing
+  const iteracoesMax = Math.max(1000, q * 200);
+  const tempInicial = 10;
+  const tempFinal = 0.01;
+  const coolingRate = (tempFinal / tempInicial) ** (1 / iteracoesMax);
+
+  let temperatura = tempInicial;
+
+  for (let iter = 0; iter < iteracoesMax; iter++) {
+    if (disponiveis.size === 0) break;
+
+    // Vizinho: trocar um jogo selecionado por um não selecionado
+    const idxRemover = Math.floor(rng() * estadoAtual.length);
+    const idxAdicionar = Array.from(disponiveis)[Math.floor(rng() * disponiveis.size)];
+
+    const novoEstado = [...estadoAtual];
+    novoEstado[idxRemover] = idxAdicionar;
+    const novaEnergia = energia(novoEstado.map((i) => candidatos[i]));
+
+    const delta = novaEnergia - energiaAtual;
+
+    // Critério de aceitação de Metropolis
+    if (delta < 0 || rng() < Math.exp(-delta / temperatura)) {
+      estadoAtual = novoEstado;
+      energiaAtual = novaEnergia;
+
+      // Atualizar disponiveis
+      disponiveis.add(estadoAtual[idxRemover]);
+      disponiveis.delete(idxAdicionar);
+
+      if (novaEnergia < melhorEnergia) {
+        melhorEnergia = novaEnergia;
+        melhorEstado = [...estadoAtual];
+      }
+    }
+
+    // Resfriamento exponencial
+    temperatura *= coolingRate;
+
+    // Progress
+    if (iter % Math.max(1, Math.floor(iteracoesMax / 20)) === 0) {
+      onProgress?.(
+        'diversifying',
+        Math.round((iter / iteracoesMax) * 100),
+        `SA: ${iter}/${iteracoesMax}`,
+      );
+    }
+  }
+
+  return melhorEstado.map((i) => candidatos[i]);
+}
+
 export type ProgressCallback = (progress: {
   phase: 'weights' | 'candidates' | 'diversifying' | 'fallback' | 'complete';
   progress: number; // 0-100
@@ -371,6 +491,7 @@ export function generateGames(
   const calibrar = flag('calibrar') || flag('calibration');
   const janelaAdaptativa = flag('janelaAdaptativa') || flag('adaptiveWindow');
   const usarBMA = flag('bma') || flag('bayesianModelAveraging') || flag('useBMA');
+  const usarSA = flag('sa') || flag('simulatedAnnealing') || flag('useSA');
   const janelaReq = (() => {
     const v = opt(opcoes, 'janela', 'window', 'N', 'janelaConcursos');
     if (typeof v === 'number' && Number.isFinite(v) && v > 0) return Math.floor(v);
@@ -625,55 +746,81 @@ export function generateGames(
         onProgress,
       );
     }
-    const selecionados: number[][] = [candidatos[0] as number[]];
-    const restantes = candidatos.slice(1);
-    const overlap = (a: number[], b: number[]) => {
-      const set = new Set(a);
-      return b.filter((x) => set.has(x)).length;
-    };
-    // Progress para diversificação
-    updateProgress('diversifying', 1, q);
-    while (selecionados.length < q && restantes.length > 0) {
-      let melhorIdx = 0;
-      let melhorMax = Number.POSITIVE_INFINITY;
-      let melhorSoma = Number.POSITIVE_INFINITY;
-      for (let i = 0; i < restantes.length; i++) {
-        const cand = restantes[i] as number[];
-        let maxOverlap = 0;
-        let somaOverlap = 0;
-        for (const sel of selecionados) {
-          const ov = overlap(cand, sel);
-          if (ov > maxOverlap) maxOverlap = ov;
-          somaOverlap += ov;
-        }
-        if (maxOverlap < melhorMax || (maxOverlap === melhorMax && somaOverlap < melhorSoma)) {
-          melhorMax = maxOverlap;
-          melhorSoma = somaOverlap;
-          melhorIdx = i;
-        }
+    // Simulated Annealing para diversificação otimizada (se habilitado)
+    if (usarSA && candidatos.length >= q) {
+      updateProgress('diversifying', 0, 100);
+      const selecionadosSA = simulatedAnnealingDiversificacao(
+        candidatos,
+        q,
+        rngFn,
+        (phase, progress, message) => {
+          updateProgress('diversifying', progress, message);
+        },
+      );
+      for (const dezenas of selecionadosSA) {
+        const chave = dezenas.join(',');
+        if (usados.has(chave)) continue;
+        usados.add(chave);
+        const timestamp = new Date().toISOString();
+        games.push({
+          id: `${modalidade.id}-${games.length}-${timestamp}`,
+          dezenas,
+          timestamp,
+          modalidade: request.modalidade,
+        });
       }
-      const escolhido = restantes.splice(melhorIdx, 1)[0] as number[];
-      selecionados.push(escolhido);
-      updateProgress('diversifying', selecionados.length, q);
-    }
-    // Fallback final: se não conseguiu diversificar o suficiente, usa os primeiros
-    if (selecionados.length < q && _fallbackDepth < 2) {
-      console.warn('[generate] E4: não diversificou o suficiente, completando com primeiros...');
+    } else {
+      // Greedy original (fallback ou SA desabilitado)
+      const selecionados: number[][] = [candidatos[0] as number[]];
+      const restantes = candidatos.slice(1);
+      const overlap = (a: number[], b: number[]) => {
+        const set = new Set(a);
+        return b.filter((x) => set.has(x)).length;
+      };
+      // Progress para diversificação
+      updateProgress('diversifying', 1, q);
       while (selecionados.length < q && restantes.length > 0) {
-        selecionados.push(restantes.shift() as number[]);
+        let melhorIdx = 0;
+        let melhorMax = Number.POSITIVE_INFINITY;
+        let melhorSoma = Number.POSITIVE_INFINITY;
+        for (let i = 0; i < restantes.length; i++) {
+          const cand = restantes[i] as number[];
+          let maxOverlap = 0;
+          let somaOverlap = 0;
+          for (const sel of selecionados) {
+            const ov = overlap(cand, sel);
+            if (ov > maxOverlap) maxOverlap = ov;
+            somaOverlap += ov;
+          }
+          if (maxOverlap < melhorMax || (maxOverlap === melhorMax && somaOverlap < melhorSoma)) {
+            melhorMax = maxOverlap;
+            melhorSoma = somaOverlap;
+            melhorIdx = i;
+          }
+        }
+        const escolhido = restantes.splice(melhorIdx, 1)[0] as number[];
+        selecionados.push(escolhido);
+        updateProgress('diversifying', selecionados.length, q);
       }
-    }
-    for (const dezenas of selecionados) {
-      const chave = dezenas.join(',');
-      if (usados.has(chave)) continue;
-      usados.add(chave);
-      const timestamp = new Date().toISOString();
-      games.push({
-        id: `${modalidade.id}-${games.length}-${timestamp}`,
-        dezenas,
-        timestamp,
-        modalidade: request.modalidade,
-      });
+      // Fallback final: se não conseguiu diversificar o suficiente, usa os primeiros
+      if (selecionados.length < q && _fallbackDepth < 2) {
+        console.warn('[generate] E4: não diversificou o suficiente, completando com primeiros...');
+        while (selecionados.length < q && restantes.length > 0) {
+          selecionados.push(restantes.shift() as number[]);
+        }
+      }
+      for (const dezenas of selecionados) {
+        const chave = dezenas.join(',');
+        if (usados.has(chave)) continue;
+        usados.add(chave);
+        const timestamp = new Date().toISOString();
+        games.push({
+          id: `${modalidade.id}-${games.length}-${timestamp}`,
+          dezenas,
+          timestamp,
+          modalidade: request.modalidade,
+        });
+      }
     }
   }
 
