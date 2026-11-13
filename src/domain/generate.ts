@@ -11,6 +11,7 @@ import { sampleWeighted } from './sampling';
 import { atrasoAcumulado, frequenciaDezenas, ultimosN } from './stats';
 import type { Game, GameRequest } from './types';
 import type { ModalidadeId } from './types';
+import { type CalibrationResult, calibrationTest } from './validation';
 import { ALGORITHM_VERSION } from './version';
 import { atrasoWeights, frequencyWeights } from './weights';
 
@@ -268,6 +269,7 @@ export function generateGames(
 
   const beta = betaFromOpcoes(opcoes);
   const evitaCal = flag('evitaCalendario') || flag('evitaPadraoCalendario') || flag('calendario');
+  const calibrar = flag('calibrar') || flag('calibration');
   const janelaReq = (() => {
     const v = opt(opcoes, 'janela', 'window', 'N', 'janelaConcursos');
     if (typeof v === 'number' && Number.isFinite(v) && v > 0) return Math.floor(v);
@@ -576,6 +578,61 @@ export function generateGames(
     stats: { tentativas, aceitos, jogosGerados: games.length },
   });
 
+  // Calibração opcional: se solicitado e há histórico, roda calibrationTest
+  let calibrationResult: CalibrationResult | undefined;
+  if (calibrar && windowed.length > 0 && games.length > 0) {
+    onProgress?.({
+      phase: 'complete',
+      progress: 100,
+      message: 'Calculando calibração...',
+      stats: { tentativas, aceitos, jogosGerados: games.length },
+    });
+
+    // Para cada jogo gerado, calcular probabilidade de acerto de cada dezena
+    // e comparar com resultado real no próximo concurso (simulado via leave-one-out)
+    const predicoes: number[] = [];
+    const observacoes: number[] = [];
+
+    // Usar leave-one-out cross-validation no histórico disponível
+    // Para cada concurso no histórico, usar os anteriores para prever o atual
+    for (let i = Math.max(0, windowed.length - 20); i < windowed.length; i++) {
+      const concursoAtual = windowed[i];
+      const historicoTreino = windowed.slice(0, i);
+
+      if (historicoTreino.length < 10) continue;
+
+      const freqTreino = frequenciaDezenas(historicoTreino);
+      const totalSorteios = historicoTreino.length;
+      const dezenasSorteadas = modalidade.dezenasSorteadas;
+
+      // Probabilidade estimada para cada dezena do concurso atual
+      for (const dezena of concursoAtual) {
+        const freq = freqTreino[dezena] ?? 0;
+        const prob = Math.min(1, (freq + 1) / (totalSorteios + modalidade.universo)); // Laplace smoothing
+        predicoes.push(prob);
+        observacoes.push(1); // Acertou (estava no concurso)
+      }
+
+      // Adicionar dezenas NÃO sorteadas como negativos (amostragem)
+      const todasDezenas = Array.from({ length: modalidade.universo }, (_, i) =>
+        modalidade.id === 'lotomania' ? i : i + 1,
+      );
+      const naoSorteadas = todasDezenas.filter((d) => !concursoAtual.includes(d));
+      // Amostrar alguns negativos para balancear
+      const negativosAmostra = naoSorteadas.slice(0, dezenasSorteadas);
+      for (const dezena of negativosAmostra) {
+        const freq = freqTreino[dezena] ?? 0;
+        const prob = Math.min(1, (freq + 1) / (totalSorteios + modalidade.universo));
+        predicoes.push(prob);
+        observacoes.push(0); // Não acertou
+      }
+    }
+
+    if (predicoes.length > 0) {
+      calibrationResult = calibrationTest(predicoes, observacoes);
+    }
+  }
+
   const cacheStats = getCacheStats();
 
   const result = games as Game[] & {
@@ -597,7 +654,7 @@ export function generateGames(
     };
   };
   result.games = games;
-  result.meta = {
+  const metaBase = {
     algorithmVersion: ALGORITHM_VERSION,
     seed,
     janela: janelaUsada,
@@ -618,5 +675,18 @@ export function generateGames(
     cacheSize: cacheStats.comb + cacheStats.factorial,
     fallbackDepth: _fallbackDepth,
   };
+
+  result.meta = calibrationResult
+    ? {
+        ...metaBase,
+        calibracao: {
+          brierScore: calibrationResult.brierScore,
+          ece: calibrationResult.ece,
+          interpretacao: calibrationResult.interpretacao,
+          bins: calibrationResult.bins,
+          amostras: calibrationResult.resultados.reduce((s, r) => s + r.n, 0),
+        },
+      }
+    : metaBase;
   return result;
 }
