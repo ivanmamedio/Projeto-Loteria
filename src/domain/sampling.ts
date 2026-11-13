@@ -121,7 +121,7 @@ export function sampleWeighted(
     if (items.length < k) {
       items.push({ n: dezena, key });
       if (items.length === k) items.sort((a, b) => a.key - b.key); // min-heap: menor key no índice 0
-    } else if (items.length > 0 && key > items[0]!.key) {
+    } else if (items.length > 0 && key > (items[0]?.key ?? Number.NEGATIVE_INFINITY)) {
       items[0] = { n: dezena, key };
       // Sift down para manter propriedade de min-heap
       let idx = 0;
@@ -129,12 +129,24 @@ export function sampleWeighted(
         const left = 2 * idx + 1;
         const right = 2 * idx + 2;
         let smallest = idx;
-        if (left < k && items[left] && items[left].key < items[smallest]!.key) smallest = left;
-        if (right < k && items[right] && items[right].key < items[smallest]!.key) smallest = right;
+        if (
+          left < k &&
+          items[left] &&
+          items[left].key < (items[smallest]?.key ?? Number.POSITIVE_INFINITY)
+        )
+          smallest = left;
+        if (
+          right < k &&
+          items[right] &&
+          items[right].key < (items[smallest]?.key ?? Number.POSITIVE_INFINITY)
+        )
+          smallest = right;
         if (smallest === idx) break;
-        const smallestItem = items[smallest]!;
-        const idxItem = items[idx]!;
-        [items[idx], items[smallest]] = [smallestItem, idxItem];
+        const smallestItem = items[smallest];
+        const idxItem = items[idx];
+        if (smallestItem && idxItem) {
+          [items[idx], items[smallest]] = [smallestItem, idxItem];
+        }
         idx = smallest;
       }
     }

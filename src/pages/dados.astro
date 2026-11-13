@@ -67,7 +67,7 @@ function getUltimaData(concursos: Concurso[]): string {
   return datas[datas.length - 1];
 }
 
-function getUltimosConcursos(concursos: Concurso[], qtd: number = 10): Concurso[] {
+function getUltimosConcursos(concursos: Concurso[], qtd = 10): Concurso[] {
   return [...concursos].sort((a, b) => b.concurso - a.concurso).slice(0, qtd);
 }
 
@@ -76,27 +76,28 @@ function formatarTamanho(bytes: number): string {
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
 }
 
 async function getTamanhoArquivo(mod: string): Promise<{ csv: string; json: string }> {
   const fs = await import('node:fs/promises');
   const path = await import('node:path');
   const basePath = '/home/carlos/Documentos/Projeto Loteria/public/data';
-  let csvSize = 0, jsonSize = 0;
-  
+  let csvSize = 0;
+  let jsonSize = 0;
+
   try {
     const csvPath = path.join(basePath, '..', 'data', 'raw', `${mod}.csv`);
     const stats = await fs.stat(csvPath);
     csvSize = stats.size;
   } catch {}
-  
+
   try {
     const jsonPath = path.join(basePath, `${mod}.json`);
     const stats = await fs.stat(jsonPath);
     jsonSize = stats.size;
   } catch {}
-  
+
   return { csv: formatarTamanho(csvSize), json: formatarTamanho(jsonSize) };
 }
 

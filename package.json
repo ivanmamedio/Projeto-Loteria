@@ -16,8 +16,8 @@
     "format": "biome format .",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
-    "data:import": "node etl/import.ts",
-    "data:check": "node etl/check.ts",
+    "data:import": "tsx etl/import.ts",
+    "data:check": "tsx etl/check.ts",
     "data:download": "node etl/download-csvs.js"
   },
   "dependencies": {
@@ -32,6 +32,7 @@
     "@vitest/coverage-v8": "^1.0.0",
     "papaparse": "^5.0.0",
     "sharp": "^0.35.5",
+    "tsx": "^4.23.15",
     "typescript": "^5.0.0",
     "vitest": "^1.0.0"
   }
