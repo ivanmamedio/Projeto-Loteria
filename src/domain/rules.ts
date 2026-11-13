@@ -116,6 +116,9 @@ export const MODALIDADES: ReadonlyArray<ModalidadeRegras> = [
   },
 ];
 
+/** Lista de IDs válidos de modalidades (para uso em runtime). */
+export const MODALIDADES_VALIDAS: readonly ModalidadeId[] = MODALIDADES.map((m) => m.id);
+
 /** Recupera as regras de uma modalidade pelo seu ID. */
 export function modalidadePorId(id: ModalidadeId): ModalidadeRegras {
   const regras = MODALIDADES.find((modalidade) => modalidade.id === id);

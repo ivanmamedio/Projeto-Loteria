@@ -82,18 +82,19 @@ function formatarTamanho(bytes: number): string {
 async function getTamanhoArquivo(mod: string): Promise<{ csv: string; json: string }> {
   const fs = await import('node:fs/promises');
   const path = await import('node:path');
-  const basePath = '/home/carlos/Documentos/Projeto Loteria/public/data';
+  // No build time (Astro), o diretório base é a raiz do projeto
+  const projectRoot = '/home/carlos/Documentos/Projeto Loteria';
   let csvSize = 0;
   let jsonSize = 0;
 
   try {
-    const csvPath = path.join(basePath, '..', 'data', 'raw', `${mod}.csv`);
+    const csvPath = path.join(projectRoot, 'data', 'raw', `${mod}.csv`);
     const stats = await fs.stat(csvPath);
     csvSize = stats.size;
   } catch {}
 
   try {
-    const jsonPath = path.join(basePath, `${mod}.json`);
+    const jsonPath = path.join(projectRoot, 'public', 'data', `${mod}.json`);
     const stats = await fs.stat(jsonPath);
     jsonSize = stats.size;
   } catch {}
@@ -128,7 +129,6 @@ const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
         const total = d.concursos.length;
         const inicio = getAnoInicio(d.concursos);
         const ultima = getUltimaData(d.concursos);
-        const t = tamanhos[mod];
         return (
           <div class="data-card">
             <h3>{getNomeModalidade(mod)}</h3>
@@ -136,26 +136,6 @@ const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
               {total.toLocaleString('pt-BR')} concursos · de {inicio} a {formatarDataBR(ultima)}
             </p>
             <p class="text-sm text-muted">Atualizado em {formatarDataBR(d.updatedAt.split('T')[0])}</p>
-            <div class="data-downloads">
-              <a 
-                href={`${base}data/raw/${mod}.csv`} 
-                class="btn btn-secondary btn-sm"
-                download
-                aria-label="Baixar CSV da {getNomeModalidade(mod)} ({t.csv})"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                CSV ({t.csv})
-              </a>
-              <a 
-                href={`${base}data/${mod}.json`} 
-                class="btn btn-secondary btn-sm"
-                download
-                aria-label="Baixar JSON da {getNomeModalidade(mod)} ({t.json})"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                JSON ({t.json})
-              </a>
-            </div>
           </div>
         );
       })}
@@ -187,11 +167,12 @@ const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
   <!-- Tabelas de últimos concursos por modalidade -->
   <section class="container" style="margin-top: var(--space-12);">
     <h2>Últimos concursos por modalidade</h2>
-    <p class="text-muted">Clique no cabeçalho para ordenar. Mostrando os 10 mais recentes.</p>
+    <p class="text-muted">Mostrando os 10 mais recentes.</p>
     
     {MODALIDADES.map((mod) => {
       const d = dados[mod];
       const ultimos = getUltimosConcursos(d.concursos, 10);
+      const t = tamanhos[mod];
       return (
         <div class="modalidade-table-wrap" style="margin-bottom: var(--space-8);">
           <h3>{getNomeModalidade(mod)}</h3>
@@ -231,8 +212,8 @@ const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
           </div>
           <p class="text-sm text-muted" style="margin-top: var(--space-2);">
             <a href={`${base}estatisticas/${mod}`}>Ver estatísticas completas</a> · 
-            <a href={`${base}data/${mod}.json`} download>Baixar JSON completo</a> ·
-            <a href={`${base}data/raw/${mod}.csv`} download>Baixar CSV completo</a>
+            <a href={`${base}data/${mod}.json`} download>Baixar JSON ({t.json})</a> ·
+            <a href={`${base}data/raw/${mod}.csv`} download>Baixar CSV ({t.csv})</a>
           </p>
         </div>
       );
@@ -356,20 +337,6 @@ const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
 </Base>
 
 <style>
-  .data-downloads {
-    display: flex;
-    gap: var(--space-2);
-    margin-top: var(--space-3);
-    flex-wrap: wrap;
-  }
-  
-  .data-downloads .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    font-size: 0.8rem;
-  }
-  
   .modalidade-table-wrap h3 {
     margin-bottom: var(--space-3);
     padding-bottom: var(--space-2);
@@ -476,11 +443,9 @@ const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
   }
   
   @media (max-width: 640px) {
-    .data-downloads {
-      flex-direction: column;
-    }
-    .data-downloads .btn {
-      justify-content: center;
+    .table-container {
+      margin: 0 calc(-1 * var(--container-padding));
+      padding: 0 var(--container-padding);
     }
   }
 </style>

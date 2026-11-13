@@ -474,7 +474,7 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
   <script>
     import { generateGames } from '../domain/generate';
     import { sampleNoReplace } from '../domain/sampling';
-    import { modalidadePorId, dezenasDoUniverso, type ModalidadeId } from '../domain/rules';
+    import { modalidadePorId, dezenasDoUniverso, type ModalidadeId, MODALIDADES_VALIDAS } from '../domain/rules';
     import { mulberry32, newSeed } from '../domain/rng';
     import { loadData } from '../ui/load-data';
     import { addHistory, clearHistory, loadHistory } from '../ui/history';
