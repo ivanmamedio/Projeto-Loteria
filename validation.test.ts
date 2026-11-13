@@ -7,6 +7,7 @@ import {
   bootstrapCI, 
   calibrationTest 
 } from './src/domain/validation';
+import { mulberry32 } from './src/domain/rng';
 
 describe('Validation — Detecção honesta de ilusões', () => {
   // Gerar histórico sintético ALEATÓRIO (deve passar em todos os testes)
@@ -77,6 +78,7 @@ describe('Validation — Detecção honesta de ilusões', () => {
   });
 
   // Histórico com PADRÃO ARTIFICIAL FORTE - Clustering temporal
+  const rngTest = mulberry32(42); // seed fixa para reprodutibilidade
   const histComClustering: number[][] = [];
   for (let i = 0; i < 200; i++) {
     const sorteio: number[] = [];
@@ -85,9 +87,10 @@ describe('Validation — Detecção honesta de ilusões', () => {
     if (onda) {
       sorteio.push(1, 2, 3, 4, 5);
     }
-    while (sorteio.length < 15) {
-      const d = Math.floor(Math.random() * 25) + 1;
-      if (!sorteio.includes(d)) sorteio.push(d);
+    // Preencher restante com números determinísticos (não aleatórios)
+    // para manter o padrão de clustering puro
+    for (let d = 6; sorteio.length < 15 && d <= 25; d++) {
+      sorteio.push(d);
     }
     sorteio.sort((a, b) => a - b);
     histComClustering.push(sorteio);

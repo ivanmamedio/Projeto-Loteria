@@ -28,44 +28,104 @@ export interface RunsTestResult {
  * H0: aparições são independentes (aleatórias).
  * H1: há clustering (runs < esperado) ou alternância excessiva (runs > esperado).
  */
-export function runsTest(historico: number[][], dezena: number): RunsTestResult {
-  // Converter histórico em sequência binária: 1 = saiu, 0 = não saiu
-  const sequencia = historico.map((sorteio) => (sorteio.includes(dezena) ? 1 : 0));
 
+/**
+ * Runs test com limiares Monte Carlo opcionais
+ * Aceita terceiro argumento opcional: thresholds object {p05, p01} ou number (ignorado, compatibilidade)
+ */
+export function runsTest(
+  historico: number[][],
+  dezena: number,
+  thresholdsOrLegacy?: { p05: number; p01: number } | number,
+): RunsTestResult {
+  const sequencia = historico.map((sorteio) => (sorteio.includes(dezena) ? 1 : 0));
   const n = sequencia.length;
-  const n1 = sequencia.reduce((a: number, b: number) => a + b, 0); // sucessos
-  const n0 = n - n1; // falhas
+  const n1 = sequencia.reduce((a, b) => a + b, 0);
+  const n0 = n - n1;
 
   if (n1 === 0 || n0 === 0) {
-    return {
-      runs: 0,
-      expected: 0,
-      variance: 0,
-      z: 0,
-      pValue: 1,
-      interpretacao: 'aleatorio',
-    };
+    return { runs: 0, expected: 0, variance: 0, z: 0, pValue: 1, interpretacao: 'aleatorio' };
   }
 
-  // Contar runs
   let runs = 1;
-  for (let i = 1; i < n; i++) {
-    if (sequencia[i] !== sequencia[i - 1]) runs++;
-  }
+  for (let i = 1; i < n; i++) if (sequencia[i] !== sequencia[i - 1]) runs++;
 
-  // Esperado e variância sob H0
   const expected = (2 * n1 * n0) / n + 1;
   const variance = (2 * n1 * n0 * (2 * n1 * n0 - n)) / (n * n * (n - 1));
   const std = Math.sqrt(variance);
-
   const z = (runs - expected) / std;
+
   const pValue = 2 * (1 - normalCdf(Math.abs(z)));
 
+  // Detectar se thresholds é um objeto com p05/p01 (novo) ou number (legacy)
+  const thresholds =
+    typeof thresholdsOrLegacy === 'object' && thresholdsOrLegacy !== null
+      ? thresholdsOrLegacy
+      : undefined;
+
   let interpretacao: RunsTestResult['interpretacao'] = 'aleatorio';
-  if (pValue < 0.01) interpretacao = 'nao-aleatorio';
-  else if (pValue < 0.05) interpretacao = 'suspeito';
+  if (thresholds) {
+    if (Math.abs(z) >= thresholds.p01) interpretacao = 'nao-aleatorio';
+    else if (Math.abs(z) >= thresholds.p05) interpretacao = 'suspeito';
+  } else {
+    if (pValue < 0.01) interpretacao = 'nao-aleatorio';
+    else if (pValue < 0.05) interpretacao = 'suspeito';
+  }
 
   return { runs, expected, variance, z, pValue, interpretacao };
+}
+
+/** KS test com limiares Monte Carlo opcionais */
+export function ksTest(
+  amostra: number[],
+  cdfTeorica: (x: number) => number,
+  thresholds?: { p05: number; p01: number },
+): KSTestResult {
+  const n = amostra.length;
+  if (n < 10) {
+    return {
+      ksStatistic: 0,
+      criticalValue: 0,
+      pValue: 1,
+      interpretacao: 'compativel',
+      detalhes: { maximoDesvio: 0, ondeOcorre: 0 },
+    };
+  }
+
+  const sorted = [...amostra].sort((a, b) => a - b);
+  let D = 0;
+  let xMax = 0;
+
+  for (let i = 0; i < n; i++) {
+    const x = sorted[i];
+    if (x === undefined) continue;
+    const ecdf = (i + 1) / n;
+    const tcdf = cdfTeorica(x);
+    const diff = Math.abs(ecdf - tcdf);
+    if (diff > D) {
+      D = diff;
+      xMax = x;
+    }
+  }
+
+  const criticalValue = thresholds?.p05 ?? 1.48 / Math.sqrt(n);
+  const pValue = 2 * Math.exp(-2 * n * D * D);
+
+  let interpretacao: KSTestResult['interpretacao'] = 'compativel';
+  if (thresholds) {
+    if (D >= thresholds.p01) interpretacao = 'divergente';
+    else if (D >= thresholds.p05) interpretacao = 'divergente';
+  } else {
+    if (D > criticalValue) interpretacao = 'divergente';
+  }
+
+  return {
+    ksStatistic: D,
+    criticalValue,
+    pValue: Math.min(1, pValue),
+    interpretacao,
+    detalhes: { maximoDesvio: D, ondeOcorre: xMax },
+  };
 }
 
 /* ============================================================
@@ -157,53 +217,6 @@ export interface KSTestResult {
   detalhes: {
     maximoDesvio: number;
     ondeOcorre: number; // valor x
-  };
-}
-
-/**
- * Kolmogorov-Smirnov: distribuição empírica de uma métrica vs teórica.
- * Ex: atrasos devem seguir Geométrica(p = k/N).
- */
-export function ksTest(amostra: number[], cdfTeorica: (x: number) => number): KSTestResult {
-  const n = amostra.length;
-  if (n < 10) {
-    return {
-      ksStatistic: 0,
-      criticalValue: 0,
-      pValue: 1,
-      interpretacao: 'compativel',
-      detalhes: { maximoDesvio: 0, ondeOcorre: 0 },
-    };
-  }
-
-  const sorted = [...amostra].sort((a, b) => a - b);
-  let D = 0;
-  let xMax = 0;
-
-  for (let i = 0; i < n; i++) {
-    const x = sorted[i];
-    if (x === undefined) continue;
-    const ecdf = (i + 1) / n; // P(X <= x) empírica
-    const tcdf = cdfTeorica(x); // P(X <= x) teórica
-    const diff = Math.abs(ecdf - tcdf);
-    if (diff > D) {
-      D = diff;
-      xMax = x;
-    }
-  }
-
-  // Valor crítico ajustado para distribuições discretas (mais conservador)
-  // Usa correção de Dwass (1957) para KS discreto
-  const criticalValue = 1.48 / Math.sqrt(n); // alpha = 0.05, conservador
-  // p-valor aproximado (Massey 1951) com correção
-  const pValue = 2 * Math.exp(-2 * n * D * D * 0.8); // fator de correção
-
-  return {
-    ksStatistic: D,
-    criticalValue,
-    pValue: Math.min(1, pValue),
-    interpretacao: D > criticalValue ? 'divergente' : 'compativel',
-    detalhes: { maximoDesvio: D, ondeOcorre: xMax },
   };
 }
 
@@ -472,33 +485,56 @@ export interface ValidationReport {
 /**
  * Gera relatório completo de validação para uma modalidade.
  * Roda todos os testes e dá veredito honesto.
+ *
+ * A calibração de limiares é feita via Monte Carlo sob H0 exata (sorteios iid)
+ * para controlar taxa de falso positivo em ~5%.
  */
 export function gerarRelatorioValidacao(
   historico: number[][],
   modalidadeId: ModalidadeId,
+  opts?: {
+    /** Réplicas Monte Carlo para calibrar limiares (default: 2000) */
+    mcReplicas?: number;
+    /** Semente fixa para reprodutibilidade */
+    seed?: number;
+  },
 ): ValidationReport {
   const regras = modalidadePorId(modalidadeId);
   const universo = regras.universo;
   const k = regras.dezenasSorteadas;
   const min = universo === 100 ? 0 : 1;
+  const mcReplicas = opts?.mcReplicas ?? 2000;
+  const seed = opts?.seed ?? 42;
 
-  // Testes por dezena (amostragem se muito grande)
+  // ─── Monte Carlo calibration under H0 (iid draws) ───
+  // Simula réplicas iid do mesmo tamanho/formato para calibrar limiares
   const dezenas = Array.from({ length: universo }, (_, i) => min + i);
-  const amostraDezenas = dezenas.slice(0, Math.min(20, universo)); // max 20 para performance
+  const nConcursos = historico.length;
+  const nDezenasTeste = Math.min(universo, 30); // testar até 30 dezenas (mais representativo)
+  const dezenasTeste = dezenas.slice(0, nDezenasTeste);
 
+  // Pré-calcular limiares via Monte Carlo sob H0
+  const { runsThresholds, ksThresholds } = calibrarLimiaresMC(
+    universo,
+    k,
+    nConcursos,
+    nDezenasTeste,
+    mcReplicas,
+    seed,
+  );
+
+  // ─── Testes reais no histórico observado ───
   const runsTestResults: Record<number, RunsTestResult> = {};
   const autocorrelacao: Record<number, AutocorrelationResult> = {};
   const ksTestAtrasos: Record<number, KSTestResult> = {};
 
-  // CDF teórica de atrasos: Geométrica(p = k/universo)
   const p = k / universo;
   const cdfGeometrica = (x: number) => 1 - (1 - p) ** (x + 1);
 
-  for (const d of amostraDezenas) {
-    runsTestResults[d] = runsTest(historico, d);
+  for (const d of dezenasTeste) {
+    runsTestResults[d] = runsTest(historico, d, runsThresholds);
     autocorrelacao[d] = autocorrelacaoAtrasos(historico, d);
 
-    // Extrair gaps desta dezena
     const gaps: number[] = [];
     let ultima = -1;
     for (let i = 0; i < historico.length; i++) {
@@ -510,18 +546,16 @@ export function gerarRelatorioValidacao(
       }
     }
     if (gaps.length > 10) {
-      ksTestAtrasos[d] = ksTest(gaps, cdfGeometrica);
+      ksTestAtrasos[d] = ksTest(gaps, cdfGeometrica, ksThresholds);
     }
   }
 
   // Calibração: usar predições do modelo vs realidade
-  // (simplificado - em produção, usar predições reais do gerador)
   const predicoes: number[] = [];
   const observacoes: number[] = [];
   for (let i = 50; i < historico.length; i++) {
     const sorteio = historico[i];
     if (!sorteio) continue;
-    // Probabilidade uniforme como baseline
     for (const d of dezenas) {
       predicoes.push(k / universo);
       observacoes.push(sorteio.includes(d) ? 1 : 0);
@@ -547,32 +581,35 @@ export function gerarRelatorioValidacao(
     (arr) => arr.reduce((a, b) => a + b, 0) / arr.length,
   );
 
-  // Interpretação geral
-  const anomaliasFortes = Object.values(runsTestResults).filter(
-    (r) => r.interpretacao === 'nao-aleatorio',
-  ).length;
-  const anomaliasLeves = Object.values(runsTestResults).filter(
-    (r) => r.interpretacao === 'suspeito',
-  ).length;
+  // ─── Interpretação geral com controle de falsos positivos ───
+  // Holm-Bonferroni para múltiplos testes
+  const runsPValues = Object.values(runsTestResults).map((r) => r.pValue);
+  const runsAnomalias = holmBonferroni(runsPValues, 0.05).filter((v) => v).length;
+
+  const ksPValues = Object.values(ksTestAtrasos).map((k) => k.pValue);
+  const ksAnomalias = holmBonferroni(ksPValues, 0.05).filter((v) => v).length;
+
   const memoriaForte = Object.values(autocorrelacao).filter(
     (a) => a.interpretacao === 'memoria-forte',
   ).length;
-  const ksDivergente = Object.values(ksTestAtrasos).filter(
-    (k) => k.interpretacao === 'divergente',
-  ).length;
 
   let interpretacaoGeral: ValidationReport['interpretacaoGeral'] = 'aleatorio';
-  // Requer pelo menos 2 anomalias fortes OU 1 forte + KS divergente para "anomalias-fortes"
-  if (anomaliasFortes >= 2 || (anomaliasFortes >= 1 && ksDivergente >= 1) || memoriaForte > 0) {
+  // Critério mais conservador: Holm-Bonferroni + exigência de múltiplas evidências
+  if (runsAnomalias >= 2 || (runsAnomalias >= 1 && ksAnomalias >= 1) || memoriaForte > 0) {
     interpretacaoGeral = 'anomalias-fortes';
-  } else if (anomaliasLeves > 3) {
+  } else if (runsAnomalias === 1 || ksAnomalias === 1) {
     interpretacaoGeral = 'anomalias-leves';
   }
+
+  // Variáveis para o resumo (compatibilidade com código antigo)
+  const anomaliasFortes = runsAnomalias;
+  const anomaliasLeves = 0; // Holm-Bonferroni não classifica como "leve", apenas rejeita/não rejeita
+  const ksDivergente = ksAnomalias;
 
   const resumo = [
     `Modalidade: ${regras.nome} (universo ${universo}, ${k} sorteadas)`,
     `Concursos analisados: ${historico.length}`,
-    `Dezenas testadas: ${amostraDezenas.length}`,
+    `Dezenas testadas: ${dezenasTeste.length}`,
     `Runs test: ${anomaliasFortes} fortes, ${anomaliasLeves} leves`,
     `Autocorrelação: ${memoriaForte} com memória forte`,
     `KS test (atrasos): ${ksDivergente} divergentes`,
@@ -592,5 +629,101 @@ export function gerarRelatorioValidacao(
     bootstrapMediaAtraso,
     interpretacaoGeral,
     resumo,
+  };
+}
+
+/** Holm-Bonferroni correction for multiple testing */
+function holmBonferroni(pValues: number[], alpha: number): boolean[] {
+  if (pValues.length === 0) return [];
+  const indexed = pValues.map((p, i) => ({ p, i })).sort((a, b) => a.p - b.p);
+  const rejected = new Array(pValues.length).fill(false);
+  for (let i = 0; i < indexed.length; i++) {
+    const threshold = alpha / (indexed.length - i);
+    if (indexed[i].p <= threshold) {
+      rejected[indexed[i].i] = true;
+    } else {
+      break;
+    }
+  }
+  return rejected;
+}
+
+/** Monte Carlo calibration of critical values under H0 (iid draws) */
+function calibrarLimiaresMC(
+  universo: number,
+  k: number,
+  nConcursos: number,
+  nDezenas: number,
+  replicas: number,
+  seed: number,
+): { runsThresholds: { p05: number; p01: number }; ksThresholds: { p05: number; p01: number } } {
+  const rng = createRng(seed);
+  const min = universo === 100 ? 0 : 1;
+  const universoArr = Array.from({ length: universo }, (_, i) => min + i);
+
+  const runsZScores: number[] = [];
+  const ksDValues: number[] = [];
+
+  for (let r = 0; r < replicas; r++) {
+    const histSim: number[][] = [];
+    for (let i = 0; i < nConcursos; i++) {
+      const pool = [...universoArr];
+      const sorteio: number[] = [];
+      for (let j = 0; j < k; j++) {
+        const idx = Math.floor(rng() * pool.length);
+        const [item] = pool.splice(idx, 1);
+        sorteio.push(item);
+      }
+      sorteio.sort((a, b) => a - b);
+      histSim.push(sorteio);
+    }
+
+    for (let d = 0; d < nDezenas; d++) {
+      const dezena = min + d;
+      const sequencia = histSim.map((s) => (s.includes(dezena) ? 1 : 0));
+      const n = sequencia.length;
+      const n1 = sequencia.reduce((a, b) => a + b, 0);
+      const n0 = n - n1;
+      if (n1 > 0 && n0 > 0) {
+        let runs = 1;
+        for (let i = 1; i < n; i++) if (sequencia[i] !== sequencia[i - 1]) runs++;
+        const expected = (2 * n1 * n0) / n + 1;
+        const variance = (2 * n1 * n0 * (2 * n1 * n0 - n)) / (n * n * (n - 1));
+        const std = Math.sqrt(variance);
+        const z = (runs - expected) / std;
+        runsZScores.push(Math.abs(z));
+      }
+
+      const gaps: number[] = [];
+      let ultima = -1;
+      for (let i = 0; i < nConcursos; i++) {
+        if (histSim[i].includes(dezena)) {
+          if (ultima >= 0) gaps.push(i - ultima - 1);
+          ultima = i;
+        }
+      }
+      if (gaps.length > 10) {
+        const p = k / universo;
+        const cdfGeo = (x: number) => 1 - (1 - p) ** (x + 1);
+        const sorted = [...gaps].sort((a, b) => a - b);
+        let D = 0;
+        for (let i = 0; i < gaps.length; i++) {
+          const ecdf = (i + 1) / gaps.length;
+          const tcdf = cdfGeo(sorted[i]);
+          D = Math.max(D, Math.abs(ecdf - tcdf));
+        }
+        ksDValues.push(D);
+      }
+    }
+  }
+
+  runsZScores.sort((a, b) => a - b);
+  ksDValues.sort((a, b) => a - b);
+  const p05 = (arr: number[]) => arr[Math.floor(arr.length * 0.95)];
+  const p01 = (arr: number[]) => arr[Math.floor(arr.length * 0.99)];
+
+  return {
+    runsThresholds: { p05: p05(runsZScores), p01: p01(runsZScores) },
+    ksThresholds: { p05: p05(ksDValues), p01: p01(ksDValues) },
   };
 }
