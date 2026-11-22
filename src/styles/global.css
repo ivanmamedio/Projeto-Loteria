@@ -1506,3 +1506,4 @@ section.container > p { max-width: 80ch; line-height: var(--leading-relaxed); ma
 @media (max-width: 480px) {
   .pix-label { white-space: normal; }
 }
+

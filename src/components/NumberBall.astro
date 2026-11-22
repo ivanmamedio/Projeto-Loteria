@@ -6,28 +6,40 @@
 interface Props {
   value: number;
   size?: 'sm' | 'md' | 'lg';
+  variant?: 'default' | 'modalidade' | 'accent' | 'success';
 }
 
-const { value, size = 'md' } = Astro.props;
+const { value, size = 'md', variant = 'default' } = Astro.props;
 
 const sizes = {
-  sm: { width: '28px', height: '28px', fontSize: '0.85rem' },
-  md: { width: '40px', height: '40px', fontSize: '1.1rem' },
-  lg: { width: '56px', height: '56px', fontSize: '1.5rem' },
+  sm: { width: '28px', height: '28px', fontSize: 'var(--text-sm)' },
+  md: { width: '40px', height: '40px', fontSize: 'var(--text-base)' },
+  lg: { width: '56px', height: '56px', fontSize: 'var(--text-lg)' },
 };
 
-const style = {
+const variantStyles = {
+  default: 'background: var(--color-primary); color: var(--color-text-inverse);',
+  modalidade: 'background: var(--color-primary-pale); color: var(--color-primary); border: 2px solid var(--color-primary);',
+  accent: 'background: var(--color-accent); color: var(--color-text-inverse);',
+  success: 'background: var(--color-success); color: var(--color-text-inverse);',
+};
+
+const baseStyle = {
   width: sizes[size].width,
   height: sizes[size].height,
   fontSize: sizes[size].fontSize,
-  backgroundColor: '#5dd921',
-  color: '#111',
   borderRadius: '50%',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   fontWeight: '600',
   userSelect: 'none',
+  transition: 'transform var(--transition-fast), box-shadow var(--transition-fast)',
+};
+
+const style = {
+  ...baseStyle,
+  ...variantStyles[variant],
 };
 ---
 

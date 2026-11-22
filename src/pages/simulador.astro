@@ -12,6 +12,7 @@ import { distribuicaoAcertos, varianciaAcertos } from '../domain/stats';
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { getClientBaseUrl } from '../utils/base-url';
 
 export function getStaticPaths() {
   return MODALIDADES.map((m) => ({ params: { modalidade: m.id } }));
@@ -320,9 +321,8 @@ const janelaPadrao = 100;
 
   // Helper: carregar histórico real
   async function carregarHistorico(mod: string): Promise<number[][]> {
-    const isGitHubPages = window.location.hostname.includes('github.io');
-    const basePath = isGitHubPages ? '/Projeto-Loteria/' : '/';
-    const res = await fetch(`${basePath}data/${mod}.json`);
+    const basePath = getClientBaseUrl();
+    const res = await fetch(`${basePath}/data/${mod}.json`);
     if (!res.ok) return [];
     const data = await res.json();
     return (data.concursos || []).map((c: any) => c.dezenas);

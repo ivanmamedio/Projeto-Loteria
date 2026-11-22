@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "build:sri": "astro build && node scripts/generate-sri.js",
     "preview": "astro preview",
     "check": "biome check .",
     "check:fix": "biome check --fix .",
@@ -18,7 +19,8 @@
     "test:e2e": "playwright test",
     "data:import": "tsx etl/import.ts",
     "data:check": "tsx etl/check.ts",
-    "data:download": "node etl/download-csvs.js"
+    "data:download": "node etl/download-csvs.js",
+    "sri:generate": "node scripts/generate-sri.js"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.0.0",

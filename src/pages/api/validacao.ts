@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { gerarRelatorioValidacao } from '../../domain/validation';
 import { loadData } from '../../ui/load-data';
+import { buildUrl } from '../../utils/base-url';
 
 const MODALIDADES = ['mega-sena', 'lotofacil', 'quina', 'lotomania'] as const;
 type ModalidadeId = (typeof MODALIDADES)[number];
@@ -22,9 +23,8 @@ export const GET: APIRoute = async ({ url }) => {
 
   try {
     // Carregar histórico do JSON público
-    const baseClient = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
     const res = await loadData<{ concursos: { dezenas: number[]; data?: string }[] }>(
-      `${baseClient}data/${modalidade}.json`,
+      buildUrl(`data/${modalidade}.json`),
     );
 
     if (!res.ok || !res.data?.concursos) {

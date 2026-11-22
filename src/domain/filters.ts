@@ -137,7 +137,6 @@ export function verificaFiltros(
 ) {
   // Verificar maxPorFaixa (distribuição por faixas de 10)
   const minUniv = N === 100 ? 0 : 1;
-  const numFaixas = Math.max(1, Math.ceil(N / 10));
   const contagemFaixa = new Map<number, number>();
   for (const d of dezenas) {
     const faixa = Math.floor((d - minUniv) / 10);

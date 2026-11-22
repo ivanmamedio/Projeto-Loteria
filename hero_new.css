@@ -1,0 +1,80 @@
+/* --------------------------------------------------------------------------
+   Hero — Entrada orquestrada + Trust bar
+   -------------------------------------------------------------------------- */
+.hero {
+  position: relative; padding: var(--space-16) 0; text-align: center;
+  background: linear-gradient(135deg, var(--color-primary-pale) 0%, var(--color-neutral-100) 100%);
+  color: var(--color-text);
+  overflow: hidden;
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm); font-weight: 500; color: var(--color-accent);
+  background: var(--color-accent-pale); border: 1px solid var(--color-accent);
+  border-radius: var(--radius-full); margin-bottom: var(--space-6);
+  animation: slide-up var(--transition-slow) ease forwards;
+}
+.hero-badge svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+.hero-title {
+  font-size: clamp(var(--text-3xl), 5vw, var(--text-4xl));
+  font-weight: 800; line-height: var(--leading-tight);
+  letter-spacing: -0.02em; margin-bottom: var(--space-4); color: var(--color-text);
+}
+.hero-title .highlight {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-description {
+  font-size: var(--text-lg); line-height: var(--leading-relaxed);
+  color: var(--color-text-muted); max-width: 680px; margin: 0 auto var(--space-8);
+}
+
+.hero-actions { display: flex; flex-wrap: wrap; gap: var(--space-4); justify-content: center; margin-bottom: var(--space-10); }
+
+/* Trust bar */
+.hero-trust {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-4);
+  font-size: var(--text-sm); color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border); padding-top: var(--space-8); margin-top: var(--space-8);
+}
+.hero-trust-item { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.hero-trust-item svg { 
+  width: 18px; height: 18px; 
+  color: var(--color-text-inverse);
+  background: var(--color-primary);
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+.hero-trust-item span { word-break: break-word; hyphens: auto; }
+
+@media (max-width: 480px) {
+  .hero-trust { gap: var(--space-3); }
+  .hero-trust-item { font-size: var(--text-xs); gap: var(--space-1); }
+  .hero-trust-item svg { width: 16px; height: 16px; }
+}
+
+/* Animations */
+@keyframes fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slide-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.animate-fade-in { animation: fade-in var(--transition-base) ease forwards; }
+.animate-slide-up { animation: slide-up var(--transition-slow) ease forwards; }
+
+/* Stagger children */
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 80ms; }
+.stagger > *:nth-child(3) { animation-delay: 160ms; }
+.stagger > *:nth-child(4) { animation-delay: 240ms; }
+.stagger > *:nth-child(5) { animation-delay: 320ms; }
+.stagger > *:nth-child(6) { animation-delay: 400ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in, .animate-slide-up { animation: none !important; opacity: 1; transform: none; }
+}

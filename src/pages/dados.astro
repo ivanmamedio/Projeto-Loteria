@@ -107,7 +107,8 @@ for (const mod of MODALIDADES) {
   tamanhos[mod] = await getTamanhoArquivo(mod);
 }
 
-const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
+// Base path para links - funciona em dev e prod
+const base = import.meta.env.PROD ? '/Projeto-Loteria/' : '/';
 const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
 ---
 

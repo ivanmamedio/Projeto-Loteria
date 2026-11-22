@@ -446,6 +446,7 @@ export function patternWeights(ctx: PatternContext, useBMA = false): number[] {
   for (let j = 0; j < numFatores; j++) {
     const fator = fatores[j];
     const pesoFator = pesosFatores[j];
+    if (!fator || pesoFator === undefined) continue;
     for (let i = 0; i < n; i++) {
       const val = Math.max(fator[i] ?? 1, EPS);
       logWeights[i] += pesoFator * Math.log(val);
@@ -485,6 +486,7 @@ function aprenderPesosBMA(ctx: PatternContext, fatores: number[][]): number[] {
   // Rolling window: para cada concurso de teste, avaliar cada fator
   for (let t = inicioTeste; t < totalConcursos; t++) {
     const concursoAtual = historico[t];
+    if (!concursoAtual) continue;
     const historicoTreino = historico.slice(0, t);
 
     if (historicoTreino.length < 10) continue;
@@ -492,6 +494,7 @@ function aprenderPesosBMA(ctx: PatternContext, fatores: number[][]): number[] {
     // Para cada fator, calcular log-likelihood das dezenas do concurso atual
     for (let j = 0; j < numFatores; j++) {
       const fator = fatores[j];
+      if (!fator) continue;
 
       let ll = 0;
       for (const dezena of concursoAtual) {

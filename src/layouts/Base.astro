@@ -42,6 +42,21 @@ const modalidade = Astro.props.modalidade || 'mega-sena';
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <link rel="apple-touch-icon" href={`${base}apple-touch-icon.png`} />
     <link rel="manifest" href={`${base}site.webmanifest`} />
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/Projeto-Loteria/sw.js')
+            .then((registration) => {
+              console.log('[SW] Registrado com escopo:', registration.scope);
+            })
+            .catch((error) => {
+              console.error('[SW] Falha no registro:', error);
+            });
+        });
+      }
+    </script>
   </head>
   <body>
     <a href="#conteudo" class="skip-link">Pular para o conteúdo principal</a>

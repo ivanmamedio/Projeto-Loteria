@@ -2,9 +2,7 @@
 // Compilado como módulo separado para Astro
 
 import { generateGames } from '../domain/generate';
-import { mulberry32, newSeed } from '../domain/rng';
-import { type ModalidadeId, dezenasDoUniverso, modalidadePorId } from '../domain/rules';
-import { sampleNoReplace } from '../domain/sampling';
+import { type ModalidadeId, modalidadePorId } from '../domain/rules';
 
 type WorkerMessage = { type: 'generate'; payload: GeneratePayload } | { type: 'cancel' };
 
@@ -63,7 +61,8 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
     const { modalidade, dezenasMarcadas, opcoes, quantidade, concursos, seed } = e.data.payload;
 
     try {
-      const m = modalidadePorId(modalidade);
+      // Validar modalidade
+      modalidadePorId(modalidade);
 
       // Adicionar concursos se fornecidos
       if (concursos && concursos.length > 0) {
@@ -75,15 +74,38 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
         quantidade,
         seed,
         0,
-        (progress) => {
+        (progress: ProgressData) => {
           self.postMessage({ type: 'progress', progress } as WorkerResponse);
         },
       );
 
+      // Transformar para o formato esperado pelo worker
+      const gamesResult = resultado.games.map((g) => ({
+        dezenas: g.dezenas,
+        meta: { janela: resultado.meta.janela, taxaAceitacao: resultado.meta.taxaAceitacao },
+      }));
+      const metaResult = {
+        algorithmVersion: resultado.meta.algorithmVersion,
+        seed: resultado.meta.seed,
+        janela: resultado.meta.janela,
+        taxaAceitacao: resultado.meta.taxaAceitacao,
+        estrategiasAtivas: resultado.meta.estrategiasAtivas,
+        tamanhoAposta: resultado.meta.tamanhoAposta,
+        dezenasMarcadas: resultado.meta.dezenasMarcadas,
+        universo: resultado.meta.universo,
+        tentativas: resultado.meta.tentativas,
+        jogosGerados: resultado.meta.jogosGerados,
+        cacheHits: resultado.meta.cacheHits,
+        cacheSize: resultado.meta.cacheSize,
+        fallbackDepth: resultado.meta.fallbackDepth,
+        calibracao: resultado.meta.calibracao,
+        janelaOtima: resultado.meta.janelaOtima,
+      };
+
       self.postMessage({
         type: 'result',
-        games: resultado.games,
-        meta: resultado.meta,
+        games: gamesResult,
+        meta: metaResult,
       } as WorkerResponse);
     } catch (err) {
       self.postMessage({

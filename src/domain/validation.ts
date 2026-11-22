@@ -38,7 +38,7 @@ export function runsTest(
   dezena: number,
   thresholdsOrLegacy?: { p05: number; p01: number } | number,
 ): RunsTestResult {
-  const sequencia = historico.map((sorteio) => (sorteio.includes(dezena) ? 1 : 0));
+  const sequencia: number[] = historico.map((sorteio) => (sorteio.includes(dezena) ? 1 : 0));
   const n = sequencia.length;
   const n1 = sequencia.reduce((a, b) => a + b, 0);
   const n0 = n - n1;
@@ -638,9 +638,11 @@ function holmBonferroni(pValues: number[], alpha: number): boolean[] {
   const indexed = pValues.map((p, i) => ({ p, i })).sort((a, b) => a.p - b.p);
   const rejected = new Array(pValues.length).fill(false);
   for (let i = 0; i < indexed.length; i++) {
+    const entry = indexed[i];
+    if (!entry) continue;
     const threshold = alpha / (indexed.length - i);
-    if (indexed[i].p <= threshold) {
-      rejected[indexed[i].i] = true;
+    if (entry.p <= threshold) {
+      rejected[entry.i] = true;
     } else {
       break;
     }
@@ -671,8 +673,8 @@ function calibrarLimiaresMC(
       const sorteio: number[] = [];
       for (let j = 0; j < k; j++) {
         const idx = Math.floor(rng() * pool.length);
-        const [item] = pool.splice(idx, 1);
-        sorteio.push(item);
+        const item = pool.splice(idx, 1)[0];
+        if (item !== undefined) sorteio.push(item);
       }
       sorteio.sort((a, b) => a - b);
       histSim.push(sorteio);
@@ -680,7 +682,7 @@ function calibrarLimiaresMC(
 
     for (let d = 0; d < nDezenas; d++) {
       const dezena = min + d;
-      const sequencia = histSim.map((s) => (s.includes(dezena) ? 1 : 0));
+      const sequencia: number[] = histSim.map((s) => (s.includes(dezena) ? 1 : 0));
       const n = sequencia.length;
       const n1 = sequencia.reduce((a, b) => a + b, 0);
       const n0 = n - n1;
@@ -697,7 +699,9 @@ function calibrarLimiaresMC(
       const gaps: number[] = [];
       let ultima = -1;
       for (let i = 0; i < nConcursos; i++) {
-        if (histSim[i].includes(dezena)) {
+        const sorteio = histSim[i];
+        if (!sorteio) continue;
+        if (sorteio.includes(dezena)) {
           if (ultima >= 0) gaps.push(i - ultima - 1);
           ultima = i;
         }
@@ -708,8 +712,10 @@ function calibrarLimiaresMC(
         const sorted = [...gaps].sort((a, b) => a - b);
         let D = 0;
         for (let i = 0; i < gaps.length; i++) {
+          const sortedVal = sorted[i];
+          if (sortedVal === undefined) continue;
           const ecdf = (i + 1) / gaps.length;
-          const tcdf = cdfGeo(sorted[i]);
+          const tcdf = cdfGeo(sortedVal);
           D = Math.max(D, Math.abs(ecdf - tcdf));
         }
         ksDValues.push(D);
@@ -719,8 +725,8 @@ function calibrarLimiaresMC(
 
   runsZScores.sort((a, b) => a - b);
   ksDValues.sort((a, b) => a - b);
-  const p05 = (arr: number[]) => arr[Math.floor(arr.length * 0.95)];
-  const p01 = (arr: number[]) => arr[Math.floor(arr.length * 0.99)];
+  const p05 = (arr: number[]): number => (arr.length > 0 ? arr[Math.floor(arr.length * 0.95)]! : 0);
+  const p01 = (arr: number[]): number => (arr.length > 0 ? arr[Math.floor(arr.length * 0.99)]! : 0);
 
   return {
     runsThresholds: { p05: p05(runsZScores), p01: p01(runsZScores) },

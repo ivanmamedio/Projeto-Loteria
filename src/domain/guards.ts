@@ -2,7 +2,7 @@
  * Guards e validação de entradas para o domínio.
  */
 
-import { modalidadePorId } from './rules';
+import { maxUniverso, modalidadePorId } from './rules';
 import type { ModalidadeId } from './types';
 
 export interface ValidacaoResultado {

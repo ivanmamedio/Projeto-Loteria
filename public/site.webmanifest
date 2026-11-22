@@ -1,0 +1,27 @@
+{
+  "name": "Jogo na Hora",
+  "short_name": "Jogo na Hora",
+  "description": "Gerador gratuito de combinações de loteria com estratégias descritivas baseadas em dados oficiais da Caixa. Sem promessas falsas, 100% transparente.",
+  "start_url": "/Projeto-Loteria/",
+  "display": "standalone",
+  "background_color": "#f7fdf7",
+  "theme_color": "#007A33",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/Projeto-Loteria/assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/Projeto-Loteria/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["utilities", "education"],
+  "lang": "pt-BR",
+  "dir": "ltr"
+}
