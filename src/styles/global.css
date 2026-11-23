@@ -841,23 +841,24 @@ td { color: var(--color-text); }
 }
 
 @media (max-width: 768px) {
-  :root { --container-padding: 1rem; }
-  h1 { font-size: var(--text-3xl); }
-  h2 { font-size: var(--text-2xl); }
+  :root { --container-padding: 1.25rem; }
+  h1 { font-size: var(--text-4xl); }
+  h2 { font-size: var(--text-3xl); }
   .section { padding: var(--space-10) 0; }
   .section-lg { padding: var(--space-12) 0; }
-  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-  .hero-actions { flex-direction: column; align-items: center; }
-  .hero-actions .btn { width: 100%; max-width: 320px; }
-  .controls-grid { grid-template-columns: 1fr; }
-  .controls-actions { flex-direction: column; }
-  .controls-actions .btn { width: 100%; }
-  .game-card { flex-direction: column; align-items: stretch; }
-  .game-header, .game-numbers, .game-actions { width: 100%; justify-content: center; }
-  .game-actions { justify-content: center; }
-  .footer .container { grid-template-columns: 1fr; text-align: center; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .hero-actions { flex-wrap: wrap; gap: var(--space-4); justify-content: center; }
+  .hero-actions .btn { width: auto; max-width: none; }
+  .controls-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .controls-actions { flex-wrap: wrap; gap: var(--space-4); }
+  .controls-actions .btn { width: auto; }
+  .game-card { flex-wrap: wrap; align-items: flex-start; }
+  .game-header, .game-numbers, .game-actions { width: auto; }
+  .game-actions { justify-content: flex-start; }
+  .footer .container { grid-template-columns: repeat(2, 1fr); gap: var(--space-8); }
   .footer-brand { max-width: none; }
-  .footer-bottom { flex-direction: column; text-align: center; }
+  .footer-bottom { flex-direction: row; flex-wrap: wrap; justify-content: space-between; align-items: center; text-align: left; }
   .nav-toggle-label { display: flex; }
 }
 
