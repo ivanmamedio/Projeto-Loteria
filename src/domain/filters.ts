@@ -65,28 +65,28 @@ function gcdBigInt(a: bigint, b: bigint): bigint {
   return x;
 }
 
-export function filtrosEquilibrio(N: number, k: number) {
+export function filtrosEquilibrio(N: number, k: number, limiar = 0.1) {
   const M = N;
   const K = evensCount(N);
   const n = k;
 
-  // Encontrar paresMin: menor h tal que P(X <= h) > 0.1
+  // Encontrar paresMin: menor h tal que P(X <= h) > limiar
   let paresMin = 0;
   for (let h = 0; h <= n; h++) {
     const cdf = hypergeometricCdfExact(M, K, n, h);
-    if (cdf.valor > 0.1) {
+    if (cdf.valor > limiar) {
       paresMin = h;
       break;
     }
   }
 
-  // Encontrar paresMax: maior h tal que P(X >= h) > 0.1
+  // Encontrar paresMax: maior h tal que P(X >= h) > limiar
   // P(X >= h) = 1 - P(X <= h-1)
   let paresMax = n;
   for (let h = n; h >= 0; h--) {
     const cdf = h === 0 ? { valor: 1 } : hypergeometricCdfExact(M, K, n, h - 1);
     const surv = 1 - cdf.valor;
-    if (surv > 0.1) {
+    if (surv > limiar) {
       paresMax = h;
       break;
     }
