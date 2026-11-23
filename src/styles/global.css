@@ -896,6 +896,14 @@ td { color: var(--color-text); }
   .section > ul {
     margin-bottom: var(--space-4);
   }
+  /* Content grid em coluna única no mobile */
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  .content-grid > aside,
+  .section > .content {
+    width: 100%;
+  }
 }
 
 /* Extra small mobile (320px e abaixo) */
@@ -927,6 +935,14 @@ td { color: var(--color-text); }
   }
   .section > ul {
     margin-bottom: var(--space-4);
+  }
+  /* Content grid em coluna única no mobile */
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  .content-grid > aside,
+  .section > .content {
+    width: 100%;
   }
 }
 
