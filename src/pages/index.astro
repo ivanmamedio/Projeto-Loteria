@@ -974,6 +974,7 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
         const progressStats = progressContainer.querySelector('.progress-stats') as HTMLElement;
         
         const seed = newSeed();
+        console.log('[Index] Enviando para worker:', { modalidade: modalidade as ModalidadeId, dezenasMarcadas: marcadas.length, opcoes, quantidade, seed });
         const resultado = await generateWithWorker(
           { modalidade: modalidade as ModalidadeId, dezenasMarcadas: marcadas, opcoes, quantidade, concursos: concursos.length > 0 ? concursos : undefined, seed },
           (progress) => {
@@ -985,6 +986,7 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
             }
           }
         );
+        console.log('[Worker] Resultado recebido:', { jogosGerados: resultado.games.length });
         
         // Esconde progresso
         progressContainer.style.display = 'none';
