@@ -60,7 +60,14 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
   if (e.data.type === 'generate') {
     const { modalidade, dezenasMarcadas, opcoes, quantidade, concursos, seed } = e.data.payload;
 
-    console.log('[Worker] Iniciando geração', { modalidade, quantidade, opcoes });
+    console.log('[Worker] Iniciando geração', {
+      modalidade,
+      quantidade,
+      opcoes,
+      dezenasMarcadasCount: dezenasMarcadas.length,
+      concursosLength: concursos?.length,
+      seed,
+    });
 
     try {
       // Validar modalidade
@@ -70,6 +77,8 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
       if (concursos && concursos.length > 0) {
         opcoes.concursos = concursos;
       }
+
+      console.log('[Worker] Chamando generateGames', { modalidade, quantidade, opcoes });
 
       const resultado = generateGames(
         { modalidade, dezenasMarcadas, opcoes },
@@ -82,7 +91,10 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
         },
       );
 
-      console.log('[Worker] Geração concluída', { jogosGerados: resultado.games.length });
+      console.log('[Worker] Geração concluída', {
+        jogosGerados: resultado.games?.length,
+        jogosGeradosArray: resultado.games?.map((g) => g.dezenas.length),
+      });
 
       // Transformar para o formato esperado pelo worker
       const gamesResult = resultado.games.map((g) => ({
