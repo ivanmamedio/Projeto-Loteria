@@ -8,16 +8,18 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
 ---
 
 <Base modalidade="mega-sena">
-  <section class="page-header">
+  <section class="page-header section-highlight">
     <div class="container">
-      <h1>Termos de Uso</h1>
+      <div class="blob-top-left"></div>
+      <h1 class="display-heading">Termos de Uso</h1>
       <p>
         Ao utilizar este site, você concorda com as condições abaixo.
       </p>
     </div>
   </section>
 
-  <section class="container">
+  <section class="container bg-section">
+    <div class="bg-section-alt">
     <h2>1. Finalidade</h2>
     <p>
       O site tem caráter educativo e de estudo sobre a loteria da CAIXA. O
@@ -63,6 +65,7 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
       O site é disponibilizado "como está". O autor não se responsabiliza por
       decisões baseadas nas informações fornecidas.
     </p>
+    </div>
   </section>
 
   <Disclaimer />

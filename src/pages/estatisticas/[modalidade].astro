@@ -99,9 +99,10 @@ const paridadeTeorica = paridadeEsperada(regras.universo, regras.dezenasSorteada
 ---
 
 <Base modalidade={regras.id}>
-  <section class="page-header">
+  <section class="page-header section-highlight">
     <div class="container">
-      <h1>Estatísticas — {regras.nome}</h1>
+      <div class="blob-top-left"></div>
+      <h1 class="display-heading">Estatísticas — {regras.nome}</h1>
       <p>
         Frequência, atraso e análise estatística das {regras.universo} dezenas.
         Toda combinação tem a mesma probabilidade — estatísticas são para
@@ -110,8 +111,8 @@ const paridadeTeorica = paridadeEsperada(regras.universo, regras.dezenasSorteada
     </div>
   </section>
 
-  <section class="container">
-    <div class="summary-card">
+  <section class="container bg-section">
+    <div class="summary-card card-premium">
       <p>
         <strong>Modalidade:</strong> {regras.nome}
       </p>
@@ -130,7 +131,7 @@ const paridadeTeorica = paridadeEsperada(regras.universo, regras.dezenasSorteada
     </div>
 
     <div class="stats-grid">
-      <div class="stat-box">
+      <div class="stat-box bg-section-alt">
         <h3>Frequência (F4)</h3>
         <p>Total de concursos: {concursos.length}</p>
         <p>
@@ -138,19 +139,19 @@ const paridadeTeorica = paridadeEsperada(regras.universo, regras.dezenasSorteada
           {topFreq.map((x) => `${String(x.dezena).padStart(2, '0')} (${x.n})`).join(', ')}
         </p>
       </div>
-      <div class="stat-box">
+      <div class="stat-box bg-section-alt">
         <h3>Atraso acumulado (F5)</h3>
         <p>
           Maiores atrasos:{' '}
           {topAtraso.map((x) => `${String(x.dezena).padStart(2, '0')} (${x.atraso})`).join(', ')}
         </p>
       </div>
-      <div class="stat-box">
+      <div class="stat-box bg-section-alt">
         <h3>Qui-quadrado (F7)</h3>
         <p>χ² = {chi.chi2.toFixed(2)} · gl = {chi.graus}</p>
         <p>p-valor = {chi.pValor.toFixed(4)}</p>
       </div>
-      <div class="stat-box">
+      <div class="stat-box bg-section-alt">
         <h3>Variância da soma (F13)</h3>
         <p>σ² (amostral) = {varSoma.toFixed(2)}</p>
         <p>Pares/ímpares: {paridade.pares}/{paridade.impares}</p>
@@ -159,25 +160,25 @@ const paridadeTeorica = paridadeEsperada(regras.universo, regras.dezenasSorteada
     </div>
 
     <div class="stats-grid" style="margin-top:1rem;">
-      <div class="stat-box">
+      <div class="stat-box bg-section-alt">
         <h3>Probabilidade básica</h3>
         <p>Total de combinações: {totalCombinacoes.toLocaleString('pt-BR')}</p>
         <p>Acertos esperados (aposta de {apostadosRepresentativos}): {acertosEsperados.toFixed(2)}</p>
         <p>Desvio padrão dos acertos: {desvioAcertosValor.toFixed(3)}</p>
       </div>
-      <div class="stat-box">
+      <div class="stat-box bg-section-alt">
         <h3>Soma das dezenas</h3>
         <p>Média teórica: {somaMediaTeorica.toFixed(2)}</p>
         <p>Desvio padrão teórico: {somaDesvioTeorico.toFixed(2)}</p>
         <p>Gap médio teórico: {gapMedio.toFixed(2)}</p>
       </div>
-      <div class="stat-box">
+      <div class="stat-box bg-section-alt">
         <h3>Paridade teórica</h3>
         <p>Pares esperados: {paridadeTeorica.pares.toFixed(2)}</p>
         <p>Ímpares esperados: {paridadeTeorica.impares.toFixed(2)}</p>
         <p>Variancia dos acertos: {varianciaAcertosValor.toFixed(3)}</p>
       </div>
-      <div class="stat-box">
+      <div class="stat-box bg-section-alt">
         <h3>Chance de prêmio</h3>
         <p>Aposta de {apostadosRepresentativos} dezenas</p>
         <p>Probabilidade de faixa premiada: {(probabilidadePremio * 100).toFixed(4)}%</p>
@@ -185,7 +186,7 @@ const paridadeTeorica = paridadeEsperada(regras.universo, regras.dezenasSorteada
       </div>
     </div>
 
-    <div class="data-notes" style="margin-top:1rem;">
+    <div class="data-notes bg-section-alt" style="margin-top:1rem;">
       <h3>Distribuição teórica de acertos</h3>
       <p>Probabilidade de cada quantidade de acertos ao apostar {apostadosRepresentativos} dezenas (modelo hipergeométrico, sem reposição).</p>
       <table class="stats-table">

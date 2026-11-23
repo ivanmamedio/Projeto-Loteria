@@ -4,9 +4,10 @@ import { getClientBaseUrl } from '../utils/base-url';
 ---
 
 <Base modalidade="mega-sena">
-  <section class="page-header">
+  <section class="page-header section-highlight">
     <div class="container">
-      <h1>Validação Estatística</h1>
+      <div class="blob-top-left"></div>
+      <h1 class="display-heading">Validação Estatística</h1>
       <p>
         Testes de aleatoriedade e calibração aplicados ao histórico oficial da CAIXA.
         <strong>Veredito honesto:</strong> detecta ilusões, não padrões.
@@ -14,8 +15,8 @@ import { getClientBaseUrl } from '../utils/base-url';
     </div>
   </section>
 
-  <section class="container">
-    <div class="controls-panel">
+  <section class="container bg-section">
+    <div class="controls-panel card-premium">
       <h3 class="controls-panel-title">Executar Validação</h3>
       <div class="controls-grid">
         <div class="form-group">
@@ -64,6 +65,7 @@ import { getClientBaseUrl } from '../utils/base-url';
         <summary style="cursor: pointer; font-weight: 600;">Ver detalhes técnicos (JSON)</summary>
         <pre id="validacao-json" style="margin-top: var(--space-4); padding: var(--space-4); background: var(--color-bg); border-radius: var(--radius-md); overflow-x: auto; font-size: var(--text-xs);"></pre>
       </details>
+    </div>
     </div>
   </section>
 

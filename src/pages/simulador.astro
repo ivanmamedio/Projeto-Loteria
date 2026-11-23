@@ -81,9 +81,10 @@ const janelaPadrao = 100;
 ---
 
 <Base modalidade={regras.id}>
-  <section class="page-header">
+  <section class="page-header section-highlight">
     <div class="container">
-      <h1>Simulador Educativo</h1>
+      <div class="blob-top-left"></div>
+      <h1 class="display-heading">Simulador Educativo</h1>
       <p>
         Comparação honesta: <strong>todas as estratégias têm o mesmo resultado esperado</strong>.
         A diferença é apenas na <em>distribuição dos jogos gerados</em>, não na probabilidade de acerto.
@@ -91,11 +92,11 @@ const janelaPadrao = 100;
     </div>
   </section>
 
-  <section class="container">
-    <div class="summary-card" style="margin-bottom: var(--space-6);">
+  <section class="container bg-section">
+    <div class="summary-card card-premium" style="margin-bottom: var(--space-6);">
       <h3>{regras.nome} — {k} dezenas sorteadas de {universo}</h3>
       <div class="stats-grid" style="margin-top: var(--space-4);">
-        <div class="stat-box">
+        <div class="stat-box bg-section-alt">
           <h4>Probabilidade teórica (igual para todas)</h4>
           <p>Média de acertos: <strong>{mediaTeorica.toFixed(4)}</strong></p>
           <p>Desvio padrão: <strong>{desvioTeorico.toFixed(4)}</strong></p>
@@ -104,7 +105,7 @@ const janelaPadrao = 100;
             Fórmula: E[X] = k²/M = {k}²/{universo} = {mediaTeorica.toFixed(4)}
           </p>
         </div>
-        <div class="stat-box">
+        <div class="stat-box bg-section-alt">
           <h4>Distribuição hipergeométrica (F3)</h4>
           <table class="stats-table" style="margin-top: var(--space-3);">
             <thead><tr><th>Acertos</th><th>Probabilidade</th><th>1 em</th></tr></thead>
@@ -131,7 +132,7 @@ const janelaPadrao = 100;
     </div>
 
     <!-- Controles do simulador -->
-    <section class="controls-panel" style="margin-bottom: var(--space-8);">
+    <section class="controls-panel card-premium" style="margin-bottom: var(--space-8);">
       <h3 class="controls-panel-title">Configurar simulação</h3>
       <div class="controls-grid">
         <div class="form-group">
@@ -173,7 +174,7 @@ const janelaPadrao = 100;
       </div>
 
       <!-- Tabela comparativa -->
-      <div class="stat-box" style="overflow-x: auto;">
+      <div class="stat-box bg-section-alt" style="overflow-x: auto;">
         <table class="stats-table" id="tabela-comparativa">
           <thead>
             <tr>
@@ -191,20 +192,20 @@ const janelaPadrao = 100;
       </div>
 
       <!-- Gráfico de barras comparativo -->
-      <div class="stat-box" style="margin-top: var(--space-6);">
+      <div class="stat-box bg-section-alt" style="margin-top: var(--space-6);">
         <h3>Distribuição de acertos observada vs. teórica</h3>
         <div id="grafico-barras" style="height: 300px; position: relative;"></div>
       </div>
 
       <!-- Evolução temporal -->
-      <div class="stat-box" style="margin-top: var(--space-6);">
+      <div class="stat-box bg-section-alt" style="margin-top: var(--space-6);">
         <h3>Evolução da média de acertos (walk-forward)</h3>
         <canvas id="grafico-evolucao" style="max-height: 300px;"></canvas>
       </div>
     </section>
 
     <!-- Explicação metodológica -->
-    <section class="data-notes" style="margin-top: var(--space-8);">
+    <section class="data-notes bg-section-alt" style="margin-top: var(--space-8);">
       <h3>Como funciona o simulador</h3>
       <ol style="margin-left: var(--space-6); line-height: 2;">
         <li><strong>Walk-forward:</strong> Para cada concurso t, usa histórico até t-1 (janela deslizante) para gerar 1 jogo.</li>

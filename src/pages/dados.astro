@@ -113,9 +113,10 @@ const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
 ---
 
 <Base modalidade="mega-sena">
-  <section class="page-header">
+  <section class="page-header section-highlight">
     <div class="container">
-      <h1>Dados</h1>
+      <div class="blob-top-left"></div>
+      <h1 class="display-heading">Dados</h1>
       <p>
         Dados históricos das 4 modalidades da CAIXA. Fonte oficial e licença
         documentadas.
@@ -123,7 +124,7 @@ const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
     </div>
   </section>
 
-  <section class="container">
+  <section class="container bg-section">
     <div class="data-cards">
       {MODALIDADES.map((mod) => {
         const d = dados[mod];
@@ -131,7 +132,7 @@ const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
         const inicio = getAnoInicio(d.concursos);
         const ultima = getUltimaData(d.concursos);
         return (
-          <div class="data-card">
+          <div class="data-card card-premium">
             <h3>{getNomeModalidade(mod)}</h3>
             <p>
               {total.toLocaleString('pt-BR')} concursos · de {inicio} a {formatarDataBR(ultima)}
@@ -142,7 +143,7 @@ const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
       })}
     </div>
 
-    <div class="data-notes">
+    <div class="data-notes bg-section-alt">
       <h3>Fonte e licença</h3>
       <p>
         Dados provenientes de <a href="https://lotoagora.com.br/downloads/" target="_blank" rel="noopener noreferrer">LotoAgora</a> 
@@ -289,7 +290,7 @@ const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
     <h2>Informações técnicas</h2>
     
     <div class="grid grid-2" style="margin-top: var(--space-6);">
-      <div class="card">
+      <div class="card card-premium">
         <h3>Universo de dezenas por modalidade</h3>
         <ul style="line-height: 2;">
           <li><strong>Mega-Sena:</strong> 1 a 60 (6 dezenas sorteadas)</li>
@@ -299,7 +300,7 @@ const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
         </ul>
       </div>
       
-      <div class="card">
+      <div class="card card-premium">
         <h3>Probabilidades (aposta simples)</h3>
         <ul style="line-height: 2;">
           <li><strong>Mega-Sena:</strong> 1 em 50.063.860</li>
@@ -318,7 +319,7 @@ const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
       Este projeto possui <strong>GitHub Actions agendado</strong> que roda diariamente nos dias de sorteio 
       (terças, quartas, quintas, sábados às 22h BRT) para baixar, validar e publicar os dados automaticamente.
     </p>
-    <div class="card" style="margin-top: var(--space-4);">
+    <div class="card card-premium" style="margin-top: var(--space-4);">
       <h4>Como funciona a automação</h4>
       <ol style="margin-left: var(--space-4); line-height: 2;">
         <li>Workflow <code>.github/workflows/update-data.yml</code> dispara via cron</li>

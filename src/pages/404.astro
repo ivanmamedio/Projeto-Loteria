@@ -7,11 +7,12 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
 ---
 
 <Base modalidade="mega-sena">
-  <section class="page-header">
+  <section class="page-header section-highlight accent">
     <div class="container">
-      <h1>404</h1>
+      <div class="blob-top-left"></div>
+      <h1 class="display-heading">404</h1>
       <p>Página não encontrada.</p>
-      <a href={base} class="back-link">Voltar para a página inicial</a>
+      <a href={base} class="btn btn-primary btn-lg">Voltar para a página inicial</a>
     </div>
   </section>
 </Base>

@@ -6,9 +6,10 @@ import Base from '../layouts/Base.astro';
 ---
 
 <Base modalidade="mega-sena">
-  <section class="page-header">
+  <section class="page-header section-highlight">
     <div class="container">
-      <h1>Como funciona</h1>
+      <div class="blob-top-left"></div>
+      <h1 class="display-heading">Como funciona</h1>
       <p>
         Fórmulas F1–F13 e métodos de sorteio. Toda combinação tem a mesma
         probabilidade — use este conteúdo para organizar e diversificar jogos,
@@ -17,7 +18,7 @@ import Base from '../layouts/Base.astro';
     </div>
   </section>
 
-  <section class="container">
+  <section class="container bg-section">
     <div class="content-grid">
       <aside class="side-nav">
         <ul>
@@ -33,7 +34,7 @@ import Base from '../layouts/Base.astro';
       </aside>
 
       <div class="content">
-        <section id="f1-f3" class="formula-card">
+        <section id="f1-f3" class="formula-card card-premium">
           <h2>F1–F3 — Probabilidade básica</h2>
           <p>
             F1: número de combinações possíveis — C(n, k) = n! / (k! · (n - k)!)
@@ -50,7 +51,7 @@ import Base from '../layouts/Base.astro';
           </p>
         </section>
 
-        <section id="f4-f7" class="formula-card">
+        <section id="f4-f7" class="formula-card card-premium">
           <h2>F4–F7 e F13 — Estatísticas</h2>
           <p>
             F4: frequência observada de cada dezena.
@@ -69,7 +70,7 @@ import Base from '../layouts/Base.astro';
           </p>
         </section>
 
-        <section id="f8-f9" class="formula-card">
+        <section id="f8-f9" class="formula-card card-premium">
           <h2>F8–F9 — Frequência e atraso ponderados</h2>
           <p>
             F8: frequência ponderada por quantidade de concursos.
@@ -79,7 +80,7 @@ import Base from '../layouts/Base.astro';
           </p>
         </section>
 
-        <section id="f10" class="formula-card">
+        <section id="f10" class="formula-card card-premium">
           <h2>F10 — Amostragem</h2>
           <p>
             Amostragem sem reposição com float em [0, 1). Implementação:
@@ -87,7 +88,7 @@ import Base from '../layouts/Base.astro';
           </p>
         </section>
 
-        <section id="f11" class="formula-card">
+        <section id="f11" class="formula-card card-premium">
           <h2>F11 — Filtros de equilíbrio</h2>
           <p>
             Faixas teóricas de soma, soma dos quadrados, frequência de pares/
@@ -102,7 +103,7 @@ import Base from '../layouts/Base.astro';
           </p>
         </section>
 
-        <section id="f12" class="formula-card">
+        <section id="f12" class="formula-card card-premium">
           <h2>F12 — Diversificação do lote</h2>
           <p>
             Gera 3 jogos distintos usando ponderação por frequência/atraso. Exemplo
@@ -110,7 +111,7 @@ import Base from '../layouts/Base.astro';
           </p>
         </section>
 
-        <section id="f13" class="formula-card">
+        <section id="f13" class="formula-card card-premium">
           <h2>F13 — Variância da soma</h2>
           <p>
             Variância da soma dos números de uma combinação. Medida de dispersão
@@ -118,7 +119,7 @@ import Base from '../layouts/Base.astro';
           </p>
         </section>
 
-        <section id="f-fibonacci" class="formula-card">
+        <section id="f-fibonacci" class="formula-card card-premium">
           <h2>F-Fibonacci — Análise de distribuição de Fibonacci (educativa)</h2>
           
           <h3>Princípio</h3>

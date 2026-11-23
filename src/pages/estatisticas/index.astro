@@ -4,19 +4,20 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
 ---
 
 <Base modalidade="mega-sena">
-  <section class="page-header">
+  <section class="page-header section-highlight">
     <div class="container">
-      <h1>Estatísticas</h1>
+      <div class="blob-top-left"></div>
+      <h1 class="display-heading">Estatísticas</h1>
       <p>Escolha uma modalidade para ver frequência, atraso, qui-quadrado e probabilidades.</p>
     </div>
   </section>
 
-  <section class="container">
+  <section class="container bg-section">
     <div class="benefits-grid">
-      <a class="prob-card" href={`${base}estatisticas/mega-sena`}><h3>Mega-Sena</h3><p>60 dezenas · 6 sorteadas</p></a>
-      <a class="prob-card" href={`${base}estatisticas/lotofacil`}><h3>Lotofácil</h3><p>25 dezenas · 15 sorteadas</p></a>
-      <a class="prob-card" href={`${base}estatisticas/quina`}><h3>Quina</h3><p>80 dezenas · 5 sorteadas</p></a>
-      <a class="prob-card" href={`${base}estatisticas/lotomania`}><h3>Lotomania</h3><p>100 dezenas · 20 sorteadas</p></a>
+      <a class="prob-card card-premium" href={`${base}estatisticas/mega-sena`}><h3>Mega-Sena</h3><p>60 dezenas · 6 sorteadas</p></a>
+      <a class="prob-card card-premium" href={`${base}estatisticas/lotofacil`}><h3>Lotofácil</h3><p>25 dezenas · 15 sorteadas</p></a>
+      <a class="prob-card card-premium" href={`${base}estatisticas/quina`}><h3>Quina</h3><p>80 dezenas · 5 sorteadas</p></a>
+      <a class="prob-card card-premium" href={`${base}estatisticas/lotomania`}><h3>Lotomania</h3><p>100 dezenas · 20 sorteadas</p></a>
     </div>
   </section>
 </Base>
