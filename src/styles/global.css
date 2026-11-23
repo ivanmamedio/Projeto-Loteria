@@ -1124,6 +1124,62 @@ section.container > h2 { margin-top: var(--space-8); margin-bottom: var(--space-
 section.container > p { max-width: 80ch; line-height: var(--leading-relaxed); margin-bottom: var(--space-4); }
 
 /* --------------------------------------------------------------------------
+   Responsive overrides for Legacy components (must come AFTER definitions)
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  .content-grid > aside {
+    position: static;
+    width: 100%;
+    margin-bottom: var(--space-6);
+  }
+  .content-grid > .content {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  .content-grid > aside {
+    position: static;
+    width: 100%;
+    margin-bottom: var(--space-6);
+  }
+  .content-grid > .content {
+    width: 100%;
+  }
+  .side-nav {
+    position: static;
+  }
+}
+
+@media (max-width: 320px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  .content-grid > aside {
+    position: static;
+    width: 100%;
+    margin-bottom: var(--space-4);
+  }
+  .content-grid > .content {
+    width: 100%;
+  }
+  .side-nav {
+    position: static;
+    padding: var(--space-3);
+  }
+  .side-nav a {
+    padding: var(--space-2) var(--space-2);
+    font-size: var(--text-xs);
+  }
+}
+
+/* --------------------------------------------------------------------------
    Print
    -------------------------------------------------------------------------- */
 @media print {

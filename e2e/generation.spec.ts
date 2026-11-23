@@ -42,8 +42,8 @@ test('estatisticas shows janela recente', async ({ page }) => {
 test('filter flow generates games with meta', async ({ page }) => {
   await page.goto('/Projeto-Loteria/');
   await aceitarResponsabilidade(page);
-  await page.selectOption('#modalidade', 'quina');
-  await page.selectOption('#estrategia', 'E3');
+  await page.selectOption('#modalidade', 'mega-sena');
+  await page.selectOption('#estrategia', 'E1');
   await page.check('#filtros');
   await page.fill('#quantidade', '2');
   await page.click('#btn-gerar');
