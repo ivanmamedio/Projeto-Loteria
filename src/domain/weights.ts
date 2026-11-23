@@ -17,7 +17,11 @@ export interface DezenaData {
  * onde f_i é a frequência da dezena i, f̄ é a média das frequências e β é
  * o parâmetro de poder (default: 1.0).
  */
-export function frequenciaPonderada(dezenas: number[], beta = 1.0): Record<number, number> {
+export function frequenciaPonderada(
+  dezenas: number[],
+  totalDezenas?: number,
+  beta = 1.0,
+): Record<number, number> {
   if (dezenas.length === 0) return {};
 
   const contagem: Record<number, number> = {};
@@ -26,17 +30,25 @@ export function frequenciaPonderada(dezenas: number[], beta = 1.0): Record<numbe
     contagem[d] = (contagem[d] ?? 0) + 1;
   }
 
-  const freqs = Object.values(contagem);
-  const media = freqs.reduce((a, b) => a + b, 0) / freqs.length;
+  // Média sobre TODO o universo (incluindo dezenas que nunca saíram)
+  // evita viés para cima em dezenas que já apareceram.
+  const total = totalDezenas ?? dezenas.length;
+  const somaFrequencias = dezenas.length;
+  const media = somaFrequencias / total;
 
   const peso: Record<number, number> = {};
-  for (const [dezena, f] of Object.entries(contagem)) {
-    const fNum = Number(f);
+  for (const d of dezenasValidas(contagem)) {
+    const fNum = contagem[d] ?? 0;
     const pesoV = ((fNum + 1) / (media + 1)) ** beta;
-    peso[Number(dezena)] = pesoV;
+    peso[d] = pesoV;
   }
 
   return peso;
+}
+
+/** Retorna as dezenas distintas que apareceram no histórico. */
+function dezenasValidas(contagem: Record<number, number>): number[] {
+  return Object.keys(contagem).map(Number);
 }
 
 /**
