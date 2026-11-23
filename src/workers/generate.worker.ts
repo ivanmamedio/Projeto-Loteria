@@ -60,6 +60,8 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
   if (e.data.type === 'generate') {
     const { modalidade, dezenasMarcadas, opcoes, quantidade, concursos, seed } = e.data.payload;
 
+    console.log('[Worker] Iniciando geração', { modalidade, quantidade, opcoes });
+
     try {
       // Validar modalidade
       modalidadePorId(modalidade);
@@ -75,9 +77,12 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
         seed,
         0,
         (progress: ProgressData) => {
+          console.log('[Worker] Progresso:', progress);
           self.postMessage({ type: 'progress', progress } as WorkerResponse);
         },
       );
+
+      console.log('[Worker] Geração concluída', { jogosGerados: resultado.games.length });
 
       // Transformar para o formato esperado pelo worker
       const gamesResult = resultado.games.map((g) => ({
@@ -108,6 +113,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
         meta: metaResult,
       } as WorkerResponse);
     } catch (err) {
+      console.error('[Worker] Erro:', err);
       self.postMessage({
         type: 'error',
         message: err instanceof Error ? err.message : String(err),

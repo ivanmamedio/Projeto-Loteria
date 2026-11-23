@@ -991,6 +991,24 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
         
         const lista = Array.isArray(resultado.games) ? resultado.games : [resultado as unknown as GameResult];
         
+        // Se não gerou nenhum jogo, mostrar mensagem de erro ao usuário
+        if (lista.length === 0) {
+          targetContainer.innerHTML = '';
+          const alertDiv = document.createElement('div');
+          alertDiv.className = 'alert alert-error';
+          alertDiv.setAttribute('role', 'alert');
+          const content = document.createElement('div');
+          content.className = 'alert-content';
+          const p = document.createElement('p');
+          p.className = 'alert-message';
+          p.textContent = 'Não foi possível gerar jogos com as configurações selecionadas. Tente desativar filtros ou escolher outra estratégia.';
+          content.appendChild(p);
+          alertDiv.appendChild(content);
+          targetContainer.appendChild(alertDiv);
+          meta.textContent = '';
+          return;
+        }
+
         targetContainer.innerHTML = '';
         ultimosJogos = lista.map((g: GameResult) => g.dezenas);
 
