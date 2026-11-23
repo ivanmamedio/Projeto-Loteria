@@ -109,9 +109,9 @@ export function sampleWeighted(
   if (k >= n) return [...pool].sort((a, b) => a - b);
   if (k <= 0) return [];
 
-  // Min-heap simples para top-k (manter MENORES keys no topo, substituir se maior)
-  // Efraimidis-Spirakis: key_i = -ln(U_i) / w_i
+  // Efraimidis-Spirakis (2006): key_i = -ln(U_i) / w_i
   // MAIOR peso -> MENOR key -> deve ser MANTIDO (top-k menores keys)
+  // Usamos sort completo O(n log n) em vez de heap manual para simplicidade e correção.
   const items: Array<{ n: number; key: number }> = [];
 
   for (let i = 0; i < n; i++) {
@@ -122,42 +122,17 @@ export function sampleWeighted(
     const u = safeRng(rng);
     const key = -Math.log(u) / peso; // Distribuição exponencial com rate = w
 
-    if (items.length < k) {
-      items.push({ n: dezena, key });
-      if (items.length === k) items.sort((a, b) => a.key - b.key); // min-heap: menor key no índice 0
-    } else if (items.length > 0 && key < (items[0]?.key ?? Number.POSITIVE_INFINITY)) {
-      items[0] = { n: dezena, key };
-      // Sift down para manter propriedade de min-heap
-      let idx = 0;
-      while (true) {
-        const left = 2 * idx + 1;
-        const right = 2 * idx + 2;
-        let smallest = idx;
-        if (
-          left < k &&
-          items[left] &&
-          items[left].key < (items[smallest]?.key ?? Number.POSITIVE_INFINITY)
-        )
-          smallest = left;
-        if (
-          right < k &&
-          items[right] &&
-          items[right].key < (items[smallest]?.key ?? Number.POSITIVE_INFINITY)
-        )
-          smallest = right;
-        if (smallest === idx) break;
-        const smallestItem = items[smallest];
-        const idxItem = items[idx];
-        if (smallestItem && idxItem) {
-          [items[idx], items[smallest]] = [smallestItem, idxItem];
-        }
-        idx = smallest;
-      }
-    }
+    items.push({ n: dezena, key });
   }
 
-  // Extrair e ordenar por valor da dezena
-  return items.map((x) => x.n).sort((a, b) => a - b);
+  // Ordenar por key (menor primeiro = maior peso primeiro)
+  items.sort((a, b) => a.key - b.key);
+
+  // Extrair os k primeiros e ordenar por valor da dezena
+  return items
+    .slice(0, k)
+    .map((x) => x.n)
+    .sort((a, b) => a - b);
 }
 
 /**
