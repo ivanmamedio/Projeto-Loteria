@@ -6,6 +6,8 @@
  * Usa numeros normais (Number) para desempenho.
  */
 
+import { combCached } from './combinatorics';
+
 export interface DezenaRegistry {
   modalidade: string;
   dezenas: number[];
@@ -231,12 +233,9 @@ export function distribuicaoSomas(registros: number[][]): Record<number, number>
 export function combinacoes(n: number, k: number): number {
   if (k < 0 || k > n || n < 0) return 0;
   if (k === 0 || k === n) return 1;
-  const r = Math.min(k, n - k);
-  let resultado = 1;
-  for (let i = 1; i <= r; i++) {
-    resultado = (resultado * (n - r + i)) / i;
-  }
-  return Math.round(resultado);
+  // Usar BigInt (combCached) para evitar perda de precisão em valores grandes
+  // (ex.: C(100,20) ≈ 5×10^20 excede Number.MAX_SAFE_INTEGER)
+  return Number(combCached(n, Math.min(k, n - k)));
 }
 
 export function probabilidadeAcertos(
