@@ -179,10 +179,8 @@ export function quiQuadrado(
     chi2Bruto += (diff * diff) / esperado;
   }
 
-  const M = universo;
-  const d = dezenasPorSorteio;
-  const fator = M > d ? (M - 1) / (M - d) : 1;
-  const chi2 = chi2Bruto * fator;
+  // Qui-quadrado padrão (sem fator de correção arbitrário)
+  const chi2 = chi2Bruto;
 
   const graus = universo - 1;
   // USA p-VALOR EXATO (incomplete gamma) em vez de Wilson-Hilferty
