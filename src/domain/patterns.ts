@@ -487,6 +487,12 @@ function aprenderPesosBMA(ctx: PatternContext, fatores: number[][]): number[] {
   const logLikelihoods = new Array(numFatores).fill(0);
   const nPredicoes = new Array(numFatores).fill(0);
 
+  // Índice de dezenas para lookup O(1) (evita indexOf O(n) dentro de loops)
+  const indiceDezena = new Map<number, number>();
+  for (let i = 0; i < dezenasValidas.length; i++) {
+    indiceDezena.set(dezenasValidas[i], i);
+  }
+
   // Rolling window: para cada concurso de teste, avaliar cada fator
   for (let t = inicioTeste; t < totalConcursos; t++) {
     const concursoAtual = historico[t];
@@ -502,8 +508,8 @@ function aprenderPesosBMA(ctx: PatternContext, fatores: number[][]): number[] {
 
       let ll = 0;
       for (const dezena of concursoAtual) {
-        const idx = dezenasValidas.indexOf(dezena);
-        if (idx >= 0) {
+        const idx = indiceDezena.get(dezena);
+        if (idx !== undefined) {
           const peso = Math.max(fator[idx] ?? 1, 1e-10);
           // Normalizar: peso médio = 1, então prob ~ peso / n
           const prob = Math.max(1e-10, peso / dezenasValidas.length);
@@ -518,8 +524,8 @@ function aprenderPesosBMA(ctx: PatternContext, fatores: number[][]): number[] {
       const naoSorteadas = todasDezenas.filter((d) => !concursoAtual.includes(d));
       const amostraNegativos = naoSorteadas.slice(0, Math.min(10, naoSorteadas.length));
       for (const dezena of amostraNegativos) {
-        const idx = dezenasValidas.indexOf(dezena);
-        if (idx >= 0) {
+        const idx = indiceDezena.get(dezena);
+        if (idx !== undefined) {
           const peso = Math.max(fator[idx] ?? 1, 1e-10);
           const probNao = Math.max(1e-10, 1 - peso / dezenasValidas.length);
           ll += Math.log(probNao);
