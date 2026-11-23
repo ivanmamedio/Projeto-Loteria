@@ -245,16 +245,19 @@ export function quantumWalkPesos(ctx: PatternContext): number[] {
   const offset = min;
   const N = universo;
 
-  // Semente: último sorteio (amplitude 1 nos nós sorteados)
+  // Semente: último sorteio (amplitude normalizada nos nós sorteados)
   const ultimo = historico.length > 0 ? (historico[historico.length - 1] ?? []) : [];
-  // Estado quântico: para cada nó, amplitude (|0> + |1>)/√2 — moeda em superposição
+  const k = ultimo.length;
+  // Estado quântico: para cada nó sorteado, amplitude 1/√(2k) em ψ0 e ψ1,
+  // de modo que a soma total de probabilidades seja 1 (k * (1/(2k) + 1/(2k)) = 1).
   const psi0 = new Array(N).fill(0);
   const psi1 = new Array(N).fill(0);
+  const amp = k > 0 ? 1 / Math.sqrt(2 * k) : 0;
   for (const d of ultimo) {
     if (d >= min && d < min + universo) {
       const idx = d - offset;
-      psi0[idx] = 1 / Math.sqrt(2);
-      psi1[idx] = 1 / Math.sqrt(2);
+      psi0[idx] = amp;
+      psi1[idx] = amp;
     }
   }
 
@@ -275,10 +278,11 @@ export function quantumWalkPesos(ctx: PatternContext): number[] {
       const h0 = (a0 + a1) / Math.sqrt(2);
       const h1 = (a0 - a1) / Math.sqrt(2);
       // Shift: moeda |0> move para esquerda, |1> para direita (ciclo)
+      // O Hadamard já normalizou (dividiu por √2); o shift apenas move as amplitudes.
       const left = (i - 1 + N) % N;
       const right = (i + 1) % N;
-      next0[left] = (next0[left] ?? 0) + h0 / Math.sqrt(2);
-      next1[right] = (next1[right] ?? 0) + h1 / Math.sqrt(2);
+      next0[left] = (next0[left] ?? 0) + h0;
+      next1[right] = (next1[right] ?? 0) + h1;
     }
     cur0 = next0;
     cur1 = next1;
