@@ -872,8 +872,8 @@ td { color: var(--color-text); }
   .hero-title { font-size: var(--text-3xl); }
   .hero-actions { flex-direction: column; align-items: center; gap: var(--space-3); }
   .hero-actions .btn { width: 100%; max-width: 320px; }
-  .modality-btn { min-width: calc(50% - var(--space-2)); }
-  .modality-card { min-width: calc(50% - var(--space-2)); }
+  .modality-btn { min-width: 100%; }
+  .modality-card { min-width: 100%; }
   .number-grid { grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); }
   .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
   .controls-grid { grid-template-columns: 1fr; }
