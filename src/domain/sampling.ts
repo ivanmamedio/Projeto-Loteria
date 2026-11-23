@@ -37,19 +37,22 @@ export function sampleNoReplace(
   if (k > n) throw new Error(`k (${k}) não pode ser maior que n (${n})`);
   if (k <= 0) return [];
 
-  // Índices disponíveis — vetor simples para Fisher–Yates
+  // Índices disponíveis — vetor simples para Fisher–Yates parcial
   const indices = Array.from({ length: n }, (_, i) => i);
 
   const resultados: number[] = [];
 
-  for (let i = n - 1; i >= n - k; i--) {
-    const j = Math.floor(safeRng(rng) * (i + 1));
+  // Fisher–Yates parcial: iterar de 0 até k-1, escolher j em [i, n-1],
+  // trocar array[i] com array[j], e pegar array[i].
+  // Isso garante distribuição uniforme: cada combinação de k de n tem
+  // a mesma probabilidade de ser sorteada.
+  for (let i = 0; i < k; i++) {
+    const j = i + Math.floor(safeRng(rng) * (n - i));
     const iVal = indices[i];
     const jVal = indices[j];
-    if (iVal === undefined || jVal === undefined) continue;
     indices[i] = jVal;
     indices[j] = iVal;
-    resultados.push(jVal);
+    resultados.push(iVal);
   }
 
   return resultados;
