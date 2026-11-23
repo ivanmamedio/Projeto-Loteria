@@ -737,53 +737,56 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
     // ============================================================
     // GERAÇÃO DE IMAGENS (CLIENT-ONLY - canvas não existe no SSR)
     // ============================================================
-    if (typeof window !== 'undefined') {
-      // === CORES DO DESIGN SYSTEM (matching tokens.css) ===
-      const CORES = {
-        primary: '#0d9488',        // teal-600
-        primaryHover: '#0f766e',   // teal-700
-        primaryLight: '#14b8a6',   // teal-500
-        primaryPale: '#ccfbf1',    // teal-50
-        accent: '#d4a843',         // amber-600
-        accentHover: '#b8943a',    // amber-700
-        accentPale: '#fef3c7',     // amber-50
-        neutral950: '#1c1917',     // stone-950
-        neutral900: '#292524',     // stone-900
-        neutral700: '#686058',     // stone-700
-        neutral600: '#78716c',     // stone-600
-        neutral500: '#a8a29e',     // stone-500
-        neutral300: '#e7e5e4',     // stone-300
-        neutral200: '#f5f5f4',     // stone-200
-        neutral100: '#fafaf9',     // stone-100
-        neutral50: '#fafaf9',      // stone-50
-        success: '#166534',        // green-800
-        successBg: '#dcfce7',      // green-50
-        white: '#ffffff',
-      };
+    // Nota: estas funções são chamadas apenas via clique do usuário,
+    // que só acontece no cliente, portanto canvas está disponível.
+    // ============================================================
 
-      // Cores por modalidade
-      const MODALIDADE_CORES: Record<string, { bg: string; text: string; badge: string }> = {
-        'mega-sena': { bg: '#dcfce7', text: '#15803d', badge: '#166534' },      // green
-        'lotofacil': { bg: '#ffedd5', text: '#ea580c', badge: '#c2410c' },      // orange
-        'quina': { bg: '#dbeafe', text: '#2563eb', badge: '#1d4ed8' },           // blue
-        'lotomania': { bg: '#f3e8ff', text: '#9333ea', badge: '#7e22ce' },       // purple
-      };
+    // === CORES DO DESIGN SYSTEM (matching tokens.css) ===
+    const CORES = {
+      primary: '#0d9488',        // teal-600
+      primaryHover: '#0f766e',   // teal-700
+      primaryLight: '#14b8a6',   // teal-500
+      primaryPale: '#ccfbf1',    // teal-50
+      accent: '#d4a843',         // amber-600
+      accentHover: '#b8943a',    // amber-700
+      accentPale: '#fef3c7',     // amber-50
+      neutral950: '#1c1917',     // stone-950
+      neutral900: '#292524',     // stone-900
+      neutral700: '#686058',     // stone-700
+      neutral600: '#78716c',     // stone-600
+      neutral500: '#a8a29e',     // stone-500
+      neutral300: '#e7e5e4',     // stone-300
+      neutral200: '#f5f5f4',     // stone-200
+      neutral100: '#fafaf9',     // stone-100
+      neutral50: '#fafaf9',      // stone-50
+      success: '#166534',        // green-800
+      successBg: '#dcfce7',      // green-50
+      white: '#ffffff',
+    };
 
-      function desenharGradienteVertical(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, corInicio: string, corFim: string) {
-        const grad = ctx.createLinearGradient(x, y, x, y + h);
-        grad.addColorStop(0, corInicio);
-        grad.addColorStop(1, corFim);
-        ctx.fillStyle = grad;
-        ctx.fillRect(x, y, w, h);
-      }
+    // Cores por modalidade
+    const MODALIDADE_CORES: Record<string, { bg: string; text: string; badge: string }> = {
+      'mega-sena': { bg: '#dcfce7', text: '#15803d', badge: '#166534' },      // green
+      'lotofacil': { bg: '#ffedd5', text: '#ea580c', badge: '#c2410c' },      // orange
+      'quina': { bg: '#dbeafe', text: '#2563eb', badge: '#1d4ed8' },           // blue
+      'lotomania': { bg: '#f3e8ff', text: '#9333ea', badge: '#7e22ce' },       // purple
+    };
 
-      function desenharGradienteHorizontal(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, corInicio: string, corFim: string) {
-        const grad = ctx.createLinearGradient(x, y, x + w, y);
-        grad.addColorStop(0, corInicio);
-        grad.addColorStop(1, corFim);
-        ctx.fillStyle = grad;
-        ctx.fillRect(x, y, w, h);
-      }
+    function desenharGradienteVertical(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, corInicio: string, corFim: string) {
+      const grad = ctx.createLinearGradient(x, y, x, y + h);
+      grad.addColorStop(0, corInicio);
+      grad.addColorStop(1, corFim);
+      ctx.fillStyle = grad;
+      ctx.fillRect(x, y, w, h);
+    }
+
+    function desenharGradienteHorizontal(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, corInicio: string, corFim: string) {
+      const grad = ctx.createLinearGradient(x, y, x + w, y);
+      grad.addColorStop(0, corInicio);
+      grad.addColorStop(1, corFim);
+      ctx.fillStyle = grad;
+      ctx.fillRect(x, y, w, h);
+    }
 
     function arredondarRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
       ctx.beginPath();
@@ -1228,8 +1231,6 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
 
       return await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95));
     }
-
-    } // fim do if (typeof window !== 'undefined')
 
     function criarGameCard(texto: string, modalidade: string, isHero: boolean = false, indice?: number): HTMLElement {
       const card = document.createElement('div');
