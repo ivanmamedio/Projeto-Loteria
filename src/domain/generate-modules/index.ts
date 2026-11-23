@@ -89,7 +89,9 @@ export function generateGames(
     rng = mulberry32(seed);
   } else {
     rng = rngOrSeed;
-    seed = 0;
+    // Quando um IRandom é passado externamente, gerar um seed para registro
+    // (o RNG já está em andamento, então usamos newSeed apenas para rastreamento)
+    seed = newSeed();
   }
 
   const opcoes = request.opcoes as Record<string, unknown> | undefined;
