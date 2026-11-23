@@ -734,87 +734,502 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
+    // ============================================================
+    // GERAÇÃO DE IMAGENS (CLIENT-ONLY - canvas não existe no SSR)
+    // ============================================================
+    if (typeof window !== 'undefined') {
+      // === CORES DO DESIGN SYSTEM (matching tokens.css) ===
+      const CORES = {
+        primary: '#0d9488',        // teal-600
+        primaryHover: '#0f766e',   // teal-700
+        primaryLight: '#14b8a6',   // teal-500
+        primaryPale: '#ccfbf1',    // teal-50
+        accent: '#d4a843',         // amber-600
+        accentHover: '#b8943a',    // amber-700
+        accentPale: '#fef3c7',     // amber-50
+        neutral950: '#1c1917',     // stone-950
+        neutral900: '#292524',     // stone-900
+        neutral700: '#686058',     // stone-700
+        neutral600: '#78716c',     // stone-600
+        neutral500: '#a8a29e',     // stone-500
+        neutral300: '#e7e5e4',     // stone-300
+        neutral200: '#f5f5f4',     // stone-200
+        neutral100: '#fafaf9',     // stone-100
+        neutral50: '#fafaf9',      // stone-50
+        success: '#166534',        // green-800
+        successBg: '#dcfce7',      // green-50
+        white: '#ffffff',
+      };
+
+      // Cores por modalidade
+      const MODALIDADE_CORES: Record<string, { bg: string; text: string; badge: string }> = {
+        'mega-sena': { bg: '#dcfce7', text: '#15803d', badge: '#166534' },      // green
+        'lotofacil': { bg: '#ffedd5', text: '#ea580c', badge: '#c2410c' },      // orange
+        'quina': { bg: '#dbeafe', text: '#2563eb', badge: '#1d4ed8' },           // blue
+        'lotomania': { bg: '#f3e8ff', text: '#9333ea', badge: '#7e22ce' },       // purple
+      };
+
+      function desenharGradienteVertical(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, corInicio: string, corFim: string) {
+        const grad = ctx.createLinearGradient(x, y, x, y + h);
+        grad.addColorStop(0, corInicio);
+        grad.addColorStop(1, corFim);
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, y, w, h);
+      }
+
+      function desenharGradienteHorizontal(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, corInicio: string, corFim: string) {
+        const grad = ctx.createLinearGradient(x, y, x + w, y);
+        grad.addColorStop(0, corInicio);
+        grad.addColorStop(1, corFim);
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, y, w, h);
+      }
+
+    function arredondarRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+
+    function desenharBolaBonita(ctx: CanvasRenderingContext2D, cx: number, cy: number, raio: number, numero: string, corFundo: string, corTexto: string) {
+      // Sombra suave
+      ctx.shadowColor = 'rgba(28, 25, 23, 0.15)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 3;
+
+      // Gradiente da bola
+      const grad = ctx.createRadialGradient(cx - raio * 0.3, cy - raio * 0.3, 0, cx, cy, raio);
+      grad.addColorStop(0, corFundo);
+      grad.addColorStop(0.5, corFundo);
+      grad.addColorStop(1, corFundo === CORES.primary ? CORES.primaryHover : corFundo);
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, raio, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Borda sutil
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Reset shadow
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
+
+      // Número
+      ctx.fillStyle = corTexto;
+      ctx.font = 'bold 22px "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(numero, cx, cy + 1);
+    }
+
+    function getModalidadeNome(mod: string): string {
+      const nomes: Record<string, string> = {
+        'mega-sena': 'Mega-Sena',
+        'lotofacil': 'Lotofácil',
+        'quina': 'Quina',
+        'lotomania': 'Lotomania',
+      };
+      return nomes[mod] ?? mod;
+    }
+
     async function gerarImagemJogo(dezenas: number[], modalidade: string): Promise<Blob | null> {
       const canvas = document.createElement('canvas');
-      canvas.width = 900;
-      canvas.height = 360;
+      canvas.width = 1080;  // Maior resolução para melhor qualidade
+      canvas.height = 540;
       const ctx = canvas.getContext('2d');
       if (!ctx) return null;
 
-      ctx.fillStyle = '#f1f8f1';
+      const modCores = MODALIDADE_CORES[modalidade] || MODALIDADE_CORES['mega-sena'];
+      const modNome = getModalidadeNome(modalidade);
+
+      // ========== BACKGROUND COM GRADIENTE E DECORAÇÕES ==========
+      // Fundo gradiente suave (top-left para bottom-right)
+      const bgGrad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      bgGrad.addColorStop(0, CORES.neutral50);
+      bgGrad.addColorStop(0.5, CORES.primaryPale);
+      bgGrad.addColorStop(1, CORES.accentPale);
+      ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = '#171717';
-      ctx.font = 'bold 40px Inter, system-ui, sans-serif';
-      ctx.fillText('Jogo na Hora', 40, 60);
+      // Blob decorativo topo-esquerdo (sutil)
+      ctx.save();
+      ctx.globalAlpha = 0.08;
+      const blobGrad1 = ctx.createRadialGradient(100, 100, 0, 100, 100, 300);
+      blobGrad1.addColorStop(0, CORES.primary);
+      blobGrad1.addColorStop(1, 'transparent');
+      ctx.fillStyle = blobGrad1;
+      ctx.beginPath();
+      ctx.arc(100, 100, 300, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
 
-      ctx.fillStyle = '#525252';
-      ctx.font = '22px Inter, system-ui, sans-serif';
-      ctx.fillText(`Modalidade: ${modalidade}`, 40, 95);
+      // Blob decorativo bottom-right
+      ctx.save();
+      ctx.globalAlpha = 0.06;
+      const blobGrad2 = ctx.createRadialGradient(canvas.width - 150, canvas.height - 150, 0, canvas.width - 150, canvas.height - 150, 350);
+      blobGrad2.addColorStop(0, CORES.accent);
+      blobGrad2.addColorStop(1, 'transparent');
+      ctx.fillStyle = blobGrad2;
+      ctx.beginPath();
+      ctx.arc(canvas.width - 150, canvas.height - 150, 350, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
 
+      // Linha decorativa topo (brand)
+      desenharGradienteHorizontal(ctx, 0, 0, canvas.width, 4, CORES.primary, CORES.accent);
+
+      // ========== HEADER COM LOGO E MODALIDADE ==========
+      const headerY = 60;
+
+      // Logo "Jogo na Hora"
+      ctx.fillStyle = CORES.neutral900;
+      ctx.font = '800 42px "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('Jogo na Hora', 60, headerY);
+
+      // Badge da modalidade
+      const badgeX = 60;
+      const badgeY = headerY + 18;
+      const badgePaddingX = 16;
+      const badgePaddingY = 6;
+      const badgeText = modNome.toUpperCase();
+      ctx.font = '700 13px "Plus Jakarta Sans", system-ui, sans-serif';
+      const badgeTextWidth = ctx.measureText(badgeText).width;
+      const badgeWidth = badgeTextWidth + badgePaddingX * 2;
+      const badgeHeight = 28;
+
+      // Fundo do badge com gradiente
+      arredondarRect(ctx, badgeX, badgeY, badgeWidth, badgeHeight, badgeHeight / 2);
+      const badgeGrad = ctx.createLinearGradient(badgeX, badgeY, badgeX, badgeY + badgeHeight);
+      badgeGrad.addColorStop(0, modCores.badge);
+      badgeGrad.addColorStop(1, modCores.text);
+      ctx.fillStyle = badgeGrad;
+      ctx.fill();
+
+      // Texto do badge
+      ctx.fillStyle = CORES.white;
+      ctx.font = '700 13px "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(badgeText, badgeX + badgeWidth / 2, badgeY + badgeHeight / 2 + 1);
+
+      // ========== ÁREA DAS DEZENAS (CENTRO) ==========
       const balls = dezenas.map((d) => d.toString().padStart(2, '0'));
-      let x = 40;
-      const y = 185;
-      for (const ball of balls) {
-        ctx.beginPath();
-        ctx.arc(x + 32, y, 32, 0, Math.PI * 2);
-        ctx.fillStyle = '#007A33';
-        ctx.fill();
-        ctx.fillStyle = '#f7fdf7';
-        ctx.font = 'bold 20px Inter, system-ui, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(ball, x + 32, y);
-        ctx.textAlign = 'start';
-        ctx.textBaseline = 'alphabetic';
-        x += 76;
-        if (x > canvas.width - 80) {
-          x = 40;
-        }
-      }
+      const ballRadius = 38;
+      const ballGap = 20;
+      const totalWidth = balls.length * (ballRadius * 2) + (balls.length - 1) * ballGap;
+      const startX = (canvas.width - totalWidth) / 2;
+      const centerY = canvas.height / 2 - 20;
 
-      ctx.fillStyle = '#525252';
-      ctx.font = '14px Inter, system-ui, sans-serif';
-      ctx.fillText('Aviso: toda combinação tem a mesma probabilidade de sorteio.', 40, 320);
-      ctx.fillText('Site independente. Resultados válidos são os divulgados pela CAIXA.', 40, 342);
+      // Label "Suas dezenas"
+      ctx.fillStyle = CORES.neutral600;
+      ctx.font = '500 16px "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('Suas dezenas', canvas.width / 2, centerY - 60);
+
+      // Desenhar bolas
+      balls.forEach((ball, i) => {
+        const cx = startX + ballRadius + i * (ballRadius * 2 + ballGap);
+        desenharBolaBonita(ctx, cx, centerY, ballRadius, ball, CORES.primary, CORES.white);
+      });
+
+      // ========== FOOTER COM AVISOS ==========
+      const footerY = canvas.height - 80;
+
+      // Linha separadora sutil
+      ctx.strokeStyle = CORES.neutral300;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(60, footerY - 30);
+      ctx.lineTo(canvas.width - 60, footerY - 30);
+      ctx.stroke();
+
+      // Card de aviso
+      const cardY = footerY;
+      const cardHeight = 60;
+      const cardX = 60;
+      const cardW = canvas.width - 120;
+
+      // Fundo do card
+      arredondarRect(ctx, cardX, cardY, cardW, cardHeight, 12);
+      ctx.fillStyle = CORES.white;
+      ctx.fill();
+      ctx.strokeStyle = CORES.neutral200;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Ícone de alerta (triângulo com exclamação)
+      const iconX = cardX + 24;
+      const iconY = cardY + cardHeight / 2;
+      ctx.fillStyle = CORES.accent;
+      ctx.beginPath();
+      ctx.moveTo(iconX, iconY - 10);
+      ctx.lineTo(iconX - 10, iconY + 10);
+      ctx.lineTo(iconX + 10, iconY + 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = CORES.neutral950;
+      ctx.font = 'bold 14px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('!', iconX, iconY + 8);
+
+      // Textos do aviso
+      ctx.fillStyle = CORES.neutral700;
+      ctx.font = '500 14px "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Toda combinação tem a mesma probabilidade de sorteio.', iconX + 28, cardY + 18);
+      ctx.fillStyle = CORES.neutral600;
+      ctx.font = '400 13px "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.fillText('Site independente. Resultados válidos são os divulgados pela CAIXA.', iconX + 28, cardY + 42);
+
+      // Brand bottom
+      ctx.fillStyle = CORES.neutral500;
+      ctx.font = '500 12px "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('jogopronto.com.br  ·  Estudo e diversão  ·  18+', canvas.width / 2, canvas.height - 20);
 
       return await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95));
     }
 
     async function gerarImagemJogos(jogos: number[][], modalidade: string): Promise<Blob | null> {
       const canvas = document.createElement('canvas');
-      canvas.width = 900;
-      canvas.height = Math.max(360, 120 + jogos.length * 56 + 80);
+      canvas.width = 1080;
+      const paddingTop = 140;
+      const paddingBottom = 120;
+      const rowHeight = 72;
+      const gapBetweenRows = 16;
+      canvas.height = paddingTop + jogos.length * (rowHeight + gapBetweenRows) + paddingBottom;
       const ctx = canvas.getContext('2d');
       if (!ctx) return null;
 
-      ctx.fillStyle = '#f1f8f1';
+      const modCores = MODALIDADE_CORES[modalidade] || MODALIDADE_CORES['mega-sena'];
+      const modNome = getModalidadeNome(modalidade);
+
+      // ========== BACKGROUND ==========
+      const bgGrad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      bgGrad.addColorStop(0, CORES.neutral50);
+      bgGrad.addColorStop(0.4, CORES.primaryPale);
+      bgGrad.addColorStop(1, CORES.accentPale);
+      ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = '#171717';
-      ctx.font = 'bold 40px Inter, system-ui, sans-serif';
-      ctx.fillText('Jogo na Hora', 40, 60);
+      // Blobs decorativos
+      ctx.save();
+      ctx.globalAlpha = 0.08;
+      const blobGrad1 = ctx.createRadialGradient(100, 100, 0, 100, 100, 300);
+      blobGrad1.addColorStop(0, CORES.primary);
+      blobGrad1.addColorStop(1, 'transparent');
+      ctx.fillStyle = blobGrad1;
+      ctx.beginPath();
+      ctx.arc(100, 100, 300, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
 
-      ctx.fillStyle = '#525252';
-      ctx.font = '22px Inter, system-ui, sans-serif';
-      ctx.fillText(`Modalidade: ${modalidade}`, 40, 95);
+      ctx.save();
+      ctx.globalAlpha = 0.06;
+      const blobGrad2 = ctx.createRadialGradient(canvas.width - 150, canvas.height - 150, 0, canvas.width - 150, canvas.height - 150, 350);
+      blobGrad2.addColorStop(0, CORES.accent);
+      blobGrad2.addColorStop(1, 'transparent');
+      ctx.fillStyle = blobGrad2;
+      ctx.beginPath();
+      ctx.arc(canvas.width - 150, canvas.height - 150, 350, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
 
-      let y = 150;
-      for (const dezenas of jogos) {
-        const texto = dezenas.map((d) => d.toString().padStart(2, '0')).join('  ');
-        ctx.fillStyle = '#171717';
-        ctx.font = 'bold 24px Inter, system-ui, sans-serif';
-        ctx.fillText(texto, 40, y);
-        y += 46;
-      }
+      // Linha brand topo
+      desenharGradienteHorizontal(ctx, 0, 0, canvas.width, 4, CORES.primary, CORES.accent);
 
-      ctx.fillStyle = '#525252';
-      ctx.font = '14px Inter, system-ui, sans-serif';
-      ctx.fillText('Aviso: toda combinação tem a mesma probabilidade de sorteio.', 40, canvas.height - 42);
-      ctx.fillText('Site independente. Resultados válidos são os divulgados pela CAIXA.', 40, canvas.height - 20);
+      // ========== HEADER ==========
+      const headerY = 60;
+      ctx.fillStyle = CORES.neutral900;
+      ctx.font = '800 42px "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('Jogo na Hora', 60, headerY);
+
+      // Badge modalidade
+      const badgeX = 60;
+      const badgeY = headerY + 18;
+      const badgeText = modNome.toUpperCase();
+      ctx.font = '700 13px "Plus Jakarta Sans", system-ui, sans-serif';
+      const badgeTextWidth = ctx.measureText(badgeText).width;
+      const badgeWidth = badgeTextWidth + 32;
+      const badgeHeight = 28;
+      arredondarRect(ctx, badgeX, badgeY, badgeWidth, badgeHeight, badgeHeight / 2);
+      const badgeGrad = ctx.createLinearGradient(badgeX, badgeY, badgeX, badgeY + badgeHeight);
+      badgeGrad.addColorStop(0, modCores.badge);
+      badgeGrad.addColorStop(1, modCores.text);
+      ctx.fillStyle = badgeGrad;
+      ctx.fill();
+      ctx.fillStyle = CORES.white;
+      ctx.font = '700 13px "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(badgeText, badgeX + badgeWidth / 2, badgeY + badgeHeight / 2 + 1);
+
+      // Subtitle com quantidade de jogos
+      ctx.fillStyle = CORES.neutral600;
+      ctx.font = '500 18px "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText(`${jogos.length} jogo${jogos.length > 1 ? 's' : ''} gerado${jogos.length > 1 ? 's' : ''}`, 60, headerY + 60);
+
+      // ========== LISTA DE JOGOS ==========
+      const startY = paddingTop;
+      const leftMargin = 60;
+      const rightMargin = 60;
+      const availableWidth = canvas.width - leftMargin - rightMargin;
+      const ballRadius = 26;
+      const ballGap = 10;
+
+      jogos.forEach((dezenas, jogoIndex) => {
+        const rowY = startY + jogoIndex * (rowHeight + gapBetweenRows);
+        const rowCenterY = rowY + rowHeight / 2;
+
+        // Card do jogo
+        const cardX = leftMargin;
+        const cardY = rowY;
+        const cardW = availableWidth;
+        const cardH = rowHeight;
+
+        // Fundo do card com gradiente sutil
+        arredondarRect(ctx, cardX, cardY, cardW, cardH, 16);
+        const cardGrad = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardH);
+        cardGrad.addColorStop(0, CORES.white);
+        cardGrad.addColorStop(1, CORES.neutral50);
+        ctx.fillStyle = cardGrad;
+        ctx.fill();
+
+        // Borda esquerda colorida (brand da modalidade)
+        ctx.fillStyle = modCores.badge;
+        ctx.beginPath();
+        ctx.moveTo(cardX, cardY);
+        ctx.lineTo(cardX + 6, cardY);
+        ctx.lineTo(cardX + 6, cardY + cardH);
+        ctx.lineTo(cardX, cardY + cardH);
+        ctx.closePath();
+        ctx.fill();
+
+        // Sombra suave do card
+        ctx.shadowColor = 'rgba(28, 25, 23, 0.06)';
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetY = 4;
+        ctx.shadowOffsetX = 0;
+
+        // Redesenhar card com sombra (apenas visual, não afeta hit testing)
+        arredondarRect(ctx, cardX, cardY, cardW, cardH, 16);
+        ctx.fillStyle = cardGrad;
+        ctx.fill();
+
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.shadowOffsetX = 0;
+
+        // Número do jogo (ex: "01", "02")
+        const jogoNum = String(jogoIndex + 1).padStart(2, '0');
+        ctx.fillStyle = CORES.neutral500;
+        ctx.font = '700 14px "Plus Jakarta Sans", system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(jogoNum, cardX + 32, rowCenterY);
+
+        // Bolas das dezenas
+        const balls = dezenas.map((d) => d.toString().padStart(2, '0'));
+        const totalBallsWidth = balls.length * (ballRadius * 2) + (balls.length - 1) * ballGap;
+        const ballsStartX = cardX + 80 + (availableWidth - 80 - 40 - totalBallsWidth) / 2;
+
+        balls.forEach((ball, i) => {
+          const cx = ballsStartX + ballRadius + i * (ballRadius * 2 + ballGap);
+          desenharBolaBonita(ctx, cx, rowCenterY, ballRadius, ball, CORES.primary, CORES.white);
+        });
+
+        // Label "Jogo" à direita
+        ctx.fillStyle = CORES.neutral500;
+        ctx.font = '500 13px "Plus Jakarta Sans", system-ui, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Jogo gerado', canvas.width - 60, rowCenterY);
+      });
+
+      // ========== FOOTER COM AVISOS ==========
+      const footerY = canvas.height - paddingBottom + 30;
+
+      // Linha separadora
+      ctx.strokeStyle = CORES.neutral300;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(60, footerY - 20);
+      ctx.lineTo(canvas.width - 60, footerY - 20);
+      ctx.stroke();
+
+      // Card de aviso
+      const cardY = footerY;
+      const cardHeight = 70;
+      const cardX = 60;
+      const cardW = canvas.width - 120;
+
+      arredondarRect(ctx, cardX, cardY, cardW, cardHeight, 12);
+      ctx.fillStyle = CORES.white;
+      ctx.fill();
+      ctx.strokeStyle = CORES.neutral200;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Ícone de alerta
+      const iconX = cardX + 24;
+      const iconY = cardY + cardHeight / 2;
+      ctx.fillStyle = CORES.accent;
+      ctx.beginPath();
+      ctx.moveTo(iconX, iconY - 12);
+      ctx.lineTo(iconX - 12, iconY + 12);
+      ctx.lineTo(iconX + 12, iconY + 12);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = CORES.neutral950;
+      ctx.font = 'bold 16px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('!', iconX, iconY + 9);
+
+      // Textos
+      ctx.fillStyle = CORES.neutral700;
+      ctx.font = '500 15px "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Toda combinação tem a mesma probabilidade de sorteio.', iconX + 32, cardY + 20);
+      ctx.fillStyle = CORES.neutral600;
+      ctx.font = '400 14px "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.fillText('Site independente. Resultados válidos são os divulgados pela CAIXA.', iconX + 32, cardY + 48);
+
+      // Brand bottom
+      ctx.fillStyle = CORES.neutral500;
+      ctx.font = '500 12px "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('jogopronto.com.br  ·  Estudo e diversão  ·  18+', canvas.width / 2, canvas.height - 20);
 
       return await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95));
     }
+
+    } // fim do if (typeof window !== 'undefined')
 
     function criarGameCard(texto: string, modalidade: string, isHero: boolean = false, indice?: number): HTMLElement {
       const card = document.createElement('div');
