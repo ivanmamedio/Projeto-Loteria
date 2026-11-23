@@ -1,47 +1,425 @@
 ---
 import Disclaimer from '../components/Disclaimer.astro';
-// Página "Sobre" — quem somos, propósito do projeto
-// Referência: tasks_loteria.md — T1.1 (Astro + TS estrito)
-
 import Base from '../layouts/Base.astro';
+
+const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
 ---
 
 <Base modalidade="mega-sena">
+  <!-- HERO -->
   <section class="page-header section-highlight">
     <div class="container">
       <div class="blob-top-left"></div>
       <h1 class="display-heading">Sobre o Jogo na Hora</h1>
-      <p>
+      <p class="text-lg">
         Site independente de estudo e diversão sobre as loterias da CAIXA.
         Projetado com transparência — fórmulas, dados e probabilidades
-        expostos para quem quer entender, não para quem quer ganhar.
+        expostos para quem quer <strong>entender</strong>, não para quem quer ganhar.
       </p>
     </div>
   </section>
 
-  <section class="container bg-section">
-    <div class="bg-section-alt">
-      <h2 class="section-title">Objetivo</h2>
-      <p>
-        Fornecer uma ferramenta gratuita e acessível para consulta de dados
-        históricos, geração de jogos e estudo de probabilidades. Sem anúncios,
-        sem levantamento de dados de jogadores — apenas informação.
-      </p>
+  <!-- TRUST GRID - Diferenciais principais -->
+  <section class="section" aria-labelledby="trust-title" style="background: var(--color-bg);">
+    <div class="container">
+      <header class="section-header">
+        <h2 id="trust-title">Por que confiar no Jogo na Hora?</h2>
+        <p>Seis pilares que nos tornam diferentes de qualquer outro site de loteria.</p>
+      </header>
 
-      <h2 class="section-title">Princípios</h2>
-      <ul class="list-premium">
-        <li><strong>Uniformidade:</strong> toda combinação tem a mesma probabilidade.</li>
-        <li><strong>Transparência:</strong> fórmulas documentadas e calculadas a partir dos dados reais.</li>
-        <li><strong>Verdade:</strong> nenhum texto sugere previsão ou vantagem estatística.</li>
-        <li><strong>Respeito:</strong> sem indicação de vínculo com a CAIXA.</li>
-        <li><strong>Idade:</strong> conteúdo destinado a pessoas com 18 anos ou mais.</li>
-      </ul>
+      <div class="trust-grid">
+        <article class="trust-item">
+          <div class="trust-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </div>
+          <h3>Dados Oficiais CAIXA</h3>
+          <p>Resultados importados diretamente das fontes oficiais, com data de atualização visível em cada página.</p>
+        </article>
 
-      <h2 class="section-title">Fontes e licença</h2>
-      <p>
-        Os resultados históricos são derivados de dados públicos da CAIXA e da
-        compilação LotoAgora. O site não se apresenta como publicação oficial.
-      </p>
+        <article class="trust-item">
+          <div class="trust-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <h3>Metodologia Aberta</h3>
+          <p>Todas as fórmulas (F1–F13), estratégias (E0–E4) e filtros documentados com limitações claras.</p>
+        </article>
+
+        <article class="trust-item">
+          <div class="trust-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
+            </svg>
+          </div>
+          <h3>Privacidade Real</h3>
+          <p>Zero coleta de dados pessoais. Histórico fica só no seu navegador. Sem cookies de rastreamento.</p>
+        </article>
+
+        <article class="trust-item">
+          <div class="trust-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+          </div>
+          <h3>Performance Extrema</h3>
+          <p>Astro + CSS puro = carregamento instantâneo. Core Web Vitals otimizados. PWA planejado.</p>
+        </article>
+
+        <article class="trust-item">
+          <div class="trust-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </div>
+          <h3>Código Aberto</h3>
+          <p>Lógica de geração e regras auditáveis no GitHub. Qualquer um pode verificar a implementação.</p>
+        </article>
+
+        <article class="trust-item">
+          <div class="trust-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <h3>Atualizações Automáticas</h3>
+          <p>GitHub Actions agendado roda nos dias de sorteio. Dados sempre frescos, sem intervenção manual.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS STEPS - Como funciona -->
+  <section class="section" aria-labelledby="process-title" style="background: var(--color-bg);">
+    <div class="container">
+      <header class="section-header">
+        <h2 id="process-title">Como funciona em 4 passos</h2>
+        <p>Simples, transparente, sem cadastro. Do zero ao jogo em segundos.</p>
+      </header>
+
+      <ol class="process-steps">
+        <li class="process-step">
+          <div class="step-content">
+            <h3>Escolha a modalidade</h3>
+            <p>Mega-Sena, Lotofácil, Quina ou Lotomania. Cada uma com suas regras, probabilidades e preço.</p>
+          </div>
+        </li>
+        <li class="process-step">
+          <div class="step-content">
+            <h3>Configure a estratégia</h3>
+            <p>Selecione quantidade (1–10), estratégia (E0–E4), filtros de equilíbrio, janela de análise.</p>
+          </div>
+        </li>
+        <li class="process-step">
+          <div class="step-content">
+            <h3>Gere as combinações</h3>
+            <p>Resultados com dezenas legíveis, resumo do método usado, taxa de aceitação dos filtros.</p>
+          </div>
+        </li>
+        <li class="process-step">
+          <div class="step-content">
+            <h3>Entenda e use com responsabilidade</h3>
+            <p>Copie, compartilhe, salve no histórico. Lembre-se: toda combinação tem a mesma probabilidade.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- FEATURE CARDS - Ferramentas disponíveis -->
+  <section class="section" aria-labelledby="tools-title" style="background: var(--color-bg);">
+    <div class="container">
+      <header class="section-header">
+        <h2 id="tools-title">Ferramentas à sua disposição</h2>
+        <p>Cada página foi desenhada para um propósito específico de estudo e organização.</p>
+      </header>
+
+      <div class="grid grid-3" style="margin-top: var(--space-8);">
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Gerador Avançado</h3>
+          <p class="feature-description">Crie 1–10 jogos com 5 estratégias (E0–E4), filtros de equilíbrio, diversificação de lote e seleção manual de dezenas.</p>
+          <a href={`${base}`} class="feature-link">Acessar gerador <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </article>
+
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Estatísticas Completas</h3>
+          <p class="feature-description">Frequência (F4), atraso (F5), qui-quadrado (F7), variância da soma (F13), distribuição teórica de acertos por modalidade.</p>
+          <a href={`${base}estatisticas`} class="feature-link">Ver estatísticas <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </article>
+
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Simulador Educativo</h3>
+          <p class="feature-description">Backtest walk-forward comparando todas as estratégias (E0–E4) contra a distribuição hipergeométrica teórica. Prova honesta: nenhuma vence.</p>
+          <a href={`${base}simulador/mega-sena`} class="feature-link">Testar simulador <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </article>
+
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Dados Históricos</h3>
+          <p class="feature-description">JSON e CSV de todos os concursos, dicionário de dados, probabilidades por modalidade, pipeline de atualização automática documentado.</p>
+          <a href={`${base}dados`} class="feature-link">Acessar dados <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </article>
+
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Validação Estatística</h3>
+          <p class="feature-description">Testes de aleatoriedade (Runs, Autocorrelação, KS, Bootstrap, Calibração ECE/Brier) aplicados ao histórico real. Veredito honesto.</p>
+          <a href={`${base}validacao`} class="feature-link">Validar agora <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </article>
+
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Probabilidade & Fórmulas</h3>
+          <p class="feature-description">Cálculos básicos (C(n,k)), avisos obrigatórios, explicação didática de por que nenhuma estratégia altera a chance de ganhar.</p>
+          <a href={`${base}probabilidade`} class="feature-link">Entender a matemática <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRINCIPLES - Princípios fundamentais -->
+  <section class="section" aria-labelledby="principles-title" style="background: var(--color-neutral-50);">
+    <div class="container">
+      <header class="section-header">
+        <h2 id="principles-title">Nossos princípios inegociáveis</h2>
+        <p>Não são apenas palavras — cada decisão de produto reflete estes valores.</p>
+      </header>
+
+      <div class="grid grid-2" style="margin-top: var(--space-8);">
+        <div class="card card-premium">
+          <h3 class="section-title" style="font-size: var(--text-xl); margin-bottom: var(--space-4);">Honestidade Matemática</h3>
+          <ul class="list-premium">
+            <li><strong>Uniformidade:</strong> Toda combinação válida tem exatamente a mesma probabilidade de sorteio.</li>
+            <li><strong>Sem promessas:</strong> Nenhum texto, botão ou recurso sugere previsão, vantagem ou garantia de prêmio.</li>
+            <li><strong>Viés declarado:</strong> Cada estratégia (E1–E4) expõe claramente seu viés descritivo e suas limitações.</li>
+          </ul>
+        </div>
+
+        <div class="card card-premium">
+          <h3 class="section-title" style="font-size: var(--text-xl); margin-bottom: var(--space-4);">Respeito ao Usuário</h3>
+          <ul class="list-premium">
+            <li><strong>Privacidade real:</strong> Zero tracking, zero cookies, zero analytics de terceiros. Histórico só no seu navegador.</li>
+            <li><strong>Sem dark patterns:</strong> Interface limpa, sem popups enganosos, sem urgência artificial.</li>
+            <li><strong>Público adulto:</strong> Conteúdo destinado a maiores de 18 anos. Links para Jogadores Anônimos e CVV no rodapé.</li>
+          </ul>
+        </div>
+
+        <div class="card card-premium">
+          <h3 class="section-title" style="font-size: var(--text-xl); margin-bottom: var(--space-4);">Transparência Radical</h3>
+          <ul class="list-premium">
+            <li><strong>Código aberto:</strong> Lógica de geração, regras, validação — tudo auditável no GitHub.</li>
+            <li><strong>Dados rastreáveis:</strong> Cada página de estatísticas mostra a data de atualização e a fonte dos dados.</li>
+            <li><strong>Metodologia documentada:</strong> Fórmulas F1–F13, estratégias E0–E4, filtros — tudo em <a href={`${base}como-funciona`} style="color: var(--color-primary);">Como funciona</a>.</li>
+          </ul>
+        </div>
+
+        <div class="card card-premium">
+          <h3 class="section-title" style="font-size: var(--text-xl); margin-bottom: var(--space-4);">Independência</h3>
+          <ul class="list-premium">
+            <li><strong>Sem vínculo CAIXA:</strong> Site independente, não afiliado, não endossado, não patrocinado.</li>
+            <li><strong>Sem monetização oculta:</strong> Gratuito, sem anúncios, sem upsell. PIX voluntário apenas para quem quiser apoiar.</li>
+            <li><strong>Resultados oficiais:</strong> Apenas a CAIXA define os resultados válidos. Nosso site é ferramenta de estudo.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPEN SOURCE / COMMUNITY -->
+  <section class="section" aria-labelledby="community-title" style="background: var(--color-bg);">
+    <div class="container">
+      <header class="section-header">
+        <h2 id="community-title">Comunidade e código aberto</h2>
+        <p>O Jogo na Hora é construído em público. Participe, audite, contribua.</p>
+      </header>
+
+      <div class="grid grid-3" style="margin-top: var(--space-8);">
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">GitHub Repository</h3>
+          <p class="feature-description">Código fonte completo, issues, discussions, actions de CI/CD, pipeline de dados automatizado.</p>
+          <a href="https://github.com/ivanmamedio/Projeto-Loteria" target="_blank" rel="noopener noreferrer" class="feature-link">Ver no GitHub <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </article>
+
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Reportar Problemas</h3>
+          <p class="feature-description">Encontrou um bug nos cálculos? Dados desatualizados? Algo não funciona no mobile? Abra uma issue.</p>
+          <a href="https://github.com/ivanmamedio/Projeto-Loteria/issues" target="_blank" rel="noopener noreferrer" class="feature-link">Reportar issue <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </article>
+
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Sugerir Melhorias</h3>
+          <p class="feature-description">Ideias para novas estratégias, visualizações, modalidades, acessibilidade? Discussions é o lugar.</p>
+          <a href="https://github.com/ivanmamedio/Projeto-Loteria/discussions" target="_blank" rel="noopener noreferrer" class="feature-link">Participar <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </article>
+      </div>
+
+      <!-- Stack tecnológico -->
+      <div class="card card-premium" style="margin-top: var(--space-12); max-width: 800px; margin-left: auto; margin-right: auto;">
+        <h3 class="section-title" style="font-size: var(--text-xl); margin-bottom: var(--space-6); text-align: center;">Stack Tecnológico</h3>
+        <div class="grid grid-3" style="text-align: center;">
+          <div>
+            <div class="feature-icon" style="margin: 0 auto var(--space-3); background: var(--color-primary);" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/>
+                <line x1="12" y1="22" x2="12" y2="15.5"/>
+                <polyline points="22 8.5 12 15.5 2 8.5"/>
+              </svg>
+            </div>
+            <strong>Astro 4</strong><br><span class="text-sm text-muted">Static Site Generator</span>
+          </div>
+          <div>
+            <div class="feature-icon" style="margin: 0 auto var(--space-3); background: var(--color-accent);" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="6" y1="12" x2="18" y2="12"/>
+                <polyline points="12 6 18 12 12 18"/>
+              </svg>
+            </div>
+            <strong>TypeScript Strict</strong><br><span class="text-sm text-muted">Type Safety</span>
+          </div>
+          <div>
+            <div class="feature-icon" style="margin: 0 auto var(--space-3); background: var(--color-success);" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                <path d="M6 12h12M12 8v8"/>
+              </svg>
+            </div>
+            <strong>CSS Puro (Design Tokens)</strong><br><span class="text-sm text-muted">Zero Dependencies</span>
+          </div>
+          <div>
+            <div class="feature-icon" style="margin: 0 auto var(--space-3); background: #6366f1;" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <strong>Vitest</strong><br><span class="text-sm text-muted">Unit Tests (139)</span>
+          </div>
+          <div>
+            <div class="feature-icon" style="margin: 0 auto var(--space-3); background: #2ecc71;" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+            </div>
+            <strong>Playwright</strong><br><span class="text-sm text-muted">E2E Tests (8)</span>
+          </div>
+          <div>
+            <div class="feature-icon" style="margin: 0 auto var(--space-3); background: #f97316;" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <path d="M8 21h8M12 17v4"/>
+              </svg>
+            </div>
+            <strong>Biome</strong><br><span class="text-sm text-muted">Lint + Format</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FONTES E LICENÇA -->
+  <section class="section" aria-labelledby="sources-title" style="background: var(--color-neutral-50);">
+    <div class="container">
+      <header class="section-header">
+        <h2 id="sources-title">Fontes e Licença</h2>
+        <p>Transparência total sobre a origem dos dados e permissões de uso.</p>
+      </header>
+
+      <div class="card card-premium" style="max-width: 800px; margin: 0 auto;">
+        <div class="grid grid-2" style="margin-top: var(--space-6);">
+          <div>
+            <h3 class="section-title" style="font-size: var(--text-lg); margin-bottom: var(--space-3);">Fonte Primária</h3>
+            <p>Dados provenientes de <a href="https://lotoagora.com.br/downloads/" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary); font-weight: 600;">LotoAgora</a> (derivado da API oficial da CAIXA).</p>
+            <p class="text-sm text-muted" style="margin-top: var(--space-2);">API oficial CAIXA: <a href="https://servicebus3.caixa.gov.br/portaldeloterias/api/" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary);">servicebus3.caixa.gov.br/portaldeloterias/api/</a></p>
+          </div>
+          <div>
+            <h3 class="section-title" style="font-size: var(--text-lg); margin-bottom: var(--space-3);">Licença</h3>
+            <p>Licença permite uso para análise e publicação com identificação da fonte. O site não se apresenta como publicação oficial da CAIXA.</p>
+            <p class="text-sm text-muted" style="margin-top: var(--space-2);">Código do site: <a href="https://github.com/ivanmamedio/Projeto-Loteria/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary);">MIT License</a></p>
+          </div>
+        </div>
+
+        <div style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+          <h3 class="section-title" style="font-size: var(--text-lg); margin-bottom: var(--space-3);">Atualização dos Dados</h3>
+          <p>Workflow <code>.github/workflows/update-data.yml</code> roda diariamente nos dias de sorteio (terças, quartas, quintas, sábados às 22h BRT):</p>
+          <ol style="margin-left: var(--space-4); line-height: 2; margin-top: var(--space-3);">
+            <li>Baixa CSVs do LotoAgora com validação (cabeçalho, delimitador, linhas mínimas)</li>
+            <li>Processa CSV → JSON via <code>npm run data:import</code></li>
+            <li>Valida integridade via <code>npm run data:check</code> (ordem, duplicatas, lacunas, F13)</li>
+            <li>Se tudo OK: commita arquivos atualizados e faz push → GitHub Pages republica</li>
+            <li>Se falha: abre issue automática para revisão manual</li>
+          </ol>
+          <p class="text-sm text-muted" style="margin-top: var(--space-4);">
+            Última execução: <a href="https://github.com/ivanmamedio/Projeto-Loteria/actions/workflows/update-data.yml" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary);">Ver no GitHub Actions</a>
+          </p>
+        </div>
+      </div>
     </div>
   </section>
 
