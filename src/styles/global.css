@@ -874,14 +874,14 @@ td { color: var(--color-text); }
 /* Extra small mobile (320px e abaixo) */
 @media (max-width: 320px) {
   :root { --container-padding: 0.75rem; }
-  .modality-btn { min-width: 100%; }
-  .modality-card { min-width: 100%; }
+  .modality-btn { min-width: 48%; }
+  .modality-card { min-width: 48%; }
   .number-grid { grid-template-columns: repeat(4, 1fr); gap: var(--space-1); }
   .number-btn { min-width: 40px; min-height: 40px; font-size: var(--text-sm); }
   .result-ball { width: 40px; height: 40px; font-size: var(--text-sm); }
-  .hero-actions { flex-direction: column; align-items: center; }
-  .hero-actions .btn { width: 100%; }
-  .controls { grid-template-columns: 1fr; padding: var(--space-4); }
+  .hero-actions { flex-wrap: wrap; gap: var(--space-3); justify-content: center; }
+  .hero-actions .btn { width: auto; }
+  .controls { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); padding: var(--space-4); }
   .footer .container { grid-template-columns: 1fr; gap: var(--space-6); text-align: center; }
 }
 
