@@ -530,6 +530,14 @@ const base = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
       }
     };
 
+    worker.onerror = (err) => {
+      if (workerReject) {
+        workerReject(new Error(`Worker error: ${err.message || 'Unknown worker error'}`));
+        workerResolve = null;
+        workerReject = null;
+      }
+    };
+
     let currentProgressCallback: ((progress: ProgressData) => void) | null = null;
 
     function generateWithWorker(
