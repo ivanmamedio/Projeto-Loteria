@@ -133,6 +133,7 @@ const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
         const ultima = getUltimaData(d.concursos);
         return (
           <div class="data-card card-premium">
+            <span class="modal-badge">{getNomeModalidade(mod)}</span>
             <h3>{getNomeModalidade(mod)}</h3>
             <p>
               {total.toLocaleString('pt-BR')} concursos · de {inicio} a {formatarDataBR(ultima)}
@@ -179,7 +180,7 @@ const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
         <div class="modalidade-table-wrap" style="margin-bottom: var(--space-8);">
           <h3>{getNomeModalidade(mod)}</h3>
           <div class="table-container">
-            <table class="data-table" aria-label="Últimos 10 concursos da {getNomeModalidade(mod)}">
+            <table class="data-table table-premium" aria-label="Últimos 10 concursos da {getNomeModalidade(mod)}">
               <thead>
                 <tr>
                   <th scope="col">Concurso</th>
@@ -228,7 +229,7 @@ const siteUrl = 'https://ivanmamedio.github.io/Projeto-Loteria/';
     <p class="text-muted">Descrição de cada campo dos arquivos JSON e CSV.</p>
     
     <div class="table-container">
-      <table class="data-table" aria-label="Dicionário de dados">
+      <table class="data-table table-premium" aria-label="Dicionário de dados">
         <thead>
           <tr>
             <th scope="col">Campo</th>
