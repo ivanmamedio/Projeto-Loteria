@@ -7,7 +7,9 @@
  * Referência: testes padrão de aleatoriedade (NIST, Diehard) adaptados para loteria.
  */
 
+import { mulberry32 } from './rng';
 import { modalidadePorId } from './rules';
+import { sampleNoReplace } from './sampling';
 import type { GameRequest, ModalidadeId } from './types';
 
 /* ============================================================
@@ -386,6 +388,14 @@ export interface SensitivityResult {
 /**
  * Análise de sensibilidade: varia um parâmetro e mede impacto.
  * Se pequena mudança no parâmetro muda muito o resultado -> instável.
+ *
+ * @param baseRequest - Requisição base de geração
+ * @param parametro - Nome do parâmetro a variar (em opcoes)
+ * @param valores - Valores a testar
+ * @param gerarJogos - Função que gera jogos dada a requisição
+ * @param historico - Sorteios históricos para comparar acertos (opcional)
+ * @param nTestes - Número de testes por valor
+ * @param seedBase - Semente base para reprodutibilidade
  */
 export async function sensitivityAnalysis(
   baseRequest: GameRequest,
@@ -398,26 +408,53 @@ export async function sensitivityAnalysis(
   ) => { games: readonly { dezenas: readonly number[] }[]; meta: { taxaAceitacao: number } },
   nTestes = 5,
   seedBase = 123,
+  historico?: number[][],
 ): Promise<SensitivityResult> {
   const metricas: SensitivityResult['metricas'] = [];
+  const modalidade = modalidadePorId(baseRequest.modalidade);
+  const k = modalidade.dezenasSorteadas;
+  const universo = modalidade.universo;
+  const mediaAcertosTeorica = (k * k) / universo;
+
+  // Sorteios aleatórios para comparação (se não houver histórico)
+  const sorteiosAleatorios: number[][] = [];
+  if (!historico || historico.length === 0) {
+    const rng = mulberry32(seedBase);
+    for (let t = 0; t < nTestes * valores.length; t++) {
+      const sorteio = sampleNoReplace(universo, k, () => rng.next());
+      sorteiosAleatorios.push(sorteio);
+    }
+  }
 
   for (const valor of valores) {
     const req = { ...baseRequest, opcoes: { ...baseRequest.opcoes, [parametro]: valor } };
     let somaTaxa = 0;
     let somaJogos = 0;
+    let somaAcertos = 0;
+    let nAcertos = 0;
 
     for (let t = 0; t < nTestes; t++) {
       const resultado = gerarJogos(req, 1, seedBase + t * 1000 + Math.floor(valor * 100));
       somaJogos += resultado.games?.length ?? 0;
       somaTaxa += resultado.meta?.taxaAceitacao ?? 0;
-      // Simular acerto vs sorteio aleatório
-      // const jogo = resultado.games?.[0]?.dezenas ?? [];
-      // (em produção, comparar com sorteio real)
+
+      // Calcular acertos vs sorteios (histórico ou aleatórios)
+      const jogos = resultado.games ?? [];
+      for (const jogo of jogos) {
+        const dezenasJogo = jogo.dezenas ?? [];
+        // Comparar com sorteios históricos (ciclico) ou aleatórios
+        const sorteiosParaComparar = historico ?? sorteiosAleatorios;
+        const sorteioReferencia = sorteiosParaComparar[t % sorteiosParaComparar.length] ?? [];
+        const acertos = dezenasJogo.filter((d) => sorteioReferencia.includes(d)).length;
+        somaAcertos += acertos;
+        nAcertos++;
+      }
     }
 
     metricas.push({
       valor,
-      mediaAcertos: 0, // placeholder
+      mediaAcertos: nAcertos > 0 ? somaAcertos / nAcertos : 0,
+      mediaAcertosTeorica,
       taxaAceitacao: somaTaxa / nTestes,
       jogosGerados: somaJogos / nTestes,
     });
